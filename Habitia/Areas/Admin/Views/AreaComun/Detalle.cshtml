@@ -1,0 +1,598 @@
+﻿@model Habitia.Models.AreaComun
+
+@{
+    ViewData["Title"] = "Detalle Área Común";
+
+    var disponibilidades = ViewBag.Disponibilidades
+        as List<Habitia.Models.DisponibilidadArea>;
+
+    var fotos = Model.Fotos;
+}
+
+
+
+<h1 class="page-titulo">
+
+    @Model.Nombre (@Model.Codigo)
+
+</h1>
+
+
+
+
+@if (TempData["Exito"] != null)
+{
+    <div class="alerta alerta-exito">
+
+        @TempData["Exito"]
+
+    </div>
+}
+
+
+
+@if (TempData["Error"] != null)
+{
+    <div class="alerta alerta-error">
+
+        @TempData["Error"]
+
+    </div>
+}
+
+
+
+
+<!-- ===================== FOTOS ===================== -->
+
+
+<div class="tabla-card">
+
+
+    <div class="tabla-header">
+
+        <span class="tabla-titulo">
+
+            Fotos del área común
+
+        </span>
+
+
+    </div>
+
+
+
+    <div class="fotos-galeria">
+
+
+        @if (fotos == null || !fotos.Any())
+        {
+
+            <div class="foto-item foto-vacia">
+
+
+                <img src="~/img/area-default.png" />
+
+
+                <span>
+                    Sin fotos cargadas
+                </span>
+
+
+            </div>
+
+        }
+
+        else
+        {
+
+
+            foreach (var foto in fotos.Where(x => x.Estado))
+            {
+
+                <div class="foto-item">
+
+
+                    <img src="@foto.Url"
+                         alt="@Model.Nombre" />
+
+
+
+                    <form asp-area="Admin"
+                          asp-controller="AreaComun"
+                          asp-action="EliminarFoto"
+                          method="post"
+                          class="form-eliminar-foto">
+
+
+                        @Html.AntiForgeryToken()
+
+
+                        <input type="hidden"
+                               name="fotoId"
+                               value="@foto.Id" />
+
+
+                        <input type="hidden"
+                               name="areaId"
+                               value="@Model.Id" />
+
+
+
+                        <button type="submit"
+                                class="btn-eliminar-foto">
+
+
+                            ✕
+
+
+                        </button>
+
+
+                    </form>
+
+
+
+                </div>
+
+
+            }
+
+
+        }
+
+
+
+    </div>
+
+
+
+
+
+
+    @if (fotos == null || fotos.Count(x => x.Estado) < 3)
+    {
+
+
+        <form asp-area="Admin"
+              asp-controller="AreaComun"
+              asp-action="SubirFoto"
+              method="post"
+              enctype="multipart/form-data"
+              class="form-subir-foto">
+
+
+            @Html.AntiForgeryToken()
+
+
+            <input type="hidden"
+                   name="areaId"
+                   value="@Model.Id" />
+
+
+
+            <input type="file"
+                   name="archivo"
+                   accept=".jpg,.jpeg,.png,.webp"
+                   required />
+
+
+
+            <p class="fotos-nota">
+
+                Máximo 3 fotos.
+
+            </p>
+
+
+
+            <button class="btn-modal-guardar btn-subir-foto">
+
+                Subir foto
+
+            </button>
+
+
+        </form>
+
+
+    }
+
+    else
+    {
+
+        <p class="fotos-nota">
+
+            Ya alcanzaste el máximo de 3 fotos.
+
+        </p>
+
+    }
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- ===================== HORARIOS ===================== -->
+
+
+<div class="tabla-card">
+
+
+    <div class="tabla-header">
+
+        <span class="tabla-titulo">
+
+            Agregar horario disponible
+
+        </span>
+
+
+    </div>
+
+
+
+
+
+    <form asp-area="Admin"
+          asp-controller="AreaComun"
+          asp-action="AgregarDisponibilidad"
+          method="post"
+          class="disponibilidad-form">
+
+
+        @Html.AntiForgeryToken()
+
+
+
+        <input type="hidden"
+               name="IdAreaComun"
+               value="@Model.Id" />
+
+
+
+        <div class="modal-form-group">
+
+
+            <label>
+
+                Fecha
+
+            </label>
+
+
+            <input type="date"
+                   name="Fecha"
+                   required />
+
+        </div>
+
+
+
+
+        <div class="modal-form-group">
+
+
+            <label>
+
+                Hora inicio
+
+            </label>
+
+
+            <input type="time"
+                   name="HoraInicio"
+                   required />
+
+        </div>
+
+
+
+
+        <div class="modal-form-group">
+
+
+            <label>
+
+                Hora fin
+
+            </label>
+
+
+            <input type="time"
+                   name="HoraFin"
+                   required />
+
+        </div>
+
+
+
+        <button type="submit"
+                class="btn-modal-guardar btn-guardar-horario">
+
+
+            Guardar horario
+
+
+        </button>
+
+
+
+    </form>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- ===================== LISTADO ===================== -->
+
+
+<div class="tabla-card">
+
+
+    <div class="tabla-header">
+
+
+        <span class="tabla-titulo">
+
+            Horarios registrados
+
+        </span>
+
+
+    </div>
+
+
+
+
+
+
+    <table class="tabla">
+
+
+        <thead>
+
+            <tr>
+
+                <th>
+                    Fecha
+                </th>
+
+                <th>
+                    Inicio
+                </th>
+
+                <th>
+                    Fin
+                </th>
+
+                <th>
+                    Estado
+                </th>
+
+                <th></th>
+
+
+            </tr>
+
+
+        </thead>
+
+
+
+
+
+
+        <tbody>
+
+
+
+            @if (disponibilidades == null || !disponibilidades.Any())
+            {
+
+
+                <tr>
+
+                    <td colspan="5">
+
+
+                        <div class="tabla-vacia">
+
+                            No hay horarios registrados.
+
+                        </div>
+
+
+                    </td>
+
+
+                </tr>
+
+
+            }
+
+            else
+            {
+
+
+                foreach (var d in disponibilidades)
+                {
+
+
+                    <tr>
+
+
+                        <td data-label="Fecha">
+
+                            @d.Fecha.ToString("dd/MM/yyyy")
+
+                        </td>
+
+
+
+                        <td data-label="Inicio">
+
+                            @d.HoraInicio.ToString(@"hh\:mm")
+
+                        </td>
+
+
+
+                        <td data-label="Fin">
+
+                            @d.HoraFin.ToString(@"hh\:mm")
+
+                        </td>
+
+
+
+
+                        <td data-label="Estado">
+
+
+                            @if (d.Estado)
+                            {
+
+                                <span class="badge badge-activo">
+
+                                    <span class="badge-dot"></span>
+
+                                    Disponible
+
+                                </span>
+
+                            }
+                            else
+                            {
+
+                                <span class="badge badge-inactivo">
+
+                                    <span class="badge-dot"></span>
+
+                                    Inactivo
+
+                                </span>
+
+                            }
+
+
+
+                        </td>
+
+
+
+
+
+                        <td>
+
+
+                            <form asp-area="Admin"
+                                  asp-controller="AreaComun"
+                                  asp-action="EliminarDisponibilidad"
+                                  method="post">
+
+
+                                @Html.AntiForgeryToken()
+
+
+
+                                <input type="hidden"
+                                       name="id"
+                                       value="@d.Id" />
+
+
+                                <input type="hidden"
+                                       name="areaId"
+                                       value="@Model.Id" />
+
+
+
+                                <button class="btn-eliminar">
+
+                                    Eliminar
+
+                                </button>
+
+
+                            </form>
+
+
+
+                        </td>
+
+
+
+                    </tr>
+
+
+                }
+
+
+            }
+
+
+
+
+        </tbody>
+
+
+    </table>
+
+
+
+</div>
+
+
+
+
+
+@section Scripts {
+
+
+    <script src="~/js/dashboard/filiales.js"></script>
+
+
+    <script>
+
+
+        document.querySelectorAll('.form-eliminar-foto')
+        .forEach(form => {
+
+
+        form.addEventListener('submit', e => {
+
+
+        if(!confirm('¿Eliminar esta foto?'))
+        {
+
+        e.preventDefault();
+
+        }
+
+
+        });
+
+
+        });
+
+
+
+    </script>
+
+
+}

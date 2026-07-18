@@ -1,0 +1,23 @@
+﻿@model Habitia.ViewModels.AreaComunVM
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+
+    <input type="hidden" asp-for="Id" />
+
+    <input asp-for="Nombre" />
+    <input asp-for="Codigo" />
+    <input asp-for="Capacidad" />
+
+    <h4>Fotos actuales</h4>
+
+    @foreach (var foto in Model.FotosExistentes)
+    {
+        <img src="@foto.Url" style="width:120px; margin:5px;" />
+    }
+
+    <h4>Agregar nuevas</h4>
+    <input type="file" name="Fotos" multiple />
+
+    <button type="submit">Actualizar</button>
+
+</form>

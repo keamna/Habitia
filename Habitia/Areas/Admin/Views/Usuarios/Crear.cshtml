@@ -1,0 +1,284 @@
+﻿@model Habitia.ViewModels.Usuario.CrearUsuarioViewModel
+
+@{
+    ViewData["Title"] = "Crear usuario";
+}
+
+
+<div class="usuario-form-card">
+
+
+    <div class="usuario-form-header">
+
+        <div class="modal-titulo">
+            Registrar usuario
+        </div>
+
+        <div class="modal-desc">
+            Agregue un nuevo usuario al condominio
+        </div>
+
+    </div>
+
+
+
+    <form asp-action="Crear" method="post">
+
+        @Html.AntiForgeryToken()
+
+
+
+        <div class="usuario-form-grid">
+
+
+            <div class="usuario-form-group">
+
+                <label>
+                    Nombre
+                </label>
+
+                <input asp-for="Nombre"
+                       placeholder="Ingrese nombre" />
+
+                <span asp-validation-for="Nombre"></span>
+
+            </div>
+
+
+
+
+            <div class="usuario-form-group">
+
+                <label>
+                    Apellido
+                </label>
+
+                <input asp-for="Apellido"
+                       placeholder="Ingrese apellido" />
+
+                <span asp-validation-for="Apellido"></span>
+
+            </div>
+
+
+
+
+
+            <div class="usuario-form-group">
+
+                <label>
+                    Correo electrónico
+                </label>
+
+                <input asp-for="Email"
+                       type="email"
+                       placeholder="correo@ejemplo.com" />
+
+                <span asp-validation-for="Email"></span>
+
+            </div>
+
+
+
+
+
+            <div class="usuario-form-group">
+
+                <label>
+                    Contraseña
+                </label>
+
+                <input asp-for="Password"
+                       type="password"
+                       placeholder="Contraseña" />
+
+                <span asp-validation-for="Password"></span>
+
+            </div>
+
+
+
+
+
+            <div class="usuario-form-group">
+
+                <label>
+                    Tipo identificación
+                </label>
+
+
+                <select asp-for="TipoIdentificacion">
+
+                    <option value="">
+                        Seleccione
+                    </option>
+
+                    <option value="1">
+                        Cédula
+                    </option>
+
+                    <option value="2">
+                        Pasaporte
+                    </option>
+
+                </select>
+
+
+            </div>
+
+
+
+
+
+            <div class="usuario-form-group">
+
+                <label>
+                    Identificación
+                </label>
+
+                <input asp-for="Identificacion"
+                       placeholder="Número de identificación" />
+
+            </div>
+
+
+
+
+
+
+            <div class="usuario-form-group">
+
+                <label>
+                    Teléfono
+                </label>
+
+                <input asp-for="Telefono"
+                       placeholder="8888-8888" />
+
+            </div>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <div class="roles-container">
+
+
+            <label>
+                Rol del usuario
+            </label>
+
+
+
+            <div class="roles-opciones">
+
+
+
+                <label class="rol-opcion">
+
+
+                    <input type="checkbox"
+                           name="Roles"
+                           value="Residente" />
+
+
+                    Residente
+
+
+                </label>
+
+
+
+
+
+                <label class="rol-opcion">
+
+
+                    <input type="checkbox"
+                           name="Roles"
+                           value="Seguridad" />
+
+
+                    Seguridad
+
+
+                </label>
+
+
+
+
+
+                <label class="rol-opcion">
+
+
+                    <input type="checkbox"
+                           name="Roles"
+                           value="Mantenimiento" />
+
+
+                    Mantenimiento
+
+
+                </label>
+
+
+
+            </div>
+
+
+        </div>
+
+
+
+
+
+
+
+
+        <div class="modal-footer">
+
+
+
+            <a asp-action="Index"
+               class="btn-modal-cancelar">
+
+                Cancelar
+
+            </a>
+
+
+
+
+
+            <button type="submit"
+                    class="btn-modal-guardar">
+
+                Guardar
+
+            </button>
+
+
+
+        </div>
+
+
+
+    </form>
+
+
+</div>
+
+
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+}

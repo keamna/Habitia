@@ -1,0 +1,587 @@
+﻿.usuario-form-card,
+.usuario-form-card input,
+.usuario-form-card select,
+.usuario-form-card button,
+.usuario-form-card label {
+    font-family: 'Inter', sans-serif;
+}
+
+
+
+/* =====================================
+   TARJETA TABLA USUARIOS
+===================================== */
+
+.tabla-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+
+/* =====================================
+   HEADER TABLA
+===================================== */
+
+.tabla-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 16px;
+}
+
+
+.tabla-titulo {
+    font-size: 16px;
+    font-weight: 700;
+    color: #101010;
+}
+
+
+.tabla-acciones {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+/* =====================================
+   BUSCADOR
+===================================== */
+
+.buscador {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #F9FAFB;
+    border: 1.5px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 8px 14px;
+    width: 220px;
+}
+
+
+    .buscador i {
+        color: #848484;
+        font-size: 14px;
+    }
+
+
+    .buscador input {
+        border: none;
+        outline: none;
+        background: transparent;
+        width: 100%;
+        font-size: 13px;
+    }
+
+
+
+/* =====================================
+   BOTON +
+===================================== */
+
+
+.btn-agregar {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    background: #336332;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+
+    .btn-agregar i {
+        color: white;
+    }
+
+
+    .btn-agregar:hover {
+        background: #275126;
+    }
+
+
+
+/* =====================================
+   TABLA
+===================================== */
+
+
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+    .tabla thead th {
+        text-align: left;
+        padding: 10px 12px;
+        font-size: 12px;
+        color: #848484;
+        border-bottom: 1px solid #F0F0F0;
+    }
+
+
+    .tabla tbody td {
+        padding: 13px 12px;
+        font-size: 13px;
+        color: #101010;
+    }
+
+
+    .tabla tbody tr {
+        border-bottom: 1px solid #F9FAFB;
+    }
+
+
+        .tabla tbody tr:hover {
+            background: #F9FAFB;
+        }
+
+
+
+/* =====================================
+   BADGES
+===================================== */
+
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+
+.badge-activo {
+    background: #E8F5E8;
+    color: #336332;
+}
+
+
+.badge-inactivo {
+    background: #F5F5F5;
+    color: #848484;
+}
+
+
+.badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+
+
+/* =====================================
+   MENU ACCIONES FILA
+===================================== */
+
+
+.fila-acciones {
+    position: relative;
+}
+
+
+.btn-menu-fila {
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #848484;
+}
+
+
+    .btn-menu-fila:hover {
+        color: #101010;
+    }
+
+
+
+/* =====================================
+   DROPDOWN
+===================================== */
+
+
+.dropdown-menu-fila {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 30px;
+    width: 160px;
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.08);
+    overflow: hidden;
+    z-index: 100;
+}
+
+
+    .dropdown-menu-fila a {
+        display: block;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: #101010;
+        text-decoration: none;
+    }
+
+
+        .dropdown-menu-fila a:hover {
+            background: #F9FAFB;
+        }
+
+
+
+/* =====================================
+   MODALES
+===================================== */
+
+
+.modal-overlay,
+.modal-custom {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+    .modal-overlay.visible {
+        display: flex;
+    }
+
+
+
+.modal-card {
+    background: white;
+    width: 420px;
+    padding: 24px;
+    border-radius: 16px;
+}
+
+
+
+/* =====================================
+   TITULOS MODAL
+===================================== */
+
+
+.modal-titulo {
+    font-size: 18px;
+    font-weight: 700;
+    color: #101010;
+}
+
+
+.modal-desc {
+    font-size: 13px;
+    color: #848484;
+    margin-top: 6px;
+}
+
+
+
+/* =====================================
+   FORMULARIO CREAR USUARIO
+===================================== */
+
+.usuario-form-card {
+    width: 760px;
+    max-width: 95%;
+    background: #FFFFFF;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    font-family: 'Inter', sans-serif;
+}
+
+
+
+/* TITULO */
+
+.usuario-form-header {
+    margin-bottom: 24px;
+}
+
+
+    .usuario-form-header .modal-titulo {
+        font-size: 18px;
+        font-weight: 700;
+        color: #101010;
+        margin-bottom: 6px;
+    }
+
+
+
+    .usuario-form-header .modal-desc {
+        font-size: 13px;
+        color: #848484;
+    }
+
+
+
+
+/* GRID DE CAMPOS */
+
+.usuario-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px 20px;
+}
+
+
+
+/* CAMPOS */
+
+.usuario-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+
+
+    .usuario-form-group label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #101010;
+    }
+
+
+
+    .usuario-form-group input,
+    .usuario-form-group select {
+        height: 44px;
+        width: 100%;
+        border: 1.5px solid #E5E7EB;
+        border-radius: 10px;
+        padding: 0 14px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #101010;
+        background: #FFFFFF;
+        outline: none;
+        transition: .2s ease;
+    }
+
+
+
+        .usuario-form-group input::placeholder {
+            color: #C4C9D1;
+        }
+
+
+
+        .usuario-form-group input:focus,
+        .usuario-form-group select:focus {
+            border-color: #336332;
+            box-shadow: 0 0 0 3px rgba(51,99,50,.10);
+        }
+
+
+
+
+/* VALIDACIONES */
+
+.field-validation-error {
+    color: #DC2626;
+    font-size: 12px;
+}
+
+
+
+/* ==========================
+   ROLES
+========================== */
+
+
+.roles-container {
+    margin-top: 25px;
+}
+
+
+
+    .roles-container > label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #101010;
+    }
+
+
+
+.roles-opciones {
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    gap: 12px;
+    margin-top: 12px;
+}
+
+
+
+.rol-opcion {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    background: #FFFFFF;
+    font-size: 13px;
+    font-family: 'Inter',sans-serif;
+    color: #101010;
+    cursor: pointer;
+}
+
+
+
+    .rol-opcion:hover {
+        background: #F9FAFB;
+    }
+
+
+
+    .rol-opcion input {
+        width: 16px;
+        height: 16px;
+        accent-color: #336332;
+    }
+
+
+
+
+
+/* ==========================
+   BOTONES
+========================== */
+
+
+.usuario-form-card .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+
+
+.usuario-form-card .btn-modal-cancelar,
+.usuario-form-card .btn-modal-guardar {
+    height: 42px;
+    padding: 0 24px;
+    border-radius: 10px;
+    font-family: 'Inter',sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+
+.usuario-form-card .btn-modal-cancelar {
+    background: #F5F5F5;
+    color: #101010;
+}
+
+
+
+.usuario-form-card .btn-modal-guardar {
+    background: #336332;
+    color: white;
+    border: none;
+}
+
+
+
+
+
+/* RESPONSIVE */
+
+@media(max-width:700px) {
+
+
+    .usuario-form-card {
+        width: 95%;
+        padding: 22px;
+    }
+
+
+    .usuario-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .roles-opciones {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =====================================
+   BOTONES APROBAR / RECHAZAR
+===================================== */
+
+.btn-aprobar,
+.btn-rechazar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+}
+
+
+    .btn-aprobar i,
+    .btn-rechazar i {
+        font-size: 13px;
+    }
+
+
+
+.btn-aprobar {
+    background: #E8F5E8;
+    color: #336332;
+    border: 1.5px solid #BFE3BE;
+}
+
+
+    .btn-aprobar:hover {
+        background: #D7EED6;
+        border-color: #336332;
+    }
+
+
+
+.btn-rechazar {
+    background: #FEE2E2;
+    color: #DC2626;
+    border: 1.5px solid #FCA5A5;
+}
+
+
+    .btn-rechazar:hover {
+        background: #FCD3D3;
+        border-color: #DC2626;
+    }

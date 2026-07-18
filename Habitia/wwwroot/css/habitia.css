@@ -1,0 +1,445 @@
+﻿/* Font: Poppins y DM Sans */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=DM+Sans:wght@400;500;600&display=swap');
+
+
+:root {
+    --habitia-bg: #F4FFF5;
+    --habitia-sidebar-bg: #FFFFFF;
+    --habitia-text-gray: #848484;
+    --habitia-green-active: #336332;
+    --habitia-red: #E53935;
+    --habitia-border: #ECECEC;
+}
+
+
+
+* {
+    box-sizing: border-box;
+}
+
+
+
+body {
+
+    background-color: var(--habitia-bg);
+
+    font-family: 'DM Sans', sans-serif;
+
+    margin: 0;
+
+}
+
+
+
+
+
+/* =========================
+   CONTENEDOR PRINCIPAL
+========================= */
+
+
+.habitia-wrapper {
+
+    display: flex;
+
+    min-height: 100vh;
+
+}
+
+
+
+
+
+
+/* =========================
+   SIDEBAR
+========================= */
+
+
+.habitia-sidebar {
+
+    width: 260px;
+
+    flex-shrink: 0;
+
+    background-color: var(--habitia-sidebar-bg);
+
+    border-right: 1px solid var(--habitia-border);
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: space-between;
+
+    padding-bottom: 20px;
+
+}
+
+
+
+
+
+
+/* =========================
+   LOGO
+========================= */
+
+
+.habitia-brand {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 2px;
+
+    padding: 22px 20px;
+
+    border-bottom: 1px solid var(--habitia-border);
+
+}
+
+
+
+.habitia-brand img {
+
+    width: 70px;
+
+    height: 70px;
+
+    object-fit: contain;
+
+}
+
+
+
+.habitia-brand span {
+
+    font-family: 'Poppins', sans-serif;
+
+    font-weight: 700;
+
+    font-size: 1.25rem;
+
+    color: var(--habitia-green-active);
+
+}
+
+
+
+
+
+
+
+/* =========================
+   MENU
+========================= */
+
+
+.habitia-nav {
+
+    padding: 18px 12px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+
+}
+
+
+
+
+
+.habitia-nav-item {
+
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    padding: 11px 14px;
+
+    border-radius: 9px;
+
+    color: var(--habitia-text-gray);
+
+    text-decoration: none;
+
+    font-weight: 500;
+
+    font-size: 0.92rem;
+
+    transition: .2s ease;
+
+}
+
+
+
+
+
+.habitia-nav-item i {
+
+    font-size: 1rem;
+
+    width: 20px;
+
+    text-align: center;
+
+}
+
+
+
+
+
+
+.habitia-nav-item:hover {
+
+    background-color: rgba(51,99,50,0.08);
+
+    color: var(--habitia-green-active);
+
+    text-decoration: none;
+
+}
+
+
+
+
+
+
+.habitia-nav-item.active {
+
+    background-color: var(--habitia-green-active);
+
+    color: #FFFFFF;
+
+}
+
+
+
+
+.habitia-nav-item.active i {
+
+    color: #FFFFFF;
+
+}
+
+
+
+
+
+
+
+/* =========================
+   USUARIO FOOTER
+========================= */
+
+
+.habitia-sidebar-footer {
+
+    padding: 0 20px;
+
+}
+
+
+
+
+.habitia-user {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 14px 0;
+
+}
+
+
+
+
+
+
+.habitia-user-avatar {
+
+    width: 36px;
+
+    height: 36px;
+
+    border-radius: 50%;
+
+    background-color: #D9D9D9;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #FFFFFF;
+
+    flex-shrink: 0;
+
+}
+
+
+
+
+
+.habitia-user-name {
+
+    font-weight: 600;
+
+    color: #1a1a1a;
+
+    font-size: 0.9rem;
+
+    line-height: 1.2;
+
+}
+
+
+
+
+
+.habitia-user-role {
+
+    font-size: 0.78rem;
+
+    color: var(--habitia-text-gray);
+
+}
+
+
+
+
+
+
+
+/* =========================
+   CERRAR SESIÓN
+========================= */
+
+
+.habitia-logout {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: var(--habitia-red);
+
+    text-decoration: none;
+
+    font-weight: 600;
+
+    font-size: 0.9rem;
+
+    background: none;
+
+    border: none;
+
+    padding: 0;
+
+    cursor: pointer;
+
+}
+
+
+
+
+
+
+
+/* =========================
+   CONTENIDO
+========================= */
+
+
+.habitia-content {
+
+    flex: 1;
+
+    padding: 28px 36px;
+
+}
+
+
+
+
+
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+
+@media(max-width:900px){
+
+
+    .habitia-sidebar {
+
+        width: 220px;
+
+    }
+
+
+    .habitia-content {
+
+        padding: 24px;
+
+    }
+
+
+}
+
+
+
+@media(max-width:700px){
+
+
+    .habitia-sidebar {
+
+        width: 70px;
+
+    }
+
+
+    .habitia-brand span,
+    .habitia-nav-item span,
+    .habitia-user-name,
+    .habitia-user-role,
+    .habitia-logout span {
+
+        display:none;
+
+    }
+
+
+    .habitia-nav-item {
+
+        justify-content:center;
+
+        padding:12px;
+
+    }
+
+
+    .habitia-sidebar-footer {
+
+        padding:0 12px;
+
+    }
+
+
+}

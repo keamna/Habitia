@@ -1,0 +1,108 @@
+﻿@model Habitia.ViewModels.AreaComunVM
+
+@{
+    ViewData["Title"] = "Nueva Área Común";
+}
+
+
+<h1 class="page-titulo">
+    Nueva Área Común
+</h1>
+
+
+<div class="area-comun-container">
+
+    <div class="tabla-card">
+
+        <form asp-area="Admin"
+              asp-controller="AreaComun"
+              asp-action="Create"
+              method="post"
+              enctype="multipart/form-data"
+              class="area-comun-form">
+
+            @Html.AntiForgeryToken()
+
+            <div class="modal-form-group">
+                <label asp-for="Nombre">
+                    Nombre del área
+                </label>
+
+                <input asp-for="Nombre"
+                       placeholder="Ej: Piscina" />
+            </div>
+
+
+            <div class="modal-form-group">
+                <label asp-for="Codigo">
+                    Código
+                </label>
+
+                <input asp-for="Codigo"
+                       placeholder="Ej: PIS-01" />
+            </div>
+
+
+            <div class="modal-form-group">
+                <label asp-for="Capacidad">
+                    Capacidad máxima
+                </label>
+
+                <input asp-for="Capacidad"
+                       type="number"
+                       min="1"
+                       placeholder="20" />
+            </div>
+
+
+            <div class="modal-form-group">
+
+                <label>
+                    Fotos del área
+                </label>
+
+                <div class="form-fotos">
+
+                    <input type="file"
+                           name="Fotos"
+                           multiple
+                           accept=".jpg,.jpeg,.png,.webp" />
+
+                    <small>
+                        Puede agregar varias imágenes.
+                    </small>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="modal-footer">
+
+                <a asp-action="Index"
+                   class="btn-modal-cancelar">
+                    Cancelar
+                </a>
+
+
+                <button type="submit"
+                        class="btn-guardar-area">
+                    Guardar área
+                </button>
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+}

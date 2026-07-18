@@ -1,0 +1,678 @@
+﻿@model List<Habitia.ViewModels.UsuarioListItemViewModel>
+
+@{
+    ViewData["Title"] = "Usuarios";
+}
+
+
+<div class="tabla-card">
+
+
+    <!-- HEADER -->
+
+    <div class="tabla-header">
+
+        <div class="tabla-titulo">
+            Usuarios registrados
+        </div>
+
+
+        <div class="tabla-acciones">
+
+
+            <div class="buscador">
+
+                <i class="bi bi-search"></i>
+
+                <input type="text"
+                       placeholder="Buscar usuario..." />
+
+            </div>
+
+
+
+            <select class="filtro-select">
+
+                <option>
+                    Todos
+                </option>
+
+                <option>
+                    Pendientes
+                </option>
+
+                <option>
+                    Activos
+                </option>
+
+                <option>
+                    Rechazados
+                </option>
+
+            </select>
+
+
+
+            <a asp-area="Admin"
+               asp-controller="Usuarios"
+               asp-action="Crear"
+               class="btn-agregar">
+
+                <i class="bi bi-plus-lg"></i>
+
+            </a>
+
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+    <!-- TABLA -->
+
+
+    <table class="tabla">
+
+
+        <thead>
+
+            <tr>
+
+                <th></th>
+
+                <th>
+                    Identificación
+                </th>
+
+
+                <th>
+                    Usuario
+                </th>
+
+
+                <th>
+                    Email
+                </th>
+
+
+                <th>
+                    Teléfono
+                </th>
+
+
+                <th>
+                    Estado
+                </th>
+
+
+                <th>
+                    Rol
+                </th>
+
+
+                <th>
+                    Vivienda
+                </th>
+
+
+                <th>
+                    Acciones
+                </th>
+
+            </tr>
+
+        </thead>
+
+
+
+
+
+        <tbody>
+
+
+            @foreach (var item in Model)
+            {
+
+                <tr>
+
+
+                    <td>
+
+                        <input type="checkbox"
+                               class="tabla-checkbox" />
+
+                    </td>
+
+
+
+
+                    <td>
+
+                        @item.NumeroIdentificacion
+
+                    </td>
+
+
+
+
+
+                    <td>
+
+                        <strong>
+                            @item.NombreCompleto
+                        </strong>
+
+                    </td>
+
+
+
+
+
+                    <td>
+
+                        @item.Email
+
+                    </td>
+
+
+
+
+
+                    <td>
+
+                        @item.Telefono
+
+                    </td>
+
+
+
+
+
+                    <td>
+
+
+                        @if (item.Estado == "Activo")
+                        {
+
+                            <span class="badge badge-activo">
+
+                                <span class="badge-dot"></span>
+
+                                Activo
+
+                            </span>
+
+                        }
+                        else if (item.Estado == "Pendiente")
+                        {
+
+                            <span class="badge badge-pendiente">
+
+                                <span class="badge-dot"></span>
+
+                                Pendiente
+
+                            </span>
+
+                        }
+                        else
+                        {
+
+                            <span class="badge badge-inactivo">
+
+                                <span class="badge-dot"></span>
+
+                                @item.Estado
+
+                            </span>
+
+                        }
+
+
+                    </td>
+
+
+
+
+
+                    <td>
+
+
+                        @foreach (var rol in item.Roles)
+                        {
+
+                            <span class="badge badge-activo">
+
+                                <span class="badge-dot"></span>
+
+                                @rol
+
+                            </span>
+
+                        }
+
+
+                    </td>
+
+
+
+
+
+
+                    <td>
+
+
+                        @if (item.Viviendas.Any())
+                        {
+
+
+                            foreach (var vivienda in item.Viviendas)
+                            {
+
+                                <div>
+
+                                    @vivienda.Codigo
+
+                                    <small>
+                                        (@vivienda.TipoRelacion)
+                                    </small>
+
+
+                                    @if (vivienda.Estado == "Pendiente")
+                                    {
+
+                                        <span class="text-warning">
+
+                                            Pendiente
+
+                                        </span>
+
+                                    }
+
+
+                                </div>
+
+
+                            }
+
+
+                        }
+                        else
+                        {
+
+                            <span class="text-muted">
+
+                                Sin vivienda
+
+                            </span>
+
+                        }
+
+
+                    </td>
+
+
+
+
+
+
+                    <!-- ACCIONES -->
+
+
+                    <td>
+
+
+                        <div class="fila-acciones">
+
+
+
+                            @if (item.Estado == "Pendiente")
+                            {
+
+
+                                <button class="btn-aprobar"
+                                        onclick="aprobarUsuario('@item.Id')">
+
+                                    <i class="bi bi-check-lg"></i>
+                                    Aprobar
+
+                                </button>
+
+
+
+                                <button class="btn-rechazar"
+                                        onclick="rechazarUsuario('@item.Id')">
+
+                                    <i class="bi bi-x-lg"></i>
+                                    Rechazar
+
+                                </button>
+
+
+                            }
+
+
+
+
+
+
+
+                            @if (!item.Roles.Contains("Admin"))
+                            {
+
+
+                                <button class="btn-menu-fila">
+
+                                    <i class="bi bi-three-dots-vertical"></i>
+
+                                </button>
+
+
+
+
+
+                                <div class="dropdown-menu-fila">
+
+
+                                    <a href="#"
+                                       onclick='abrirRoles(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.Roles)))'>
+
+                                        Cambiar roles
+
+                                    </a>
+
+
+
+
+                                    <a href="#"
+                                       class="text-danger btn-eliminar-usuario"
+                                       onclick='abrirEliminar(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.NombreCompleto)))'>
+
+                                        Eliminar
+
+                                    </a>
+
+
+                                </div>
+
+
+                            }
+
+
+
+                        </div>
+
+
+                    </td>
+
+
+
+
+
+                </tr>
+
+
+            }
+
+
+        </tbody>
+
+
+    </table>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- MODAL ROLES -->
+
+
+<div id="modalRoles"
+     class="modal-overlay">
+
+
+    <div class="modal-card">
+
+
+        <div class="modal-titulo">
+
+            Asignar roles
+
+        </div>
+
+
+
+        <div class="modal-desc">
+
+            Selecciona los roles del usuario.
+
+        </div>
+
+
+
+
+        <input type="hidden"
+               id="rolesUsuarioId" />
+
+
+
+
+
+        <div id="rolesContainer"
+             class="roles-opciones">
+
+
+
+
+
+            <label class="rol-opcion">
+
+                <input type="checkbox"
+                       value="Residente" />
+
+                Residente
+
+            </label>
+
+
+
+
+
+            <label class="rol-opcion">
+
+                <input type="checkbox"
+                       value="Seguridad" />
+
+                Seguridad
+
+            </label>
+
+
+
+
+
+            <label class="rol-opcion">
+
+                <input type="checkbox"
+                       value="Mantenimiento" />
+
+                Mantenimiento
+
+            </label>
+
+
+
+        </div>
+
+
+
+
+
+        <div id="rolesError"
+             class="roles-error"
+             style="display:none;">
+
+
+            Debe seleccionar al menos un rol.
+
+
+        </div>
+
+
+
+
+
+
+        <div class="modal-footer">
+
+
+
+            <button class="btn-modal-cancelar"
+                    onclick="cerrarModalRoles()">
+
+                Cancelar
+
+            </button>
+
+
+
+
+
+            <button class="btn-modal-guardar"
+                    onclick="guardarRoles()">
+
+                Guardar
+
+            </button>
+
+
+
+        </div>
+
+
+
+
+    </div>
+
+
+
+</div>
+
+
+
+
+<!-- MODAL ELIMINAR USUARIO -->
+
+
+<div id="modalEliminar"
+     class="modal-overlay">
+
+
+    <div class="modal-card">
+
+
+        <div class="modal-icon modal-icon-danger">
+
+            <i class="bi bi-exclamation-triangle"></i>
+
+        </div>
+
+
+
+
+        <div class="modal-titulo">
+
+            Eliminar usuario
+
+        </div>
+
+
+
+
+        <div class="modal-desc">
+
+            ¿Estás seguro de que querés eliminar a
+            <strong id="eliminarUsuarioNombre"></strong>?
+            <br />
+            Esta acción no se puede deshacer.
+
+        </div>
+
+
+
+
+        <input type="hidden"
+               id="eliminarUsuarioId" />
+
+
+
+
+        <div id="eliminarError"
+             class="roles-error"
+             style="display:none;">
+
+            No se pudo eliminar el usuario.
+
+        </div>
+
+
+
+
+        <div class="modal-footer">
+
+
+
+            <button class="btn-modal-cancelar"
+                    onclick="cerrarModalEliminar()">
+
+                Cancelar
+
+            </button>
+
+
+
+
+
+            <button class="btn-modal-eliminar"
+                    id="btnConfirmarEliminar"
+                    onclick="confirmarEliminarUsuario()">
+
+                Eliminar
+
+            </button>
+
+
+
+        </div>
+
+
+
+    </div>
+
+
+
+</div>
+
+
+
+
+
+
+@section Scripts {
+
+
+    <script src="~/js/admin/usuarios.js"></script>
+
+
+}

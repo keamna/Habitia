@@ -1,0 +1,511 @@
+﻿/* =====================================================
+   AREAS COMUNES - HABITIA
+   ===================================================== */
+
+
+/* ── Fuente general ── */
+
+.area-comun-container,
+.area-comun-container input,
+.area-comun-container button,
+.area-comun-container select {
+    font-family: 'DM Sans', sans-serif;
+}
+
+
+/* =====================================================
+   CARDS RESIDENTE
+   ===================================================== */
+
+
+.areas-comunes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+
+
+.area-comun-card {
+    background-color: #FFFFFF;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+
+.area-comun-card-codigo {
+    font-size: 11px;
+    font-weight: 600;
+    color: #848484;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+
+
+.area-comun-card-nombre {
+    font-size: 17px;
+    font-weight: 700;
+    color: #101010;
+}
+
+
+
+.area-comun-card-info {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: #6B7280;
+}
+
+
+    .area-comun-card-info span strong {
+        color: #101010;
+    }
+
+
+
+/* FOTO CARD */
+
+.area-comun-card-foto {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 5px;
+}
+
+
+
+
+/* BOTON RESERVAR */
+
+.btn-ver-disponibilidad {
+    margin-top: 8px;
+    background-color: #336332;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-family: 'DM Sans',sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    display: block;
+    transition: .2s;
+}
+
+
+    .btn-ver-disponibilidad:hover {
+        background-color: #275126;
+    }
+
+
+
+
+/* =====================================================
+   HORARIOS
+   ===================================================== */
+
+
+.horarios-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+
+.horario-item {
+    background: #FFFFFF;
+    border: 1.5px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+
+
+.horario-info {
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+.horario-fecha {
+    font-size: 14px;
+    font-weight: 700;
+    color: #101010;
+}
+
+
+
+.horario-hora {
+    font-size: 12px;
+    color: #6B7280;
+}
+
+
+
+/* RESERVAR */
+
+
+.btn-reservar {
+    background: #49B847;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-family: 'DM Sans';
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+
+
+    .btn-reservar:hover {
+        background: #3da53b;
+    }
+
+
+
+
+/* =====================================================
+   ADMIN - FORMULARIO
+   ===================================================== */
+
+
+.area-comun-form {
+    background: #F9FAFB;
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    font-family: 'DM Sans', sans-serif;
+}
+
+
+
+    .area-comun-form .modal-form-group {
+        min-width: 180px;
+        margin-bottom: 0;
+    }
+
+.area-comun-container {
+    font-family: 'DM Sans', sans-serif;
+}
+
+
+.area-comun-form input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
+
+
+/* INPUT FILE */
+
+
+.form-fotos {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+
+    .form-fotos input[type="file"] {
+        font-family: 'DM Sans';
+        font-size: 13px;
+        color: #6B7280;
+    }
+
+
+
+        .form-fotos input[type="file"]::file-selector-button {
+            background: white;
+            color: #336332;
+            border: 1.5px solid #336332;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-family: 'DM Sans';
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 12px;
+        }
+
+
+            .form-fotos input[type="file"]::file-selector-button:hover {
+                background: #336332;
+                color: white;
+            }
+
+
+
+
+
+/* =====================================================
+   TABLA ADMIN MINIATURA
+   ===================================================== */
+
+
+.area-comun-miniatura {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #E5E7EB;
+}
+
+
+
+
+/* =====================================================
+   GALERIA ADMIN
+   ===================================================== */
+
+
+.area-fotos-galeria {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+
+
+.area-foto-item {
+    position: relative;
+    width: 140px;
+    height: 140px;
+}
+
+
+
+    .area-foto-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid #E5E7EB;
+    }
+
+
+
+
+.area-foto-vacia {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: #9CA3AF;
+    font-size: 12px;
+}
+
+
+
+
+
+/* ELIMINAR FOTO */
+
+
+.btn-eliminar-area-foto {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,.6);
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+
+
+    .btn-eliminar-area-foto:hover {
+        background: #b91c1c;
+    }
+
+
+
+
+/* =====================================================
+   DISPONIBILIDAD
+   ===================================================== */
+
+
+.disponibilidad-area-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: #F9FAFB;
+    padding: 18px;
+    border-radius: 12px;
+}
+
+
+
+.fecha-hora-area {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+
+
+    .fecha-hora-area input[type="date"] {
+        flex: 1 1 140px;
+    }
+
+
+
+    .fecha-hora-area input[type="time"] {
+        width: 110px;
+    }
+
+
+
+
+/* =====================================================
+   BOTONES
+   ===================================================== */
+
+
+.btn-guardar-area {
+    background: #336332;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-family: 'DM Sans';
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+
+
+    .btn-guardar-area:hover {
+        background: #275126;
+    }
+
+
+/* FORM GROUP GENERAL */
+
+.modal-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+
+    .modal-form-group label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #101010;
+    }
+
+
+    .modal-form-group input {
+        height: 42px;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 0 12px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px;
+        outline: none;
+    }
+
+
+        .modal-form-group input:focus {
+            border-color: #336332;
+        }
+
+
+.toggle-estado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* =====================================================
+   BOTÓN CANCELAR MODAL / FORMULARIO
+   ===================================================== */
+
+.btn-modal-cancelar {
+    background-color: #FFFFFF;
+    color: #6B7280;
+    border: 1.5px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .2s ease;
+}
+
+
+    .btn-modal-cancelar:hover {
+        background-color: #F9FAFB;
+        color: #101010;
+        border-color: #D1D5DB;
+    }
+
+/* =====================================================
+   BOTÓN AGREGAR (+)
+   ===================================================== */
+
+.btn-agregar {
+    width: 36px;
+    height: 36px;
+    background-color: #336332;
+    color: #FFFFFF;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border: none;
+    padding: 0;
+    transition: background-color .2s ease;
+}
+
+
+    .btn-agregar:hover {
+        background-color: #275126;
+    }
+
+
+    .btn-agregar svg {
+        width: 18px;
+        height: 18px;
+    }

@@ -1,0 +1,147 @@
+﻿@model Habitia.ViewModels.Vivienda.ViviendaViewModel
+
+@{
+    ViewData["Title"] = "Crear vivienda";
+}
+
+
+<div class="vivienda-form-card">
+
+
+    <div class="vivienda-form-titulo">
+        Registrar vivienda
+    </div>
+
+
+    <div class="vivienda-form-descripcion">
+        Agregue una nueva vivienda al condominio
+    </div>
+
+
+
+    <form asp-action="Crear"
+          method="post">
+
+
+        @Html.AntiForgeryToken()
+
+
+
+        <div class="vivienda-form-group">
+
+
+            <label>
+                Código de vivienda
+            </label>
+
+
+            <input asp-for="Numero"
+                   placeholder="Ejemplo: A-101" />
+
+
+            <span asp-validation-for="Numero"
+                  class="field-validation-error">
+            </span>
+
+
+        </div>
+
+
+
+
+
+        <div class="vivienda-form-group">
+
+
+            <label>
+                Tipo de vivienda
+            </label>
+
+
+            <select asp-for="Tipo">
+
+                <option value="">
+                    Seleccione
+                </option>
+
+                <option value="Casa">
+                    Casa
+                </option>
+
+                <option value="Departamento">
+                    Departamento
+                </option>
+
+            </select>
+
+
+
+            <span asp-validation-for="Tipo"
+                  class="field-validation-error">
+            </span>
+
+
+        </div>
+
+
+
+
+
+        <div class="vivienda-estado">
+
+
+            <span>
+                Estado inicial
+            </span>
+
+
+
+            <div class="estado-badge">
+
+                Disponible
+
+            </div>
+
+
+        </div>
+
+
+
+
+
+        <div class="vivienda-form-footer">
+
+
+            <a asp-action="Index"
+               class="btn-vivienda-cancelar">
+
+                Cancelar
+
+            </a>
+
+
+
+            <button type="submit"
+                    class="btn-vivienda-guardar">
+
+                Guardar
+
+            </button>
+
+
+        </div>
+
+
+
+    </form>
+
+
+</div>
+
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+}

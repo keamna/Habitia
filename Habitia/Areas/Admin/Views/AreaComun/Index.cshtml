@@ -1,0 +1,320 @@
+﻿@model List<Habitia.Models.AreaComun>
+
+@{
+    ViewData["Title"] = "Áreas Comunes";
+}
+
+
+<h1 class="page-titulo">
+    Áreas Comunes
+</h1>
+
+
+
+@if (TempData["Exito"] != null)
+{
+    <div class="alerta alerta-exito">
+
+        @TempData["Exito"]
+
+    </div>
+}
+
+
+
+@if (TempData["Error"] != null)
+{
+    <div class="alerta alerta-error">
+
+        @TempData["Error"]
+
+    </div>
+}
+
+
+
+
+<div class="tabla-card">
+
+
+    <div class="tabla-header">
+
+
+        <span class="tabla-titulo">
+            Áreas comunes del condominio
+        </span>
+
+
+
+        <a asp-area="Admin"
+           asp-controller="AreaComun"
+           asp-action="Create"
+           class="btn-agregar"
+           title="Agregar área común">
+
+
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke="currentColor"
+                 stroke-width="2.5">
+
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 4v16m8-8H4" />
+
+            </svg>
+
+
+        </a>
+
+
+    </div>
+
+
+
+
+
+    <table class="tabla">
+
+
+        <thead>
+
+            <tr>
+
+                <th>
+                    Foto
+                </th>
+
+
+                <th>
+                    Código
+                </th>
+
+
+                <th>
+                    Nombre
+                </th>
+
+
+                <th>
+                    Capacidad
+                </th>
+
+
+                <th>
+                    Estado
+                </th>
+
+
+                <th></th>
+
+
+            </tr>
+
+        </thead>
+
+
+
+        <tbody>
+
+
+            @if (!Model.Any())
+            {
+
+                <tr>
+
+                    <td colspan="6">
+
+                        <div class="tabla-vacia">
+
+                            No hay áreas comunes registradas.
+
+                        </div>
+
+
+                    </td>
+
+
+                </tr>
+
+            }
+
+            else
+            {
+
+
+                foreach (var area in Model)
+                {
+
+
+                    var foto = area.Fotos?
+                    .Where(f => f.Estado)
+                    .OrderBy(f => f.Orden)
+                    .FirstOrDefault();
+
+
+                    <tr>
+
+
+
+                        <td data-label="Foto">
+
+
+                            <img class="area-miniatura"
+                                 src="@(foto != null ? foto.Url : "/img/area-default.png")"
+                                 alt="@area.Nombre" />
+
+
+                        </td>
+
+
+
+
+                        <td data-label="Código">
+
+                            @area.Codigo
+
+                        </td>
+
+
+
+
+                        <td data-label="Nombre">
+
+                            @area.Nombre
+
+                        </td>
+
+
+
+
+                        <td data-label="Capacidad">
+
+                            @area.Capacidad personas
+
+                        </td>
+
+
+
+
+                        <td data-label="Estado">
+
+
+                            @if (area.Estado)
+                            {
+
+                                <span class="badge badge-activo">
+
+                                    <span class="badge-dot"></span>
+                                    Activa
+
+                                </span>
+
+                            }
+                            else
+                            {
+
+                                <span class="badge badge-inactivo">
+
+                                    <span class="badge-dot"></span>
+                                    Inactiva
+
+                                </span>
+
+                            }
+
+
+                        </td>
+
+
+
+
+
+                        <td>
+
+
+                            <div class="fila-acciones">
+
+
+                                <a asp-area="Admin"
+                                   asp-controller="AreaComun"
+                                   asp-action="Detalle"
+                                   asp-route-id="@area.Id"
+                                   class="btn-menu-fila"
+                                   title="Horarios">
+
+
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                         fill="none"
+                                         viewBox="0 0 24 24"
+                                         stroke="currentColor"
+                                         stroke-width="2">
+
+
+                                        <path stroke-linecap="round"
+                                              stroke-linejoin="round"
+                                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+
+
+                                    </svg>
+
+
+                                </a>
+
+
+
+
+
+                                <a asp-area="Admin"
+                                   asp-controller="AreaComun"
+                                   asp-action="Edit"
+                                   asp-route-id="@area.Id"
+                                   class="btn-menu-fila"
+                                   title="Editar">
+
+
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                         fill="none"
+                                         viewBox="0 0 24 24"
+                                         stroke="currentColor"
+                                         stroke-width="2">
+
+                                        <path stroke-linecap="round"
+                                              stroke-linejoin="round"
+                                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+
+                                    </svg>
+
+
+                                </a>
+
+
+
+                            </div>
+
+
+
+                        </td>
+
+
+
+
+                    </tr>
+
+
+
+                }
+
+
+            }
+
+
+
+        </tbody>
+
+
+    </table>
+
+
+</div>

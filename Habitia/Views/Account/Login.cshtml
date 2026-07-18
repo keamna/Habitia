@@ -1,0 +1,60 @@
+﻿@model Habitia.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+
+<h1>Iniciar Sesión</h1>
+
+
+<form asp-action="Login" method="post">
+
+
+    <div asp-validation-summary="All"
+         class="text-danger">
+    </div>
+
+
+    <div>
+        <label>Correo</label>
+
+        <input asp-for="Email"
+               class="form-control" />
+
+        <span asp-validation-for="Email"
+              class="text-danger">
+        </span>
+    </div>
+
+
+
+    <div>
+        <label>Contraseña</label>
+
+        <input asp-for="Password"
+               class="form-control" />
+
+        <span asp-validation-for="Password"
+              class="text-danger">
+        </span>
+    </div>
+
+
+
+    <div>
+        <label>
+            <input asp-for="RememberMe"/>
+            Recordarme
+        </label>
+    </div>
+
+
+
+    <button type="submit"
+            class="btn btn-primary">
+        Ingresar
+    </button>
+
+
+</form>
