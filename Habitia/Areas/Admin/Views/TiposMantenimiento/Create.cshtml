@@ -1,0 +1,23 @@
+﻿@model Habitia.ViewModels.Catalogos.TipoMantenimientoCreateViewModel
+@{
+    ViewData["Title"] = "Nuevo Tipo de Mantenimiento";
+}
+
+<h2>Nuevo Tipo de Mantenimiento</h2>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="mb-3">
+        <label asp-for="Nombre" class="form-label"></label>
+        <input asp-for="Nombre" class="form-control" />
+        <span asp-validation-for="Nombre" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

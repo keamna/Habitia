@@ -1,23 +1,132 @@
 ﻿@model Habitia.ViewModels.AreaComunVM
+@{
+    ViewData["Title"] = "Editar Área Común";
+}
+<h1 class="page-titulo">
+    Editar Área Común
+</h1>
+<div class="area-comun-container">
+    <div class="tabla-card">
+        <form asp-area="Admin"
+              asp-controller="AreaComun"
+              asp-action="Edit"
+              method="post"
+              enctype="multipart/form-data"
+              class="area-comun-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <div class="modal-form-group">
+                <label asp-for="Nombre">Nombre del área</label>
+                <input asp-for="Nombre" placeholder="Ej: Piscina" />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
+            <div class="modal-form-group">
+                <label asp-for="Codigo">Código</label>
+                <input asp-for="Codigo" placeholder="Ej: PIS-01" />
+                <span asp-validation-for="Codigo" class="text-danger"></span>
+            </div>
+            <div class="modal-form-group">
+                <label asp-for="IdTipo">Tipo de área</label>
+                <select asp-for="IdTipo" asp-items="ViewBag.Tipos as SelectList">
+                    <option value="">-- Seleccione --</option>
+                </select>
+                <span asp-validation-for="IdTipo" class="text-danger"></span>
+            </div>
+            <div class="modal-form-group">
+                <label asp-for="Capacidad">Capacidad máxima</label>
+                <input asp-for="Capacidad" type="number" min="1" placeholder="20" />
+                <span asp-validation-for="Capacidad" class="text-danger"></span>
+            </div>
 
-<form asp-action="Edit" method="post" enctype="multipart/form-data">
+            <div class="toggle-estado">
+                <label asp-for="Estado">Área activa</label>
+                <input type="checkbox" asp-for="Estado" />
+            </div>
 
-    <input type="hidden" asp-for="Id" />
+            <div class="modal-form-group">
+                <label>Fotos actuales</label>
 
-    <input asp-for="Nombre" />
-    <input asp-for="Codigo" />
-    <input asp-for="Capacidad" />
+                @if (Model.FotosExistentes != null && Model.FotosExistentes.Any())
+                {
+                    <div class="area-fotos-galeria">
+                        @foreach (var foto in Model.FotosExistentes)
+                        {
+                            <div class="area-foto-item">
+                                <img src="@foto.Url" alt="@Model.Nombre" />
+                                <button type="button"
+                                        class="btn-eliminar-area-foto"
+                                        data-foto-id="@foto.Id"
+                                        data-area-id="@Model.Id"
+                                        onclick="eliminarFotoExistente(this)">
+                                    ✕
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="fotos-nota">Esta área todavía no tiene fotos.</p>
+                }
+            </div>
 
-    <h4>Fotos actuales</h4>
+            <div class="modal-form-group">
+                <label>Agregar nuevas fotos</label>
+                <div class="form-fotos">
+                    <input type="file"
+                           id="inputFotos"
+                           name="Fotos"
+                           multiple
+                           accept=".jpg,.jpeg,.png,.webp" />
+                    <small>Puede agregar varias imágenes.</small>
+                    <span asp-validation-for="Fotos" class="text-danger"></span>
+                </div>
+                <div id="previewFotos" class="area-fotos-preview"></div>
+            </div>
 
-    @foreach (var foto in Model.FotosExistentes)
-    {
-        <img src="@foto.Url" style="width:120px; margin:5px;" />
-    }
+            <div class="modal-footer">
+                <a asp-action="Index" class="btn-modal-cancelar">Cancelar</a>
+                <button type="submit" class="btn-guardar-area">Actualizar área</button>
+            </div>
+        </form>
+    </div>
+</div>
 
-    <h4>Agregar nuevas</h4>
-    <input type="file" name="Fotos" multiple />
-
-    <button type="submit">Actualizar</button>
-
+<!-- Form oculto reutilizado para eliminar una foto ya guardada -->
+<form id="formEliminarFoto"
+      asp-area="Admin"
+      asp-controller="AreaComun"
+      asp-action="EliminarFoto"
+      method="post"
+      style="display:none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="eliminarFotoId" name="fotoId" />
+    <input type="hidden" id="eliminarAreaId" name="areaId" />
 </form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('inputFotos').addEventListener('change', function (e) {
+            const preview = document.getElementById('previewFotos');
+            preview.innerHTML = '';
+            Array.from(e.target.files).forEach(function (archivo) {
+                const reader = new FileReader();
+                reader.onload = function (evento) {
+                    const img = document.createElement('img');
+                    img.src = evento.target.result;
+                    img.alt = 'Vista previa';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(archivo);
+            });
+        });
+
+        function eliminarFotoExistente(boton) {
+            if (!confirm('¿Eliminar esta foto?')) return;
+            document.getElementById('eliminarFotoId').value = boton.dataset.fotoId;
+            document.getElementById('eliminarAreaId').value = boton.dataset.areaId;
+            document.getElementById('formEliminarFoto').submit();
+        }
+    </script>
+}

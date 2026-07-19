@@ -2,6 +2,7 @@
 using Habitia.Models;
 using Habitia.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace Habitia.Areas.Admin.Controllers
@@ -45,6 +46,7 @@ namespace Habitia.Areas.Admin.Controllers
         // =========================
         public IActionResult Create()
         {
+            ViewBag.Tipos = new SelectList(_context.TiposArea, "Id", "Nombre");
             return View();
         }
 
@@ -61,7 +63,10 @@ namespace Habitia.Areas.Admin.Controllers
         {
 
             if (!ModelState.IsValid)
+            {
+                ViewBag.Tipos = new SelectList(_context.TiposArea, "Id", "Nombre", vm.IdTipo);
                 return View(vm);
+            }
 
 
 
@@ -109,6 +114,10 @@ namespace Habitia.Areas.Admin.Controllers
 
 
 
+            ViewBag.Tipos = new SelectList(_context.TiposArea, "Id", "Nombre", area.IdTipo);
+
+
+
             var vm = new AreaComunVM
             {
                 Id = area.Id,
@@ -140,12 +149,24 @@ namespace Habitia.Areas.Admin.Controllers
         {
 
             var area = await _context.AreasComunes
+                .Include(a => a.Fotos)
                 .FirstOrDefaultAsync(a => a.Id == vm.Id);
 
 
 
             if (area == null)
                 return NotFound();
+
+
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Tipos = new SelectList(_context.TiposArea, "Id", "Nombre", vm.IdTipo);
+                vm.FotosExistentes = area.Fotos
+                    .Where(f => f.Estado)
+                    .ToList();
+                return View(vm);
+            }
 
 
 
@@ -284,11 +305,72 @@ namespace Habitia.Areas.Admin.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AgregarDisponibilidad(
-            DisponibilidadArea disponibilidad)
+            DisponibilidadFormVM vm)
         {
 
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Complete todos los campos del horario.";
+                return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
+            }
 
-            disponibilidad.Estado = true;
+
+
+            TimeSpan horaInicio;
+            TimeSpan horaFin;
+
+            try
+            {
+                horaInicio = DateTime.ParseExact(
+                    $"{vm.HoraInicioHora}:{vm.HoraInicioMinuto:D2} {vm.HoraInicioAmPm}",
+                    "h:mm tt",
+                    System.Globalization.CultureInfo.InvariantCulture).TimeOfDay;
+
+                horaFin = DateTime.ParseExact(
+                    $"{vm.HoraFinHora}:{vm.HoraFinMinuto:D2} {vm.HoraFinAmPm}",
+                    "h:mm tt",
+                    System.Globalization.CultureInfo.InvariantCulture).TimeOfDay;
+            }
+            catch (FormatException)
+            {
+                TempData["Error"] = "La hora ingresada no es válida.";
+                return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
+            }
+
+
+
+            if (horaInicio >= horaFin)
+            {
+                TempData["Error"] = "La hora de inicio debe ser menor que la hora de finalización.";
+                return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
+            }
+
+
+
+            bool existeDuplicado = await _context.Disponibilidades
+                .AnyAsync(d =>
+                    d.IdAreaComun == vm.IdAreaComun &&
+                    d.Fecha == vm.Fecha.Date &&
+                    d.HoraInicio == horaInicio &&
+                    d.HoraFin == horaFin &&
+                    d.Estado);
+
+            if (existeDuplicado)
+            {
+                TempData["Error"] = "Ya existe ese horario registrado para esta área y fecha.";
+                return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
+            }
+
+
+
+            var disponibilidad = new DisponibilidadArea
+            {
+                IdAreaComun = vm.IdAreaComun,
+                Fecha = vm.Fecha.Date,
+                HoraInicio = horaInicio,
+                HoraFin = horaFin,
+                Estado = true
+            };
 
 
             _context.Disponibilidades
@@ -299,10 +381,11 @@ namespace Habitia.Areas.Admin.Controllers
             await _context.SaveChangesAsync();
 
 
+            TempData["Exito"] = "Horario agregado correctamente.";
 
             return RedirectToAction(
                 nameof(Detalle),
-                new { id = disponibilidad.IdAreaComun });
+                new { id = vm.IdAreaComun });
 
         }
 

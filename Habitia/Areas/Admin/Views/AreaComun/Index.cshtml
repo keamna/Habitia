@@ -161,7 +161,7 @@
                         <td data-label="Foto">
 
 
-                            <img class="area-miniatura"
+                            <img class="area-comun-miniatura"
                                  src="@(foto != null ? foto.Url : "/img/area-default.png")"
                                  alt="@area.Nombre" />
 
@@ -241,24 +241,23 @@
                                    asp-controller="AreaComun"
                                    asp-action="Detalle"
                                    asp-route-id="@area.Id"
-                                   class="btn-menu-fila"
-                                   title="Horarios">
-
+                                   class="btn-horario-fila"
+                                   title="Agregar horario">
 
                                     <svg xmlns="http://www.w3.org/2000/svg"
+                                         width="15"
+                                         height="15"
                                          fill="none"
                                          viewBox="0 0 24 24"
                                          stroke="currentColor"
                                          stroke-width="2">
 
-
                                         <path stroke-linecap="round"
                                               stroke-linejoin="round"
-                                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-
+                                              d="M12 4v16m8-8H4" />
 
                                     </svg>
-
+                                    Agregar horario
 
                                 </a>
 
@@ -275,6 +274,8 @@
 
 
                                     <svg xmlns="http://www.w3.org/2000/svg"
+                                         width="16"
+                                         height="16"
                                          fill="none"
                                          viewBox="0 0 24 24"
                                          stroke="currentColor"

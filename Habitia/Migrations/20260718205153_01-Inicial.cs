@@ -442,6 +442,29 @@ namespace Habitia.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "THBT_A_AreaComunFoto",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    IdAreaComun = table.Column<int>(type: "int", nullable: false),
+                    Url = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    EsPrincipal = table.Column<bool>(type: "bit", nullable: false),
+                    Orden = table.Column<int>(type: "int", nullable: false),
+                    Estado = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_THBT_A_AreaComunFoto", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_THBT_A_AreaComunFoto_THBT_A_AreaComun_IdAreaComun",
+                        column: x => x.IdAreaComun,
+                        principalTable: "THBT_A_AreaComun",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "THBT_A_DisponibilidadArea",
                 columns: table => new
                 {
@@ -476,9 +499,12 @@ namespace Habitia.Migrations
                     Tipo = table.Column<int>(type: "int", nullable: false),
                     Estado = table.Column<int>(type: "int", nullable: false),
                     Responsabilidad = table.Column<int>(type: "int", nullable: false),
-                    Titulo = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Descripcion = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Titulo = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Descripcion = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ImagenUrl = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    ComentarioAdicional = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -487,47 +513,25 @@ namespace Habitia.Migrations
                         name: "FK_THBT_A_Incidencia_THBT_A_AreaComun_IdAreaComun",
                         column: x => x.IdAreaComun,
                         principalTable: "THBT_A_AreaComun",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_THBT_A_Incidencia_THBT_A_Usuario_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "THBT_A_Usuario",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_THBT_A_Incidencia_THBT_A_Usuario_IdUsuario",
                         column: x => x.IdUsuario,
                         principalTable: "THBT_A_Usuario",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_THBT_A_Incidencia_THBT_A_Vivienda_IdVivienda",
                         column: x => x.IdVivienda,
                         principalTable: "THBT_A_Vivienda",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "THBT_A_Mantenimiento",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    IdTipo = table.Column<int>(type: "int", nullable: false),
-                    IdAreaComun = table.Column<int>(type: "int", nullable: true),
-                    Descripcion = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    FechaInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FechaFin = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Estado = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_THBT_A_Mantenimiento", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_THBT_A_Mantenimiento_THBT_A_AreaComun_IdAreaComun",
-                        column: x => x.IdAreaComun,
-                        principalTable: "THBT_A_AreaComun",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_THBT_A_Mantenimiento_THBT_CAT_TipoMantenimiento_IdTipo",
-                        column: x => x.IdTipo,
-                        principalTable: "THBT_CAT_TipoMantenimiento",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -566,6 +570,52 @@ namespace Habitia.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "THBT_A_Mantenimiento",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    IdIncidencia = table.Column<int>(type: "int", nullable: false),
+                    IdTipo = table.Column<int>(type: "int", nullable: false),
+                    IdAreaComun = table.Column<int>(type: "int", nullable: true),
+                    IdPersonalAsignado = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Descripcion = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    FechaProgramada = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FechaInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FechaFin = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Estado = table.Column<int>(type: "int", nullable: false),
+                    Observaciones = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_THBT_A_Mantenimiento", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_THBT_A_Mantenimiento_THBT_A_AreaComun_IdAreaComun",
+                        column: x => x.IdAreaComun,
+                        principalTable: "THBT_A_AreaComun",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_THBT_A_Mantenimiento_THBT_A_Incidencia_IdIncidencia",
+                        column: x => x.IdIncidencia,
+                        principalTable: "THBT_A_Incidencia",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_THBT_A_Mantenimiento_THBT_A_Usuario_IdPersonalAsignado",
+                        column: x => x.IdPersonalAsignado,
+                        principalTable: "THBT_A_Usuario",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_THBT_A_Mantenimiento_THBT_CAT_TipoMantenimiento_IdTipo",
+                        column: x => x.IdTipo,
+                        principalTable: "THBT_CAT_TipoMantenimiento",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_THBT_A_Acceso_IdAutorizacion",
                 table: "THBT_A_Acceso",
@@ -575,6 +625,11 @@ namespace Habitia.Migrations
                 name: "IX_THBT_A_AreaComun_IdTipo",
                 table: "THBT_A_AreaComun",
                 column: "IdTipo");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_THBT_A_AreaComunFoto_IdAreaComun",
+                table: "THBT_A_AreaComunFoto",
+                column: "IdAreaComun");
 
             migrationBuilder.CreateIndex(
                 name: "IX_THBT_A_Autorizacion_IdUsuario",
@@ -602,6 +657,21 @@ namespace Habitia.Migrations
                 column: "IdPublicacion");
 
             migrationBuilder.CreateIndex(
+                name: "IX_THBT_A_Incidencia_ApplicationUserId",
+                table: "THBT_A_Incidencia",
+                column: "ApplicationUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_THBT_A_Incidencia_Estado",
+                table: "THBT_A_Incidencia",
+                column: "Estado");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_THBT_A_Incidencia_FechaRegistro",
+                table: "THBT_A_Incidencia",
+                column: "FechaRegistro");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_THBT_A_Incidencia_IdAreaComun",
                 table: "THBT_A_Incidencia",
                 column: "IdAreaComun");
@@ -617,9 +687,35 @@ namespace Habitia.Migrations
                 column: "IdVivienda");
 
             migrationBuilder.CreateIndex(
+                name: "IX_THBT_A_Incidencia_Responsabilidad",
+                table: "THBT_A_Incidencia",
+                column: "Responsabilidad");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_THBT_A_Mantenimiento_Estado",
+                table: "THBT_A_Mantenimiento",
+                column: "Estado");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_THBT_A_Mantenimiento_FechaProgramada",
+                table: "THBT_A_Mantenimiento",
+                column: "FechaProgramada");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_THBT_A_Mantenimiento_IdAreaComun",
                 table: "THBT_A_Mantenimiento",
                 column: "IdAreaComun");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_THBT_A_Mantenimiento_IdIncidencia",
+                table: "THBT_A_Mantenimiento",
+                column: "IdIncidencia",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_THBT_A_Mantenimiento_IdPersonalAsignado",
+                table: "THBT_A_Mantenimiento",
+                column: "IdPersonalAsignado");
 
             migrationBuilder.CreateIndex(
                 name: "IX_THBT_A_Mantenimiento_IdTipo",
@@ -704,6 +800,12 @@ namespace Habitia.Migrations
                 name: "IX_THBT_A_ViviendaUsuario_IdVivienda",
                 table: "THBT_A_ViviendaUsuario",
                 column: "IdVivienda");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_THBT_CAT_TipoMantenimiento_Nombre",
+                table: "THBT_CAT_TipoMantenimiento",
+                column: "Nombre",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -713,13 +815,13 @@ namespace Habitia.Migrations
                 name: "THBT_A_Acceso");
 
             migrationBuilder.DropTable(
+                name: "THBT_A_AreaComunFoto");
+
+            migrationBuilder.DropTable(
                 name: "THBT_A_ExpiracionReserva");
 
             migrationBuilder.DropTable(
                 name: "THBT_A_ImagenPublicacion");
-
-            migrationBuilder.DropTable(
-                name: "THBT_A_Incidencia");
 
             migrationBuilder.DropTable(
                 name: "THBT_A_Mantenimiento");
@@ -755,6 +857,9 @@ namespace Habitia.Migrations
                 name: "THBT_A_Publicacion");
 
             migrationBuilder.DropTable(
+                name: "THBT_A_Incidencia");
+
+            migrationBuilder.DropTable(
                 name: "THBT_CAT_TipoMantenimiento");
 
             migrationBuilder.DropTable(
@@ -767,13 +872,13 @@ namespace Habitia.Migrations
                 name: "THBT_A_Visitante");
 
             migrationBuilder.DropTable(
-                name: "THBT_A_Vivienda");
+                name: "THBT_CAT_CategoriaPublicacion");
 
             migrationBuilder.DropTable(
                 name: "THBT_A_Usuario");
 
             migrationBuilder.DropTable(
-                name: "THBT_CAT_CategoriaPublicacion");
+                name: "THBT_A_Vivienda");
 
             migrationBuilder.DropTable(
                 name: "THBT_A_AreaComun");

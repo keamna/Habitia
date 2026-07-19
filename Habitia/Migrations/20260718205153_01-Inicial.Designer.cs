@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Habitia.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260717174636_01-Inicial")]
+    [Migration("20260718205153_01-Inicial")]
     partial class _01Inicial
     {
         /// <inheritdoc />
@@ -180,6 +180,38 @@ namespace Habitia.Migrations
                     b.ToTable("THBT_A_AreaComun");
                 });
 
+            modelBuilder.Entity("Habitia.Models.AreaComunFoto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("EsPrincipal")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Estado")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("IdAreaComun")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdAreaComun");
+
+                    b.ToTable("THBT_A_AreaComunFoto");
+                });
+
             modelBuilder.Entity("Habitia.Models.Autorizacion", b =>
                 {
                     b.Property<int>("Id")
@@ -291,6 +323,9 @@ namespace Habitia.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
                     b.ToTable("THBT_CAT_TipoMantenimiento");
                 });
 
@@ -377,10 +412,17 @@ namespace Habitia.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ComentarioAdicional")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("Descripcion")
                         .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("Estado")
                         .HasColumnType("int");
@@ -398,6 +440,10 @@ namespace Habitia.Migrations
                     b.Property<int?>("IdVivienda")
                         .HasColumnType("int");
 
+                    b.Property<string>("ImagenUrl")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
                     b.Property<int>("Responsabilidad")
                         .HasColumnType("int");
 
@@ -406,16 +452,24 @@ namespace Habitia.Migrations
 
                     b.Property<string>("Titulo")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("Estado");
+
+                    b.HasIndex("FechaRegistro");
 
                     b.HasIndex("IdAreaComun");
 
                     b.HasIndex("IdUsuario");
 
                     b.HasIndex("IdVivienda");
+
+                    b.HasIndex("Responsabilidad");
 
                     b.ToTable("THBT_A_Incidencia");
                 });
@@ -433,8 +487,8 @@ namespace Habitia.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<bool>("Estado")
-                        .HasColumnType("bit");
+                    b.Property<int>("Estado")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("FechaFin")
                         .HasColumnType("datetime2");
@@ -442,15 +496,38 @@ namespace Habitia.Migrations
                     b.Property<DateTime>("FechaInicio")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("FechaProgramada")
+                        .HasColumnType("datetime2");
+
                     b.Property<int?>("IdAreaComun")
                         .HasColumnType("int");
+
+                    b.Property<int>("IdIncidencia")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IdPersonalAsignado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("IdTipo")
                         .HasColumnType("int");
 
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("Estado");
+
+                    b.HasIndex("FechaProgramada");
+
                     b.HasIndex("IdAreaComun");
+
+                    b.HasIndex("IdIncidencia")
+                        .IsUnique();
+
+                    b.HasIndex("IdPersonalAsignado");
 
                     b.HasIndex("IdTipo");
 
@@ -826,6 +903,17 @@ namespace Habitia.Migrations
                     b.Navigation("Tipo");
                 });
 
+            modelBuilder.Entity("Habitia.Models.AreaComunFoto", b =>
+                {
+                    b.HasOne("Habitia.Models.AreaComun", "AreaComun")
+                        .WithMany("Fotos")
+                        .HasForeignKey("IdAreaComun")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AreaComun");
+                });
+
             modelBuilder.Entity("Habitia.Models.Autorizacion", b =>
                 {
                     b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
@@ -877,19 +965,25 @@ namespace Habitia.Migrations
 
             modelBuilder.Entity("Habitia.Models.Incidencia", b =>
                 {
+                    b.HasOne("Habitia.Models.ApplicationUser", null)
+                        .WithMany("Incidencias")
+                        .HasForeignKey("ApplicationUserId");
+
                     b.HasOne("Habitia.Models.AreaComun", "AreaComun")
                         .WithMany()
-                        .HasForeignKey("IdAreaComun");
+                        .HasForeignKey("IdAreaComun")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
-                        .WithMany("Incidencias")
+                        .WithMany()
                         .HasForeignKey("IdUsuario")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Habitia.Models.Vivienda", "Vivienda")
                         .WithMany()
-                        .HasForeignKey("IdVivienda");
+                        .HasForeignKey("IdVivienda")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("AreaComun");
 
@@ -902,15 +996,32 @@ namespace Habitia.Migrations
                 {
                     b.HasOne("Habitia.Models.AreaComun", "AreaComun")
                         .WithMany()
-                        .HasForeignKey("IdAreaComun");
+                        .HasForeignKey("IdAreaComun")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Habitia.Models.Incidencia", "Incidencia")
+                        .WithMany()
+                        .HasForeignKey("IdIncidencia")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Habitia.Models.ApplicationUser", "PersonalAsignado")
+                        .WithMany()
+                        .HasForeignKey("IdPersonalAsignado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Habitia.Models.Catalogos.TipoMantenimiento", "Tipo")
                         .WithMany("Mantenimientos")
                         .HasForeignKey("IdTipo")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("AreaComun");
+
+                    b.Navigation("Incidencia");
+
+                    b.Navigation("PersonalAsignado");
 
                     b.Navigation("Tipo");
                 });
@@ -1056,6 +1167,8 @@ namespace Habitia.Migrations
             modelBuilder.Entity("Habitia.Models.AreaComun", b =>
                 {
                     b.Navigation("Disponibilidades");
+
+                    b.Navigation("Fotos");
                 });
 
             modelBuilder.Entity("Habitia.Models.Autorizacion", b =>

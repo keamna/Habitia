@@ -1,60 +1,77 @@
 ﻿@model Habitia.ViewModels.LoginViewModel
-
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Iniciar Sesión";
+    Layout = "_AuthLayout";
+    ViewData["AuthImage"] = "login.png";
 }
 
+<h1 class="auth-title">Iniciar Sesión</h1>
+<p class="auth-subtitle">Completa los campos para iniciar sesión a tu cuenta.</p>
 
-<h1>Iniciar Sesión</h1>
+<form asp-action="Login" method="post" class="auth-form">
+    <div asp-validation-summary="All" class="auth-validation-summary"></div>
 
-
-<form asp-action="Login" method="post">
-
-
-    <div asp-validation-summary="All"
-         class="text-danger">
+    <div class="auth-field">
+        <label asp-for="Email">Correo</label>
+        <div class="auth-input-wrap">
+            <input asp-for="Email" class="auth-input" placeholder="correo@ejemplo.com" autocomplete="username" />
+            <button type="button" class="auth-input-icon auth-clear" data-target="Email" aria-label="Limpiar correo" tabindex="-1">
+                <i class="bi bi-x-circle"></i>
+            </button>
+        </div>
+        <span asp-validation-for="Email" class="auth-error"></span>
     </div>
 
-
-    <div>
-        <label>Correo</label>
-
-        <input asp-for="Email"
-               class="form-control" />
-
-        <span asp-validation-for="Email"
-              class="text-danger">
-        </span>
+    <div class="auth-field">
+        <label asp-for="Password">Contraseña</label>
+        <div class="auth-input-wrap">
+            <input asp-for="Password" class="auth-input" placeholder="••••••••" autocomplete="current-password" />
+            <button type="button" class="auth-input-icon auth-toggle-password" data-target="Password" aria-label="Mostrar contraseña" tabindex="-1">
+                <i class="bi bi-eye"></i>
+            </button>
+        </div>
+        <span asp-validation-for="Password" class="auth-error"></span>
     </div>
 
-
-
-    <div>
-        <label>Contraseña</label>
-
-        <input asp-for="Password"
-               class="form-control" />
-
-        <span asp-validation-for="Password"
-              class="text-danger">
-        </span>
-    </div>
-
-
-
-    <div>
-        <label>
-            <input asp-for="RememberMe"/>
-            Recordarme
+    <div class="auth-row">
+        <label class="auth-checkbox">
+            <input asp-for="RememberMe" />
+            <span>Recordarme</span>
         </label>
+        <a asp-controller="Account" asp-action="ForgotPassword" class="auth-link-muted">¿Olvidaste la contraseña?</a>
     </div>
 
+    <button type="submit" class="auth-submit">Iniciar sesión</button>
 
-
-    <button type="submit"
-            class="btn btn-primary">
-        Ingresar
-    </button>
-
-
+    <p class="auth-footer-text">
+        ¿No tienes cuenta? <a asp-controller="Account" asp-action="Register" class="auth-link">Crear cuenta</a>
+    </p>
 </form>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.auth-toggle-password').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = document.getElementById(btn.dataset.target);
+                var icon = btn.querySelector('i');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+            });
+        });
+
+        document.querySelectorAll('.auth-clear').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = document.getElementById(btn.dataset.target);
+                input.value = '';
+                input.focus();
+            });
+        });
+    </script>
+}

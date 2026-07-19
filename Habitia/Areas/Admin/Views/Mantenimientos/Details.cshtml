@@ -1,0 +1,60 @@
+﻿@model Habitia.Models.Mantenimiento
+@{
+    ViewData["Title"] = "Detalle de Tarea de Mantenimiento";
+}
+
+<h2>Detalle de Tarea de Mantenimiento</h2>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">@Model.Descripcion</h5>
+
+        <dl class="row">
+            <dt class="col-sm-3">Incidencia asociada</dt>
+            <dd class="col-sm-9">
+                <a asp-controller="Incidencias" asp-action="Details" asp-route-id="@Model.IdIncidencia">
+                    @Model.Incidencia?.Titulo
+                </a>
+            </dd>
+
+            <dt class="col-sm-3">Tipo de mantenimiento</dt>
+            <dd class="col-sm-9">@Model.Tipo?.Nombre</dd>
+
+            <dt class="col-sm-3">Personal asignado</dt>
+            <dd class="col-sm-9">@Model.PersonalAsignado?.UserName</dd>
+
+            <dt class="col-sm-3">Fecha programada</dt>
+            <dd class="col-sm-9">@Model.FechaProgramada.ToString("dd/MM/yyyy")</dd>
+
+            <dt class="col-sm-3">Fecha de inicio</dt>
+            <dd class="col-sm-9">@Model.FechaInicio.ToString("dd/MM/yyyy HH:mm")</dd>
+
+            @if (Model.FechaFin.HasValue)
+            {
+                <dt class="col-sm-3">Fecha de finalización</dt>
+                <dd class="col-sm-9">@Model.FechaFin.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+            }
+
+            <dt class="col-sm-3">Estado</dt>
+            <dd class="col-sm-9">
+                <span class="badge @(Model.Estado switch {
+                    Habitia.Enums.EstadoMantenimientoEnum.Programado => "bg-secondary",
+                    Habitia.Enums.EstadoMantenimientoEnum.EnProceso => "bg-info text-dark",
+                    Habitia.Enums.EstadoMantenimientoEnum.Completado => "bg-success",
+                    Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "bg-danger",
+                    _ => "bg-secondary"
+                })">
+                    @Model.Estado
+                </span>
+            </dd>
+
+            @if (!string.IsNullOrEmpty(Model.Observaciones))
+            {
+                <dt class="col-sm-3">Observaciones</dt>
+                <dd class="col-sm-9">@Model.Observaciones</dd>
+            }
+        </dl>
+    </div>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary mt-3">Volver</a>

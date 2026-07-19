@@ -1,0 +1,40 @@
+﻿@model Habitia.ViewModels.Mantenimiento.MantenimientoEstadoUpdateViewModel
+@{
+    ViewData["Title"] = "Actualizar Tarea";
+}
+
+<h2>Actualizar Tarea de Mantenimiento</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p class="card-text mb-0"><strong>Descripción:</strong> @ViewBag.Descripcion</p>
+    </div>
+</div>
+
+<form asp-action="ActualizarEstado" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="mb-3">
+        <label asp-for="Estado" class="form-label"></label>
+        <select asp-for="Estado" class="form-select"
+                asp-items="Html.GetEnumSelectList<Habitia.Enums.EstadoMantenimientoEnum>()">
+        </select>
+        <span asp-validation-for="Estado" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Observaciones" class="form-label"></label>
+        <textarea asp-for="Observaciones" class="form-control" rows="3"
+                  placeholder="Detalle lo realizado o el motivo del cambio de estado"></textarea>
+        <span asp-validation-for="Observaciones" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -509,3 +509,169 @@
         width: 18px;
         height: 18px;
     }
+
+
+/* =====================================================
+   BOTÓN AGREGAR HORARIO (listado admin)
+   ===================================================== */
+
+.btn-horario-fila {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 8px;
+    background: #E8F5E8;
+    color: #336332;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: .2s ease;
+}
+
+    .btn-horario-fila svg {
+        width: 15px;
+        height: 15px;
+    }
+
+    .btn-horario-fila:hover {
+        background: #D5EAD5;
+    }
+
+
+/* =====================================================
+   PREVIEW DE FOTOS AL SELECCIONAR (Create)
+   ===================================================== */
+
+.area-fotos-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 10px;
+}
+
+    .area-fotos-preview img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid #E5E7EB;
+    }
+
+
+/* =====================================================
+   ÍCONOS DE ACCIONES EN TABLA (Editar, etc.)
+   ===================================================== */
+
+.fila-acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-menu-fila svg {
+    width: 16px;
+    height: 16px;
+}
+
+
+/* =====================================================
+   BOTÓN GUARDAR HORARIO (Detalle)
+   ===================================================== */
+
+.btn-guardar-horario {
+    background: #336332;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 0 20px;
+    height: 42px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    align-self: flex-end;
+}
+
+    .btn-guardar-horario:hover {
+        background: #275126;
+    }
+
+
+/* =====================================================
+   SUBIR FOTO (Detalle)
+   ===================================================== */
+
+.form-subir-foto {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.fotos-nota {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+}
+
+.btn-subir-foto {
+    white-space: nowrap;
+}
+
+
+/* =====================================================
+   ELIMINAR HORARIO (tabla)
+   ===================================================== */
+
+.btn-eliminar {
+    background: #FFFFFF;
+    color: #EF4444;
+    border: 1.5px solid #FCA5A5;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+    .btn-eliminar:hover {
+        background: #FEF2F2;
+        border-color: #EF4444;
+    }
+
+
+/* =====================================================
+   SELECTOR DE HORA (12h AM/PM) - Detalle
+   ===================================================== */
+
+.hora-selector {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+    .hora-selector select {
+        height: 42px;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 0 8px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px;
+        outline: none;
+        background: #FFFFFF;
+    }
+
+        .hora-selector select:focus {
+            border-color: #336332;
+        }
+
+    .hora-selector span {
+        font-weight: 600;
+        color: #6B7280;
+    }
