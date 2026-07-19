@@ -8,41 +8,48 @@ namespace Habitia.Models
     public class Incidencia
     {
         [Key]
-        public int Id { get; set; }
+        public int TN_Id { get; set; }
 
         [Required]
-        public string IdUsuario { get; set; }
+        public string TC_IdUsuario { get; set; }
 
-        public int? IdVivienda { get; set; }
-        public int? IdAreaComun { get; set; }
-
-        public TipoIncidenciaEnum Tipo { get; set; }
-        public EstadoIncidenciaEnum Estado { get; set; }
-        public ResponsabilidadEnum Responsabilidad { get; set; }
+        public int? TN_IdVivienda { get; set; }
+        public int? TN_IdAreaComun { get; set; }
 
         [Required]
-        [MaxLength(50)]
-        public string Titulo { get; set; }
+        public TipoIncidenciaEnum TN_Tipo { get; set; }
 
+        [Required]
+        public EstadoIncidenciaEnum TN_Estado { get; set; }
+
+        [Required]
+        public ResponsabilidadEnum TN_Responsabilidad { get; set; }
+
+        [Required]
         [MaxLength(100)]
-        public string Descripcion { get; set; }
+        public string TC_Titulo { get; set; }
 
-        public DateTime FechaRegistro { get; set; }
+        [MaxLength(500)]
+        public string? TC_Descripcion { get; set; }
+
+        [Required]
+        public DateTime TF_FechaRegistro { get; set; }
+
+        [MaxLength(250)]
+        public string? TC_ImagenUrl { get; set; }
 
         [MaxLength(300)]
-        public string? ImagenUrl { get; set; }
-
-        [MaxLength(200)]
-        public string? ComentarioAdicional { get; set; }
+        public string? TC_ComentarioAdicional { get; set; }
 
         // Relaciones
-        [ForeignKey(nameof(IdUsuario))]
+
+        [ForeignKey(nameof(TC_IdUsuario))]
         public ApplicationUser Usuario { get; set; }
 
-        [ForeignKey(nameof(IdVivienda))]
-        public Vivienda Vivienda { get; set; }
+        [ForeignKey(nameof(TN_IdVivienda))]
+        public Vivienda? Vivienda { get; set; }
 
-        [ForeignKey(nameof(IdAreaComun))]
-        public AreaComun AreaComun { get; set; }
+        [ForeignKey(nameof(TN_IdAreaComun))]
+        public AreaComun? AreaComun { get; set; }
     }
 }

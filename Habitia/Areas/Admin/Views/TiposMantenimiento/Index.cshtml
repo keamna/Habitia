@@ -24,10 +24,10 @@
         @foreach (var tipo in Model)
         {
             <tr>
-                <td>@tipo.Nombre</td>
+                <td>@tipo.TC_Nombre</td>
                 <td>
-                    <span class="badge @(tipo.Estado ? "bg-success" : "bg-secondary")">
-                        @(tipo.Estado ? "Activo" : "Inactivo")
+                    <span class="badge @(tipo.TB_Estado ? "bg-success" : "bg-secondary")">
+                        @(tipo.TB_Estado ? "Activo" : "Inactivo")
                     </span>
                 </td>
             </tr>

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Habitia.Migrations
 {
     /// <inheritdoc />
-    public partial class _01Inicial : Migration
+    public partial class _01inicial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,15 +15,29 @@ namespace Habitia.Migrations
                 name: "THBT_A_ExpiracionReserva",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    TN_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Cantidad = table.Column<int>(type: "int", nullable: false),
-                    Tipo = table.Column<int>(type: "int", nullable: false),
-                    Estado = table.Column<bool>(type: "bit", nullable: false)
+                    TN_Cantidad = table.Column<int>(type: "int", nullable: false),
+                    TN_Tipo = table.Column<int>(type: "int", nullable: false),
+                    TB_Estado = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_THBT_A_ExpiracionReserva", x => x.Id);
+                    table.PrimaryKey("PK_THBT_A_ExpiracionReserva", x => x.TN_Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "THBT_A_ImagenPublicacion",
+                columns: table => new
+                {
+                    TN_Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TN_IdPublicacion = table.Column<int>(type: "int", nullable: false),
+                    TC_Url = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_THBT_A_ImagenPublicacion", x => x.TN_Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -45,13 +59,13 @@ namespace Habitia.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Apellido = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    TipoIdentificacion = table.Column<int>(type: "int", nullable: false),
-                    Identificacion = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Telefono = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Estado = table.Column<int>(type: "int", nullable: false),
-                    FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TC_Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    TC_Apellido = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    TN_TipoIdentificacion = table.Column<int>(type: "int", nullable: false),
+                    TC_Identificacion = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    TC_Telefono = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    TN_Estado = table.Column<int>(type: "int", nullable: false),
+                    TF_FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -76,47 +90,34 @@ namespace Habitia.Migrations
                 name: "THBT_A_Visitante",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    TN_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Identificacion = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Telefono = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    TipoIdentificacion = table.Column<int>(type: "int", nullable: false)
+                    TN_TipoIdentificacion = table.Column<int>(type: "int", nullable: false),
+                    TC_Identificacion = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    TC_Nombre = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    TC_Telefono = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    TB_Estado = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_THBT_A_Visitante", x => x.Id);
+                    table.PrimaryKey("PK_THBT_A_Visitante", x => x.TN_Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "THBT_A_Vivienda",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    TN_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Numero = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    Tipo = table.Column<int>(type: "int", nullable: false),
-                    Estado = table.Column<int>(type: "int", nullable: false),
-                    CantidadInquilinos = table.Column<int>(type: "int", nullable: false),
-                    FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    TC_Numero = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    TN_Tipo = table.Column<int>(type: "int", nullable: false),
+                    TN_Estado = table.Column<int>(type: "int", nullable: false),
+                    TN_CantidadInquilinos = table.Column<int>(type: "int", nullable: false),
+                    TF_FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_THBT_A_Vivienda", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "THBT_CAT_CategoriaPublicacion",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Nombre = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Estado = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_THBT_CAT_CategoriaPublicacion", x => x.Id);
+                    table.PrimaryKey("PK_THBT_A_Vivienda", x => x.TN_Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -137,14 +138,14 @@ namespace Habitia.Migrations
                 name: "THBT_CAT_TipoMantenimiento",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    TN_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Nombre = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Estado = table.Column<bool>(type: "bit", nullable: false)
+                    TC_Nombre = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    TB_Estado = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_THBT_CAT_TipoMantenimiento", x => x.Id);
+                    table.PrimaryKey("PK_THBT_CAT_TipoMantenimiento", x => x.TN_Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -257,21 +258,22 @@ namespace Habitia.Migrations
                 name: "THBT_A_Vehiculo",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    TN_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IdVisitante = table.Column<int>(type: "int", nullable: false),
-                    Placa = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Tipo = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Observaciones = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
+                    TN_IdVisitante = table.Column<int>(type: "int", nullable: false),
+                    TC_Placa = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    TC_Tipo = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    TC_Observaciones = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    TB_Estado = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_THBT_A_Vehiculo", x => x.Id);
+                    table.PrimaryKey("PK_THBT_A_Vehiculo", x => x.TN_Id);
                     table.ForeignKey(
-                        name: "FK_THBT_A_Vehiculo_THBT_A_Visitante_IdVisitante",
-                        column: x => x.IdVisitante,
+                        name: "FK_THBT_A_Vehiculo_THBT_A_Visitante_TN_IdVisitante",
+                        column: x => x.TN_IdVisitante,
                         principalTable: "THBT_A_Visitante",
-                        principalColumn: "Id",
+                        principalColumn: "TN_Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -279,38 +281,38 @@ namespace Habitia.Migrations
                 name: "THBT_A_Autorizacion",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    TN_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IdVisitante = table.Column<int>(type: "int", nullable: false),
-                    IdUsuario = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    IdVivienda = table.Column<int>(type: "int", nullable: false),
-                    Codigo = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Inicio = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Fin = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Motivo = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Estado = table.Column<int>(type: "int", nullable: false)
+                    TN_IdVisitante = table.Column<int>(type: "int", nullable: false),
+                    TC_IdUsuario = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TN_IdVivienda = table.Column<int>(type: "int", nullable: false),
+                    TC_Codigo = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    TF_Inicio = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TF_Fin = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TC_Motivo = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    TF_FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TN_Estado = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_THBT_A_Autorizacion", x => x.Id);
+                    table.PrimaryKey("PK_THBT_A_Autorizacion", x => x.TN_Id);
                     table.ForeignKey(
-                        name: "FK_THBT_A_Autorizacion_THBT_A_Usuario_IdUsuario",
-                        column: x => x.IdUsuario,
+                        name: "FK_THBT_A_Autorizacion_THBT_A_Usuario_TC_IdUsuario",
+                        column: x => x.TC_IdUsuario,
                         principalTable: "THBT_A_Usuario",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_THBT_A_Autorizacion_THBT_A_Visitante_IdVisitante",
-                        column: x => x.IdVisitante,
+                        name: "FK_THBT_A_Autorizacion_THBT_A_Visitante_TN_IdVisitante",
+                        column: x => x.TN_IdVisitante,
                         principalTable: "THBT_A_Visitante",
-                        principalColumn: "Id",
+                        principalColumn: "TN_Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_THBT_A_Autorizacion_THBT_A_Vivienda_IdVivienda",
-                        column: x => x.IdVivienda,
+                        name: "FK_THBT_A_Autorizacion_THBT_A_Vivienda_TN_IdVivienda",
+                        column: x => x.TN_IdVivienda,
                         principalTable: "THBT_A_Vivienda",
-                        principalColumn: "Id",
+                        principalColumn: "TN_Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -318,61 +320,29 @@ namespace Habitia.Migrations
                 name: "THBT_A_ViviendaUsuario",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    TN_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IdVivienda = table.Column<int>(type: "int", nullable: false),
-                    IdUsuario = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    TipoRelacion = table.Column<int>(type: "int", nullable: false),
-                    Estado = table.Column<int>(type: "int", nullable: false),
-                    ViveAhi = table.Column<bool>(type: "bit", nullable: false),
-                    FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    TN_IdVivienda = table.Column<int>(type: "int", nullable: false),
+                    TC_IdUsuario = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TN_TipoRelacion = table.Column<int>(type: "int", nullable: false),
+                    TN_Estado = table.Column<int>(type: "int", nullable: false),
+                    TB_ViveAhi = table.Column<bool>(type: "bit", nullable: false),
+                    TF_FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_THBT_A_ViviendaUsuario", x => x.Id);
+                    table.PrimaryKey("PK_THBT_A_ViviendaUsuario", x => x.TN_Id);
                     table.ForeignKey(
-                        name: "FK_THBT_A_ViviendaUsuario_THBT_A_Usuario_IdUsuario",
-                        column: x => x.IdUsuario,
+                        name: "FK_THBT_A_ViviendaUsuario_THBT_A_Usuario_TC_IdUsuario",
+                        column: x => x.TC_IdUsuario,
                         principalTable: "THBT_A_Usuario",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_THBT_A_ViviendaUsuario_THBT_A_Vivienda_IdVivienda",
-                        column: x => x.IdVivienda,
+                        name: "FK_THBT_A_ViviendaUsuario_THBT_A_Vivienda_TN_IdVivienda",
+                        column: x => x.TN_IdVivienda,
                         principalTable: "THBT_A_Vivienda",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "THBT_A_Publicacion",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    IdUsuario = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    IdCategoria = table.Column<int>(type: "int", nullable: false),
-                    Titulo = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    Descripcion = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    Precio = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
-                    Estado = table.Column<int>(type: "int", nullable: false),
-                    Tipo = table.Column<int>(type: "int", nullable: false),
-                    FechaPublicacion = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_THBT_A_Publicacion", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_THBT_A_Publicacion_THBT_A_Usuario_IdUsuario",
-                        column: x => x.IdUsuario,
-                        principalTable: "THBT_A_Usuario",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_THBT_A_Publicacion_THBT_CAT_CategoriaPublicacion_IdCategoria",
-                        column: x => x.IdCategoria,
-                        principalTable: "THBT_CAT_CategoriaPublicacion",
-                        principalColumn: "Id",
+                        principalColumn: "TN_Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -380,20 +350,20 @@ namespace Habitia.Migrations
                 name: "THBT_A_AreaComun",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    TN_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Codigo = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    IdTipo = table.Column<int>(type: "int", nullable: false),
-                    Capacidad = table.Column<int>(type: "int", nullable: false),
-                    Estado = table.Column<bool>(type: "bit", nullable: false)
+                    TC_Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    TC_Codigo = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    TN_IdTipo = table.Column<int>(type: "int", nullable: false),
+                    TN_Capacidad = table.Column<int>(type: "int", nullable: false),
+                    TB_Estado = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_THBT_A_AreaComun", x => x.Id);
+                    table.PrimaryKey("PK_THBT_A_AreaComun", x => x.TN_Id);
                     table.ForeignKey(
-                        name: "FK_THBT_A_AreaComun_THBT_CAT_TipoArea_IdTipo",
-                        column: x => x.IdTipo,
+                        name: "FK_THBT_A_AreaComun_THBT_CAT_TipoArea_TN_IdTipo",
+                        column: x => x.TN_IdTipo,
                         principalTable: "THBT_CAT_TipoArea",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -403,41 +373,21 @@ namespace Habitia.Migrations
                 name: "THBT_A_Acceso",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    TN_IdAcceso = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IdAutorizacion = table.Column<int>(type: "int", nullable: false),
-                    FechaIngreso = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FechaSalida = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Estado = table.Column<bool>(type: "bit", nullable: false)
+                    TN_IdAutorizacion = table.Column<int>(type: "int", nullable: false),
+                    TF_FechaIngreso = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TF_FechaSalida = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    TB_Estado = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_THBT_A_Acceso", x => x.Id);
+                    table.PrimaryKey("PK_THBT_A_Acceso", x => x.TN_IdAcceso);
                     table.ForeignKey(
-                        name: "FK_THBT_A_Acceso_THBT_A_Autorizacion_IdAutorizacion",
-                        column: x => x.IdAutorizacion,
+                        name: "FK_THBT_A_Acceso_THBT_A_Autorizacion_TN_IdAutorizacion",
+                        column: x => x.TN_IdAutorizacion,
                         principalTable: "THBT_A_Autorizacion",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "THBT_A_ImagenPublicacion",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    IdPublicacion = table.Column<int>(type: "int", nullable: false),
-                    Url = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_THBT_A_ImagenPublicacion", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_THBT_A_ImagenPublicacion_THBT_A_Publicacion_IdPublicacion",
-                        column: x => x.IdPublicacion,
-                        principalTable: "THBT_A_Publicacion",
-                        principalColumn: "Id",
+                        principalColumn: "TN_Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -445,22 +395,22 @@ namespace Habitia.Migrations
                 name: "THBT_A_AreaComunFoto",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    TN_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IdAreaComun = table.Column<int>(type: "int", nullable: false),
-                    Url = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
-                    EsPrincipal = table.Column<bool>(type: "bit", nullable: false),
-                    Orden = table.Column<int>(type: "int", nullable: false),
-                    Estado = table.Column<bool>(type: "bit", nullable: false)
+                    TN_IdAreaComun = table.Column<int>(type: "int", nullable: false),
+                    TC_Url = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    TB_EsPrincipal = table.Column<bool>(type: "bit", nullable: false),
+                    TN_Orden = table.Column<int>(type: "int", nullable: false),
+                    TB_Estado = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_THBT_A_AreaComunFoto", x => x.Id);
+                    table.PrimaryKey("PK_THBT_A_AreaComunFoto", x => x.TN_Id);
                     table.ForeignKey(
-                        name: "FK_THBT_A_AreaComunFoto_THBT_A_AreaComun_IdAreaComun",
-                        column: x => x.IdAreaComun,
+                        name: "FK_THBT_A_AreaComunFoto_THBT_A_AreaComun_TN_IdAreaComun",
+                        column: x => x.TN_IdAreaComun,
                         principalTable: "THBT_A_AreaComun",
-                        principalColumn: "Id",
+                        principalColumn: "TN_Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -468,22 +418,22 @@ namespace Habitia.Migrations
                 name: "THBT_A_DisponibilidadArea",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    TN_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IdAreaComun = table.Column<int>(type: "int", nullable: false),
-                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    HoraInicio = table.Column<TimeSpan>(type: "time", nullable: false),
-                    HoraFin = table.Column<TimeSpan>(type: "time", nullable: false),
-                    Estado = table.Column<bool>(type: "bit", nullable: false)
+                    TN_IdAreaComun = table.Column<int>(type: "int", nullable: false),
+                    TF_Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TF_HoraInicio = table.Column<TimeSpan>(type: "time", nullable: false),
+                    TF_HoraFin = table.Column<TimeSpan>(type: "time", nullable: false),
+                    TB_Estado = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_THBT_A_DisponibilidadArea", x => x.Id);
+                    table.PrimaryKey("PK_THBT_A_DisponibilidadArea", x => x.TN_Id);
                     table.ForeignKey(
-                        name: "FK_THBT_A_DisponibilidadArea_THBT_A_AreaComun_IdAreaComun",
-                        column: x => x.IdAreaComun,
+                        name: "FK_THBT_A_DisponibilidadArea_THBT_A_AreaComun_TN_IdAreaComun",
+                        column: x => x.TN_IdAreaComun,
                         principalTable: "THBT_A_AreaComun",
-                        principalColumn: "Id",
+                        principalColumn: "TN_Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -491,29 +441,29 @@ namespace Habitia.Migrations
                 name: "THBT_A_Incidencia",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    TN_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IdUsuario = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    IdVivienda = table.Column<int>(type: "int", nullable: true),
-                    IdAreaComun = table.Column<int>(type: "int", nullable: true),
-                    Tipo = table.Column<int>(type: "int", nullable: false),
-                    Estado = table.Column<int>(type: "int", nullable: false),
-                    Responsabilidad = table.Column<int>(type: "int", nullable: false),
-                    Titulo = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Descripcion = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ImagenUrl = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
-                    ComentarioAdicional = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    TC_IdUsuario = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TN_IdVivienda = table.Column<int>(type: "int", nullable: true),
+                    TN_IdAreaComun = table.Column<int>(type: "int", nullable: true),
+                    TN_Tipo = table.Column<int>(type: "int", nullable: false),
+                    TN_Estado = table.Column<int>(type: "int", nullable: false),
+                    TN_Responsabilidad = table.Column<int>(type: "int", nullable: false),
+                    TC_Titulo = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    TC_Descripcion = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    TF_FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TC_ImagenUrl = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
+                    TC_ComentarioAdicional = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
                     ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_THBT_A_Incidencia", x => x.Id);
+                    table.PrimaryKey("PK_THBT_A_Incidencia", x => x.TN_Id);
                     table.ForeignKey(
-                        name: "FK_THBT_A_Incidencia_THBT_A_AreaComun_IdAreaComun",
-                        column: x => x.IdAreaComun,
+                        name: "FK_THBT_A_Incidencia_THBT_A_AreaComun_TN_IdAreaComun",
+                        column: x => x.TN_IdAreaComun,
                         principalTable: "THBT_A_AreaComun",
-                        principalColumn: "Id",
+                        principalColumn: "TN_Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_THBT_A_Incidencia_THBT_A_Usuario_ApplicationUserId",
@@ -521,16 +471,16 @@ namespace Habitia.Migrations
                         principalTable: "THBT_A_Usuario",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_THBT_A_Incidencia_THBT_A_Usuario_IdUsuario",
-                        column: x => x.IdUsuario,
+                        name: "FK_THBT_A_Incidencia_THBT_A_Usuario_TC_IdUsuario",
+                        column: x => x.TC_IdUsuario,
                         principalTable: "THBT_A_Usuario",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_THBT_A_Incidencia_THBT_A_Vivienda_IdVivienda",
-                        column: x => x.IdVivienda,
+                        name: "FK_THBT_A_Incidencia_THBT_A_Vivienda_TN_IdVivienda",
+                        column: x => x.TN_IdVivienda,
                         principalTable: "THBT_A_Vivienda",
-                        principalColumn: "Id",
+                        principalColumn: "TN_Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -538,35 +488,35 @@ namespace Habitia.Migrations
                 name: "THBT_A_Reserva",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    TN_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IdUsuario = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    IdVivienda = table.Column<int>(type: "int", nullable: false),
-                    IdDisponibilidad = table.Column<int>(type: "int", nullable: false),
-                    Cantidad = table.Column<int>(type: "int", nullable: false),
-                    Estado = table.Column<int>(type: "int", nullable: false),
-                    FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    TC_IdUsuario = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TN_IdVivienda = table.Column<int>(type: "int", nullable: false),
+                    TN_IdDisponibilidad = table.Column<int>(type: "int", nullable: false),
+                    TN_Cantidad = table.Column<int>(type: "int", nullable: false),
+                    TN_Estado = table.Column<int>(type: "int", nullable: false),
+                    TF_FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_THBT_A_Reserva", x => x.Id);
+                    table.PrimaryKey("PK_THBT_A_Reserva", x => x.TN_Id);
                     table.ForeignKey(
-                        name: "FK_THBT_A_Reserva_THBT_A_DisponibilidadArea_IdDisponibilidad",
-                        column: x => x.IdDisponibilidad,
+                        name: "FK_THBT_A_Reserva_THBT_A_DisponibilidadArea_TN_IdDisponibilidad",
+                        column: x => x.TN_IdDisponibilidad,
                         principalTable: "THBT_A_DisponibilidadArea",
-                        principalColumn: "Id",
+                        principalColumn: "TN_Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_THBT_A_Reserva_THBT_A_Usuario_IdUsuario",
-                        column: x => x.IdUsuario,
+                        name: "FK_THBT_A_Reserva_THBT_A_Usuario_TC_IdUsuario",
+                        column: x => x.TC_IdUsuario,
                         principalTable: "THBT_A_Usuario",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_THBT_A_Reserva_THBT_A_Vivienda_IdVivienda",
-                        column: x => x.IdVivienda,
+                        name: "FK_THBT_A_Reserva_THBT_A_Vivienda_TN_IdVivienda",
+                        column: x => x.TN_IdVivienda,
                         principalTable: "THBT_A_Vivienda",
-                        principalColumn: "Id",
+                        principalColumn: "TN_Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -574,87 +524,82 @@ namespace Habitia.Migrations
                 name: "THBT_A_Mantenimiento",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    TN_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IdIncidencia = table.Column<int>(type: "int", nullable: false),
-                    IdTipo = table.Column<int>(type: "int", nullable: false),
-                    IdAreaComun = table.Column<int>(type: "int", nullable: true),
-                    IdPersonalAsignado = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Descripcion = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    FechaProgramada = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FechaInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FechaFin = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Estado = table.Column<int>(type: "int", nullable: false),
-                    Observaciones = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
+                    TN_IdIncidencia = table.Column<int>(type: "int", nullable: false),
+                    TN_IdTipo = table.Column<int>(type: "int", nullable: false),
+                    TN_IdAreaComun = table.Column<int>(type: "int", nullable: true),
+                    TC_IdPersonalAsignado = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TC_Descripcion = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
+                    TF_FechaProgramada = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TF_FechaInicio = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    TF_FechaFin = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    TN_Estado = table.Column<int>(type: "int", nullable: false),
+                    TC_Observaciones = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_THBT_A_Mantenimiento", x => x.Id);
+                    table.PrimaryKey("PK_THBT_A_Mantenimiento", x => x.TN_Id);
                     table.ForeignKey(
-                        name: "FK_THBT_A_Mantenimiento_THBT_A_AreaComun_IdAreaComun",
-                        column: x => x.IdAreaComun,
+                        name: "FK_THBT_A_Mantenimiento_THBT_A_AreaComun_TN_IdAreaComun",
+                        column: x => x.TN_IdAreaComun,
                         principalTable: "THBT_A_AreaComun",
-                        principalColumn: "Id",
+                        principalColumn: "TN_Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_THBT_A_Mantenimiento_THBT_A_Incidencia_IdIncidencia",
-                        column: x => x.IdIncidencia,
+                        name: "FK_THBT_A_Mantenimiento_THBT_A_Incidencia_TN_IdIncidencia",
+                        column: x => x.TN_IdIncidencia,
                         principalTable: "THBT_A_Incidencia",
-                        principalColumn: "Id",
+                        principalColumn: "TN_Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_THBT_A_Mantenimiento_THBT_A_Usuario_IdPersonalAsignado",
-                        column: x => x.IdPersonalAsignado,
+                        name: "FK_THBT_A_Mantenimiento_THBT_A_Usuario_TC_IdPersonalAsignado",
+                        column: x => x.TC_IdPersonalAsignado,
                         principalTable: "THBT_A_Usuario",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_THBT_A_Mantenimiento_THBT_CAT_TipoMantenimiento_IdTipo",
-                        column: x => x.IdTipo,
+                        name: "FK_THBT_A_Mantenimiento_THBT_CAT_TipoMantenimiento_TN_IdTipo",
+                        column: x => x.TN_IdTipo,
                         principalTable: "THBT_CAT_TipoMantenimiento",
-                        principalColumn: "Id",
+                        principalColumn: "TN_Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Acceso_IdAutorizacion",
+                name: "IX_THBT_A_Acceso_TN_IdAutorizacion",
                 table: "THBT_A_Acceso",
-                column: "IdAutorizacion");
+                column: "TN_IdAutorizacion");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_AreaComun_IdTipo",
+                name: "IX_THBT_A_AreaComun_TN_IdTipo",
                 table: "THBT_A_AreaComun",
-                column: "IdTipo");
+                column: "TN_IdTipo");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_AreaComunFoto_IdAreaComun",
+                name: "IX_THBT_A_AreaComunFoto_TN_IdAreaComun",
                 table: "THBT_A_AreaComunFoto",
-                column: "IdAreaComun");
+                column: "TN_IdAreaComun");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Autorizacion_IdUsuario",
+                name: "IX_THBT_A_Autorizacion_TC_IdUsuario",
                 table: "THBT_A_Autorizacion",
-                column: "IdUsuario");
+                column: "TC_IdUsuario");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Autorizacion_IdVisitante",
+                name: "IX_THBT_A_Autorizacion_TN_IdVisitante",
                 table: "THBT_A_Autorizacion",
-                column: "IdVisitante");
+                column: "TN_IdVisitante");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Autorizacion_IdVivienda",
+                name: "IX_THBT_A_Autorizacion_TN_IdVivienda",
                 table: "THBT_A_Autorizacion",
-                column: "IdVivienda");
+                column: "TN_IdVivienda");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_DisponibilidadArea_IdAreaComun",
+                name: "IX_THBT_A_DisponibilidadArea_TN_IdAreaComun",
                 table: "THBT_A_DisponibilidadArea",
-                column: "IdAreaComun");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_ImagenPublicacion_IdPublicacion",
-                table: "THBT_A_ImagenPublicacion",
-                column: "IdPublicacion");
+                column: "TN_IdAreaComun");
 
             migrationBuilder.CreateIndex(
                 name: "IX_THBT_A_Incidencia_ApplicationUserId",
@@ -662,90 +607,80 @@ namespace Habitia.Migrations
                 column: "ApplicationUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Incidencia_Estado",
+                name: "IX_THBT_A_Incidencia_TC_IdUsuario",
                 table: "THBT_A_Incidencia",
-                column: "Estado");
+                column: "TC_IdUsuario");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Incidencia_FechaRegistro",
+                name: "IX_THBT_A_Incidencia_TF_FechaRegistro",
                 table: "THBT_A_Incidencia",
-                column: "FechaRegistro");
+                column: "TF_FechaRegistro");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Incidencia_IdAreaComun",
+                name: "IX_THBT_A_Incidencia_TN_Estado",
                 table: "THBT_A_Incidencia",
-                column: "IdAreaComun");
+                column: "TN_Estado");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Incidencia_IdUsuario",
+                name: "IX_THBT_A_Incidencia_TN_IdAreaComun",
                 table: "THBT_A_Incidencia",
-                column: "IdUsuario");
+                column: "TN_IdAreaComun");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Incidencia_IdVivienda",
+                name: "IX_THBT_A_Incidencia_TN_IdVivienda",
                 table: "THBT_A_Incidencia",
-                column: "IdVivienda");
+                column: "TN_IdVivienda");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Incidencia_Responsabilidad",
+                name: "IX_THBT_A_Incidencia_TN_Responsabilidad",
                 table: "THBT_A_Incidencia",
-                column: "Responsabilidad");
+                column: "TN_Responsabilidad");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Mantenimiento_Estado",
+                name: "IX_THBT_A_Mantenimiento_TC_IdPersonalAsignado",
                 table: "THBT_A_Mantenimiento",
-                column: "Estado");
+                column: "TC_IdPersonalAsignado");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Mantenimiento_FechaProgramada",
+                name: "IX_THBT_A_Mantenimiento_TF_FechaProgramada",
                 table: "THBT_A_Mantenimiento",
-                column: "FechaProgramada");
+                column: "TF_FechaProgramada");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Mantenimiento_IdAreaComun",
+                name: "IX_THBT_A_Mantenimiento_TN_Estado",
                 table: "THBT_A_Mantenimiento",
-                column: "IdAreaComun");
+                column: "TN_Estado");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Mantenimiento_IdIncidencia",
+                name: "IX_THBT_A_Mantenimiento_TN_IdAreaComun",
                 table: "THBT_A_Mantenimiento",
-                column: "IdIncidencia",
+                column: "TN_IdAreaComun");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_THBT_A_Mantenimiento_TN_IdIncidencia",
+                table: "THBT_A_Mantenimiento",
+                column: "TN_IdIncidencia",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Mantenimiento_IdPersonalAsignado",
+                name: "IX_THBT_A_Mantenimiento_TN_IdTipo",
                 table: "THBT_A_Mantenimiento",
-                column: "IdPersonalAsignado");
+                column: "TN_IdTipo");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Mantenimiento_IdTipo",
-                table: "THBT_A_Mantenimiento",
-                column: "IdTipo");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Publicacion_IdCategoria",
-                table: "THBT_A_Publicacion",
-                column: "IdCategoria");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Publicacion_IdUsuario",
-                table: "THBT_A_Publicacion",
-                column: "IdUsuario");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Reserva_IdDisponibilidad",
+                name: "IX_THBT_A_Reserva_TC_IdUsuario",
                 table: "THBT_A_Reserva",
-                column: "IdDisponibilidad");
+                column: "TC_IdUsuario");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Reserva_IdUsuario",
+                name: "IX_THBT_A_Reserva_TN_IdDisponibilidad",
                 table: "THBT_A_Reserva",
-                column: "IdUsuario");
+                column: "TN_IdDisponibilidad");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Reserva_IdVivienda",
+                name: "IX_THBT_A_Reserva_TN_IdVivienda",
                 table: "THBT_A_Reserva",
-                column: "IdVivienda");
+                column: "TN_IdVivienda");
 
             migrationBuilder.CreateIndex(
                 name: "RoleNameIndex",
@@ -787,24 +722,24 @@ namespace Habitia.Migrations
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_Vehiculo_IdVisitante",
+                name: "IX_THBT_A_Vehiculo_TN_IdVisitante",
                 table: "THBT_A_Vehiculo",
-                column: "IdVisitante");
+                column: "TN_IdVisitante");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_ViviendaUsuario_IdUsuario",
+                name: "IX_THBT_A_ViviendaUsuario_TC_IdUsuario",
                 table: "THBT_A_ViviendaUsuario",
-                column: "IdUsuario");
+                column: "TC_IdUsuario");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_A_ViviendaUsuario_IdVivienda",
+                name: "IX_THBT_A_ViviendaUsuario_TN_IdVivienda",
                 table: "THBT_A_ViviendaUsuario",
-                column: "IdVivienda");
+                column: "TN_IdVivienda");
 
             migrationBuilder.CreateIndex(
-                name: "IX_THBT_CAT_TipoMantenimiento_Nombre",
+                name: "IX_THBT_CAT_TipoMantenimiento_TC_Nombre",
                 table: "THBT_CAT_TipoMantenimiento",
-                column: "Nombre",
+                column: "TC_Nombre",
                 unique: true);
         }
 
@@ -854,9 +789,6 @@ namespace Habitia.Migrations
                 name: "THBT_A_Autorizacion");
 
             migrationBuilder.DropTable(
-                name: "THBT_A_Publicacion");
-
-            migrationBuilder.DropTable(
                 name: "THBT_A_Incidencia");
 
             migrationBuilder.DropTable(
@@ -870,9 +802,6 @@ namespace Habitia.Migrations
 
             migrationBuilder.DropTable(
                 name: "THBT_A_Visitante");
-
-            migrationBuilder.DropTable(
-                name: "THBT_CAT_CategoriaPublicacion");
 
             migrationBuilder.DropTable(
                 name: "THBT_A_Usuario");

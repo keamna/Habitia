@@ -17,8 +17,8 @@ namespace Habitia.Services
         public async Task<List<TipoMantenimiento>> ObtenerActivosAsync()
         {
             return await _context.TiposMantenimiento
-                .Where(t => t.Estado)
-                .OrderBy(t => t.Nombre)
+                .Where(t => t.TB_Estado)
+                .OrderBy(t => t.TC_Nombre)
                 .ToListAsync();
         }
 
@@ -27,7 +27,7 @@ namespace Habitia.Services
             var nombreNormalizado = nombre.Trim().ToLower();
 
             return await _context.TiposMantenimiento
-                .AnyAsync(t => t.Nombre.ToLower() == nombreNormalizado);
+                .AnyAsync(t => t.TC_Nombre.ToLower() == nombreNormalizado);
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Habitia.Services
             if (idExistente.HasValue)
             {
                 var tipo = await _context.TiposMantenimiento
-                    .FirstOrDefaultAsync(t => t.Id == idExistente.Value);
+                    .FirstOrDefaultAsync(t => t.TN_Id == idExistente.Value);
 
                 if (tipo == null)
                 {
@@ -69,8 +69,8 @@ namespace Habitia.Services
 
             var nuevoTipo = new TipoMantenimiento
             {
-                Nombre = nombreLimpio,
-                Estado = true
+                TC_Nombre = nombreLimpio,
+                TB_Estado = true
             };
 
             _context.TiposMantenimiento.Add(nuevoTipo);

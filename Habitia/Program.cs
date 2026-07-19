@@ -89,12 +89,12 @@ using (var scope = app.Services.CreateScope())
             UserName = email,
             Email = email,
             EmailConfirmed = true,
-            Nombre = "Admin",
-            Apellido = "Sistema",
-            Identificacion = "000000000",
-            Telefono = "00000000",
-            Estado = EstadoUsuarioEnum.Activo,
-            FechaRegistro = DateTime.Now
+            TC_Nombre = "Admin",
+            TC_Apellido = "Sistema",
+            TC_Identificacion = "000000000",
+            TC_Telefono = "00000000",
+            TN_Estado = EstadoUsuarioEnum.Activo,
+            TF_FechaRegistro = DateTime.Now
         };
 
         var result =

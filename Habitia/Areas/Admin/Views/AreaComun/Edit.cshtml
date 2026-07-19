@@ -52,10 +52,10 @@
                         @foreach (var foto in Model.FotosExistentes)
                         {
                             <div class="area-foto-item">
-                                <img src="@foto.Url" alt="@Model.Nombre" />
+                                <img src="@foto.TC_Url" alt="@Model.Nombre" />
                                 <button type="button"
                                         class="btn-eliminar-area-foto"
-                                        data-foto-id="@foto.Id"
+                                        data-foto-id="@foto.TN_Id"
                                         data-area-id="@Model.Id"
                                         onclick="eliminarFotoExistente(this)">
                                     ✕

@@ -112,12 +112,12 @@ namespace Habitia.Areas.Admin.Controllers
 
             var model = new IncidenciaClasificarViewModel
             {
-                Id = incidencia.Id,
-                Titulo = incidencia.Titulo,
-                Descripcion = incidencia.Descripcion,
+                Id = incidencia.TN_Id,
+                Titulo = incidencia.TC_Titulo,
+                Descripcion = incidencia.TC_Descripcion,
                 NombreUsuarioReporta = incidencia.Usuario?.UserName ?? "N/D",
-                FechaRegistro = incidencia.FechaRegistro,
-                Responsabilidad = incidencia.Responsabilidad
+                FechaRegistro = incidencia.TF_FechaRegistro,
+                Responsabilidad = incidencia.TN_Responsabilidad
             };
 
             return View(model);
@@ -155,18 +155,18 @@ namespace Habitia.Areas.Admin.Controllers
         private async Task CargarListasAsync(IncidenciaAdminCreateViewModel model)
         {
             model.Viviendas = await _context.Viviendas
-                .OrderBy(v => v.Numero)
-                .Select(v => new SelectListItem { Value = v.Id.ToString(), Text = v.Numero })
+                .OrderBy(v => v.TC_Numero)
+                .Select(v => new SelectListItem { Value = v.TN_Id.ToString(), Text = v.TC_Numero })
                 .ToListAsync();
 
             model.AreasComunes = await _context.AreasComunes
-                .OrderBy(a => a.Nombre)
-                .Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Nombre })
+                .OrderBy(a => a.TC_Nombre)
+                .Select(a => new SelectListItem { Value = a.TN_Id.ToString(), Text = a.TC_Nombre })
                 .ToListAsync();
 
             var tipos = await _tipoMantenimientoService.ObtenerActivosAsync();
             model.TiposMantenimiento = tipos
-                .Select(t => new SelectListItem { Value = t.Id.ToString(), Text = t.Nombre })
+                .Select(t => new SelectListItem { Value = t.TN_Id.ToString(), Text = t.TC_Nombre })
                 .ToList();
 
             var personal = await _userManager.GetUsersInRoleAsync("Mantenimiento");

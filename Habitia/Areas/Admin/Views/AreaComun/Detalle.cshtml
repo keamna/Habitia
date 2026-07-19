@@ -13,7 +13,7 @@
 
 <h1 class="page-titulo">
 
-    @Model.Nombre (@Model.Codigo)
+    @Model.TC_Nombre (@Model.TC_Codigo)
 
 </h1>
 
@@ -87,14 +87,14 @@
         {
 
 
-            foreach (var foto in fotos.Where(x => x.Estado))
+            foreach (var foto in fotos.Where(x => x.TB_Estado))
             {
 
                 <div class="area-foto-item">
 
 
-                    <img src="@foto.Url"
-                         alt="@Model.Nombre" />
+                    <img src="@foto.TC_Url"
+                         alt="@Model.TC_Nombre" />
 
 
 
@@ -110,12 +110,12 @@
 
                         <input type="hidden"
                                name="fotoId"
-                               value="@foto.Id" />
+                               value="@foto.TN_Id" />
 
 
                         <input type="hidden"
                                name="areaId"
-                               value="@Model.Id" />
+                               value="@Model.TN_Id" />
 
 
 
@@ -150,7 +150,7 @@
 
 
 
-    @if (fotos == null || fotos.Count(x => x.Estado) < 3)
+    @if (fotos == null || fotos.Count(x => x.TB_Estado) < 3)
     {
 
 
@@ -167,7 +167,7 @@
 
             <input type="hidden"
                    name="areaId"
-                   value="@Model.Id" />
+                   value="@Model.TN_Id" />
 
 
 
@@ -255,7 +255,7 @@
 
         <input type="hidden"
                name="IdAreaComun"
-               value="@Model.Id" />
+               value="@Model.TN_Id" />
 
 
 
@@ -481,7 +481,7 @@
 
                         <td data-label="Fecha">
 
-                            @d.Fecha.ToString("dd/MM/yyyy")
+                            @d.TF_Fecha.ToString("dd/MM/yyyy")
 
                         </td>
 
@@ -489,7 +489,7 @@
 
                         <td data-label="Inicio">
 
-                            @DateTime.Today.Add(d.HoraInicio).ToString("hh:mm tt")
+                            @DateTime.Today.Add(d.TF_HoraInicio).ToString("hh:mm tt")
 
                         </td>
 
@@ -497,7 +497,7 @@
 
                         <td data-label="Fin">
 
-                            @DateTime.Today.Add(d.HoraFin).ToString("hh:mm tt")
+                            @DateTime.Today.Add(d.TF_HoraFin).ToString("hh:mm tt")
 
                         </td>
 
@@ -507,7 +507,7 @@
                         <td data-label="Estado">
 
 
-                            @if (d.Estado)
+                            @if (d.TB_Estado)
                             {
 
                                 <span class="badge badge-activo">
@@ -555,12 +555,12 @@
 
                                 <input type="hidden"
                                        name="id"
-                                       value="@d.Id" />
+                                       value="@d.TN_Id" />
 
 
                                 <input type="hidden"
                                        name="areaId"
-                                       value="@Model.Id" />
+                                       value="@Model.TN_Id" />
 
 
 

@@ -1,21 +1,32 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Habitia.Models;
 
-[Table("THBT_A_Acceso")]
-public class Acceso
+namespace Habitia.Models
 {
-    [Key]
-    public int Id { get; set; }
+    [Table("THBT_A_Acceso")]
+    public class Acceso
+    {
+        [Key]
+        public int TN_IdAcceso { get; set; }
 
-    public int IdAutorizacion { get; set; }
 
-    public DateTime FechaIngreso { get; set; }
+        [Required]
+        public int TN_IdAutorizacion { get; set; }
 
-    public DateTime? FechaSalida { get; set; }
 
-    public bool Estado { get; set; }
+        [Required]
+        public DateTime TF_FechaIngreso { get; set; }
 
-    [ForeignKey(nameof(IdAutorizacion))]
-    public Autorizacion Autorizacion { get; set; }
+
+        public DateTime? TF_FechaSalida { get; set; }
+
+
+        [Required]
+        public bool TB_Estado { get; set; }
+
+
+        // Relación
+        [ForeignKey(nameof(TN_IdAutorizacion))]
+        public Autorizacion Autorizacion { get; set; }
+    }
 }

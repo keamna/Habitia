@@ -7,21 +7,17 @@ namespace Habitia.Models
     public class ImagenPublicacion
     {
         [Key]
-        public int Id { get; set; }
-
-
-        public int IdPublicacion { get; set; }
+        public int TN_Id { get; set; }
 
 
         [Required]
-        [MaxLength(300)]
-        public string Url { get; set; }
+        public int TN_IdPublicacion { get; set; }
 
 
+        [Required]
+        [MaxLength(250)]
+        public string TC_Url { get; set; }
 
-        // Relaciones
 
-        [ForeignKey(nameof(IdPublicacion))]
-        public Publicacion Publicacion { get; set; }
     }
 }

@@ -149,8 +149,8 @@
 
 
                     var foto = area.Fotos?
-                    .Where(f => f.Estado)
-                    .OrderBy(f => f.Orden)
+                    .Where(f => f.TB_Estado)
+                    .OrderBy(f => f.TN_Orden)
                     .FirstOrDefault();
 
 
@@ -162,8 +162,8 @@
 
 
                             <img class="area-comun-miniatura"
-                                 src="@(foto != null ? foto.Url : "/img/area-default.png")"
-                                 alt="@area.Nombre" />
+                                 src="@(foto != null ? foto.TC_Url : "/img/area-default.png")"
+                                 alt="@area.TC_Nombre" />
 
 
                         </td>
@@ -173,7 +173,7 @@
 
                         <td data-label="Código">
 
-                            @area.Codigo
+                            @area.TC_Codigo
 
                         </td>
 
@@ -182,7 +182,7 @@
 
                         <td data-label="Nombre">
 
-                            @area.Nombre
+                            @area.TC_Nombre
 
                         </td>
 
@@ -191,7 +191,7 @@
 
                         <td data-label="Capacidad">
 
-                            @area.Capacidad personas
+                            @area.TN_Capacidad
 
                         </td>
 
@@ -201,7 +201,7 @@
                         <td data-label="Estado">
 
 
-                            @if (area.Estado)
+                            @if (area.TB_Estado)
                             {
 
                                 <span class="badge badge-activo">
@@ -240,7 +240,7 @@
                                 <a asp-area="Admin"
                                    asp-controller="AreaComun"
                                    asp-action="Detalle"
-                                   asp-route-id="@area.Id"
+                                   asp-route-id="@area.TN_Id"
                                    class="btn-horario-fila"
                                    title="Agregar horario">
 
@@ -268,7 +268,7 @@
                                 <a asp-area="Admin"
                                    asp-controller="AreaComun"
                                    asp-action="Edit"
-                                   asp-route-id="@area.Id"
+                                   asp-route-id="@area.TN_Id"
                                    class="btn-menu-fila"
                                    title="Editar">
 

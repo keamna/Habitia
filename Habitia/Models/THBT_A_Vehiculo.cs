@@ -7,29 +7,27 @@ namespace Habitia.Models
     public class Vehiculo
     {
         [Key]
-        public int Id { get; set; }
-
-
-        public int IdVisitante { get; set; }
-
+        public int TN_Id { get; set; }
 
         [Required]
-        [MaxLength(20)]
-        public string Placa { get; set; }
+        public int TN_IdVisitante { get; set; }
 
+        [Required]
+        [MaxLength(10)]
+        public string TC_Placa { get; set; }
 
         [MaxLength(50)]
-        public string Tipo { get; set; }
+        public string? TC_Tipo { get; set; }
 
+        [MaxLength(300)]
+        public string? TC_Observaciones { get; set; }
 
-        [MaxLength(200)]
-        public string Observaciones { get; set; }
-
-
+        [Required]
+        public bool TB_Estado { get; set; }
 
         // Relaciones
 
-        [ForeignKey(nameof(IdVisitante))]
+        [ForeignKey(nameof(TN_IdVisitante))]
         public Visitante Visitante { get; set; }
     }
 }

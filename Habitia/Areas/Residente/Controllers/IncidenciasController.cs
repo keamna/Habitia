@@ -89,7 +89,7 @@ namespace Habitia.Areas.Residentes.Controllers
             var idUsuario = _userManager.GetUserId(User);
 
             // Un residente solo puede ver sus propias incidencias
-            if (incidencia.IdUsuario != idUsuario)
+            if (incidencia.TC_IdUsuario != idUsuario)
                 return Forbid();
 
             return View(incidencia);
@@ -102,20 +102,20 @@ namespace Habitia.Areas.Residentes.Controllers
 
             model.Viviendas = await _context.ViviendaUsuarios
                 .Include(vu => vu.Vivienda)
-                .Where(vu => vu.IdUsuario == idUsuario)
+                .Where(vu => vu.TC_IdUsuario == idUsuario)
                 .Select(vu => new SelectListItem
                 {
-                    Value = vu.Vivienda.Id.ToString(),
-                    Text = vu.Vivienda.Numero
+                    Value = vu.Vivienda.TN_Id.ToString(),
+                    Text = vu.Vivienda.TC_Numero
                 })
                 .ToListAsync();
 
             model.AreasComunes = await _context.AreasComunes
-                .OrderBy(a => a.Nombre)
+                .OrderBy(a => a.TC_Nombre)
                 .Select(a => new SelectListItem
                 {
-                    Value = a.Id.ToString(),
-                    Text = a.Nombre
+                    Value = a.TN_Id.ToString(),
+                    Text = a.TC_Nombre
                 })
                 .ToListAsync();
         }

@@ -22,29 +22,29 @@ namespace Habitia.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Acceso", b =>
+            modelBuilder.Entity("Habitia.Models.Acceso", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_IdAcceso")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_IdAcceso"));
 
-                    b.Property<bool>("Estado")
+                    b.Property<bool>("TB_Estado")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("FechaIngreso")
+                    b.Property<DateTime>("TF_FechaIngreso")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("FechaSalida")
+                    b.Property<DateTime?>("TF_FechaSalida")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("IdAutorizacion")
+                    b.Property<int>("TN_IdAutorizacion")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("TN_IdAcceso");
 
-                    b.HasIndex("IdAutorizacion");
+                    b.HasIndex("TN_IdAutorizacion");
 
                     b.ToTable("THBT_A_Acceso");
                 });
@@ -57,11 +57,6 @@ namespace Habitia.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<string>("Apellido")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -73,27 +68,11 @@ namespace Habitia.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<int>("Estado")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("FechaRegistro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Identificacion")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -115,12 +94,33 @@ namespace Habitia.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Telefono")
+                    b.Property<string>("TC_Apellido")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TC_Identificacion")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<int>("TipoIdentificacion")
+                    b.Property<string>("TC_Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TC_Telefono")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("TF_FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TN_Estado")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TN_TipoIdentificacion")
                         .HasColumnType("int");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -145,140 +145,119 @@ namespace Habitia.Migrations
 
             modelBuilder.Entity("Habitia.Models.AreaComun", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
 
-                    b.Property<int>("Capacidad")
-                        .HasColumnType("int");
+                    b.Property<bool>("TB_Estado")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("Codigo")
+                    b.Property<string>("TC_Codigo")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<bool>("Estado")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("IdTipo")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Nombre")
+                    b.Property<string>("TC_Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.HasKey("Id");
+                    b.Property<int>("TN_Capacidad")
+                        .HasColumnType("int");
 
-                    b.HasIndex("IdTipo");
+                    b.Property<int>("TN_IdTipo")
+                        .HasColumnType("int");
+
+                    b.HasKey("TN_Id");
+
+                    b.HasIndex("TN_IdTipo");
 
                     b.ToTable("THBT_A_AreaComun");
                 });
 
             modelBuilder.Entity("Habitia.Models.AreaComunFoto", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
 
-                    b.Property<bool>("EsPrincipal")
+                    b.Property<bool>("TB_EsPrincipal")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("Estado")
+                    b.Property<bool>("TB_Estado")
                         .HasColumnType("bit");
 
-                    b.Property<int>("IdAreaComun")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Orden")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Url")
+                    b.Property<string>("TC_Url")
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.HasKey("Id");
+                    b.Property<int>("TN_IdAreaComun")
+                        .HasColumnType("int");
 
-                    b.HasIndex("IdAreaComun");
+                    b.Property<int>("TN_Orden")
+                        .HasColumnType("int");
+
+                    b.HasKey("TN_Id");
+
+                    b.HasIndex("TN_IdAreaComun");
 
                     b.ToTable("THBT_A_AreaComunFoto");
                 });
 
             modelBuilder.Entity("Habitia.Models.Autorizacion", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
 
-                    b.Property<string>("Codigo")
+                    b.Property<string>("TC_Codigo")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("Estado")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("FechaRegistro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("Fin")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("IdUsuario")
+                    b.Property<string>("TC_IdUsuario")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("IdVisitante")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdVivienda")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Inicio")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Motivo")
+                    b.Property<string>("TC_Motivo")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.HasKey("Id");
+                    b.Property<DateTime>("TF_FechaRegistro")
+                        .HasColumnType("datetime2");
 
-                    b.HasIndex("IdUsuario");
+                    b.Property<DateTime>("TF_Fin")
+                        .HasColumnType("datetime2");
 
-                    b.HasIndex("IdVisitante");
+                    b.Property<DateTime>("TF_Inicio")
+                        .HasColumnType("datetime2");
 
-                    b.HasIndex("IdVivienda");
-
-                    b.ToTable("THBT_A_Autorizacion");
-                });
-
-            modelBuilder.Entity("Habitia.Models.Catalogos.THBT_CAT_CategoriaPublicacion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("TN_Estado")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<int>("TN_IdVisitante")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("Estado")
-                        .HasColumnType("bit");
+                    b.Property<int>("TN_IdVivienda")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.HasKey("TN_Id");
 
-                    b.HasKey("Id");
+                    b.HasIndex("TC_IdUsuario");
 
-                    b.ToTable("THBT_CAT_CategoriaPublicacion");
+                    b.HasIndex("TN_IdVisitante");
+
+                    b.HasIndex("TN_IdVivienda");
+
+                    b.ToTable("THBT_A_Autorizacion");
                 });
 
             modelBuilder.Entity("Habitia.Models.Catalogos.TipoArea", b =>
@@ -304,23 +283,23 @@ namespace Habitia.Migrations
 
             modelBuilder.Entity("Habitia.Models.Catalogos.TipoMantenimiento", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
 
-                    b.Property<bool>("Estado")
+                    b.Property<bool>("TB_Estado")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Nombre")
+                    b.Property<string>("TC_Nombre")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.HasKey("Id");
+                    b.HasKey("TN_Id");
 
-                    b.HasIndex("Nombre")
+                    b.HasIndex("TC_Nombre")
                         .IsUnique();
 
                     b.ToTable("THBT_CAT_TipoMantenimiento");
@@ -328,419 +307,373 @@ namespace Habitia.Migrations
 
             modelBuilder.Entity("Habitia.Models.DisponibilidadArea", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
 
-                    b.Property<bool>("Estado")
+                    b.Property<bool>("TB_Estado")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("Fecha")
+                    b.Property<DateTime>("TF_Fecha")
                         .HasColumnType("datetime2");
 
-                    b.Property<TimeSpan>("HoraFin")
+                    b.Property<TimeSpan>("TF_HoraFin")
                         .HasColumnType("time");
 
-                    b.Property<TimeSpan>("HoraInicio")
+                    b.Property<TimeSpan>("TF_HoraInicio")
                         .HasColumnType("time");
 
-                    b.Property<int>("IdAreaComun")
+                    b.Property<int>("TN_IdAreaComun")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("TN_Id");
 
-                    b.HasIndex("IdAreaComun");
+                    b.HasIndex("TN_IdAreaComun");
 
                     b.ToTable("THBT_A_DisponibilidadArea");
                 });
 
             modelBuilder.Entity("Habitia.Models.ExpiracionReserva", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
 
-                    b.Property<int>("Cantidad")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("Estado")
+                    b.Property<bool>("TB_Estado")
                         .HasColumnType("bit");
 
-                    b.Property<int>("Tipo")
+                    b.Property<int>("TN_Cantidad")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.Property<int>("TN_Tipo")
+                        .HasColumnType("int");
+
+                    b.HasKey("TN_Id");
 
                     b.ToTable("THBT_A_ExpiracionReserva");
                 });
 
             modelBuilder.Entity("Habitia.Models.ImagenPublicacion", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
 
-                    b.Property<int>("IdPublicacion")
+                    b.Property<string>("TC_Url")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<int>("TN_IdPublicacion")
                         .HasColumnType("int");
 
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdPublicacion");
+                    b.HasKey("TN_Id");
 
                     b.ToTable("THBT_A_ImagenPublicacion");
                 });
 
             modelBuilder.Entity("Habitia.Models.Incidencia", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
 
                     b.Property<string>("ApplicationUserId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("ComentarioAdicional")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                    b.Property<string>("TC_ComentarioAdicional")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
-                    b.Property<string>("Descripcion")
+                    b.Property<string>("TC_Descripcion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("TC_IdUsuario")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("TC_ImagenUrl")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("TC_Titulo")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("Estado")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("FechaRegistro")
+                    b.Property<DateTime>("TF_FechaRegistro")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("IdAreaComun")
+                    b.Property<int>("TN_Estado")
                         .HasColumnType("int");
 
-                    b.Property<string>("IdUsuario")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int?>("IdVivienda")
+                    b.Property<int?>("TN_IdAreaComun")
                         .HasColumnType("int");
 
-                    b.Property<string>("ImagenUrl")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<int>("Responsabilidad")
+                    b.Property<int?>("TN_IdVivienda")
                         .HasColumnType("int");
 
-                    b.Property<int>("Tipo")
+                    b.Property<int>("TN_Responsabilidad")
                         .HasColumnType("int");
 
-                    b.Property<string>("Titulo")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("TN_Tipo")
+                        .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("TN_Id");
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.HasIndex("Estado");
+                    b.HasIndex("TC_IdUsuario");
 
-                    b.HasIndex("FechaRegistro");
+                    b.HasIndex("TF_FechaRegistro");
 
-                    b.HasIndex("IdAreaComun");
+                    b.HasIndex("TN_Estado");
 
-                    b.HasIndex("IdUsuario");
+                    b.HasIndex("TN_IdAreaComun");
 
-                    b.HasIndex("IdVivienda");
+                    b.HasIndex("TN_IdVivienda");
 
-                    b.HasIndex("Responsabilidad");
+                    b.HasIndex("TN_Responsabilidad");
 
                     b.ToTable("THBT_A_Incidencia");
                 });
 
             modelBuilder.Entity("Habitia.Models.Mantenimiento", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
 
-                    b.Property<string>("Descripcion")
+                    b.Property<string>("TC_Descripcion")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
-                    b.Property<int>("Estado")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("FechaFin")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("FechaInicio")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("FechaProgramada")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("IdAreaComun")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdIncidencia")
-                        .HasColumnType("int");
-
-                    b.Property<string>("IdPersonalAsignado")
+                    b.Property<string>("TC_IdPersonalAsignado")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("IdTipo")
+                    b.Property<string>("TC_Observaciones")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("TF_FechaFin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("TF_FechaInicio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("TF_FechaProgramada")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TN_Estado")
                         .HasColumnType("int");
 
-                    b.Property<string>("Observaciones")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<int?>("TN_IdAreaComun")
+                        .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.Property<int>("TN_IdIncidencia")
+                        .HasColumnType("int");
 
-                    b.HasIndex("Estado");
+                    b.Property<int>("TN_IdTipo")
+                        .HasColumnType("int");
 
-                    b.HasIndex("FechaProgramada");
+                    b.HasKey("TN_Id");
 
-                    b.HasIndex("IdAreaComun");
+                    b.HasIndex("TC_IdPersonalAsignado");
 
-                    b.HasIndex("IdIncidencia")
+                    b.HasIndex("TF_FechaProgramada");
+
+                    b.HasIndex("TN_Estado");
+
+                    b.HasIndex("TN_IdAreaComun");
+
+                    b.HasIndex("TN_IdIncidencia")
                         .IsUnique();
 
-                    b.HasIndex("IdPersonalAsignado");
-
-                    b.HasIndex("IdTipo");
+                    b.HasIndex("TN_IdTipo");
 
                     b.ToTable("THBT_A_Mantenimiento");
                 });
 
-            modelBuilder.Entity("Habitia.Models.Publicacion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Descripcion")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<int>("Estado")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("FechaPublicacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("IdCategoria")
-                        .HasColumnType("int");
-
-                    b.Property<string>("IdUsuario")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<decimal>("Precio")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<int>("Tipo")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Titulo")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdCategoria");
-
-                    b.HasIndex("IdUsuario");
-
-                    b.ToTable("THBT_A_Publicacion");
-                });
-
             modelBuilder.Entity("Habitia.Models.Reserva", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
 
-                    b.Property<int>("Cantidad")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Estado")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("FechaRegistro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("IdDisponibilidad")
-                        .HasColumnType("int");
-
-                    b.Property<string>("IdUsuario")
+                    b.Property<string>("TC_IdUsuario")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("IdVivienda")
+                    b.Property<DateTime>("TF_FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TN_Cantidad")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.Property<int>("TN_Estado")
+                        .HasColumnType("int");
 
-                    b.HasIndex("IdDisponibilidad");
+                    b.Property<int>("TN_IdDisponibilidad")
+                        .HasColumnType("int");
 
-                    b.HasIndex("IdUsuario");
+                    b.Property<int>("TN_IdVivienda")
+                        .HasColumnType("int");
 
-                    b.HasIndex("IdVivienda");
+                    b.HasKey("TN_Id");
+
+                    b.HasIndex("TC_IdUsuario");
+
+                    b.HasIndex("TN_IdDisponibilidad");
+
+                    b.HasIndex("TN_IdVivienda");
 
                     b.ToTable("THBT_A_Reserva");
                 });
 
             modelBuilder.Entity("Habitia.Models.Vehiculo", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
 
-                    b.Property<int>("IdVisitante")
-                        .HasColumnType("int");
+                    b.Property<bool>("TB_Estado")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("Observaciones")
+                    b.Property<string>("TC_Observaciones")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("TC_Placa")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("Placa")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Tipo")
-                        .IsRequired()
+                    b.Property<string>("TC_Tipo")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.HasKey("Id");
+                    b.Property<int>("TN_IdVisitante")
+                        .HasColumnType("int");
 
-                    b.HasIndex("IdVisitante");
+                    b.HasKey("TN_Id");
+
+                    b.HasIndex("TN_IdVisitante");
 
                     b.ToTable("THBT_A_Vehiculo");
                 });
 
             modelBuilder.Entity("Habitia.Models.Visitante", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
 
-                    b.Property<string>("Identificacion")
+                    b.Property<bool>("TB_Estado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TC_Identificacion")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Nombre")
+                    b.Property<string>("TC_Nombre")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
-                    b.Property<string>("Telefono")
-                        .IsRequired()
+                    b.Property<string>("TC_Telefono")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<int>("TipoIdentificacion")
+                    b.Property<int>("TN_TipoIdentificacion")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("TN_Id");
 
                     b.ToTable("THBT_A_Visitante");
                 });
 
             modelBuilder.Entity("Habitia.Models.Vivienda", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
 
-                    b.Property<int>("CantidadInquilinos")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Estado")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("FechaRegistro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Numero")
+                    b.Property<string>("TC_Numero")
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<int>("Tipo")
+                    b.Property<DateTime>("TF_FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TN_CantidadInquilinos")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.Property<int>("TN_Estado")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TN_Tipo")
+                        .HasColumnType("int");
+
+                    b.HasKey("TN_Id");
 
                     b.ToTable("THBT_A_Vivienda");
                 });
 
             modelBuilder.Entity("Habitia.Models.ViviendaUsuario", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
 
-                    b.Property<int>("Estado")
-                        .HasColumnType("int");
+                    b.Property<bool>("TB_ViveAhi")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTime>("FechaRegistro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("IdUsuario")
+                    b.Property<string>("TC_IdUsuario")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("IdVivienda")
+                    b.Property<DateTime>("TF_FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TN_Estado")
                         .HasColumnType("int");
 
-                    b.Property<int>("TipoRelacion")
+                    b.Property<int>("TN_IdVivienda")
                         .HasColumnType("int");
 
-                    b.Property<bool>("ViveAhi")
-                        .HasColumnType("bit");
+                    b.Property<int>("TN_TipoRelacion")
+                        .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("TN_Id");
 
-                    b.HasIndex("IdUsuario");
+                    b.HasIndex("TC_IdUsuario");
 
-                    b.HasIndex("IdVivienda");
+                    b.HasIndex("TN_IdVivienda");
 
                     b.ToTable("THBT_A_ViviendaUsuario");
                 });
@@ -878,11 +811,11 @@ namespace Habitia.Migrations
                     b.ToTable("THBT_A_UsuarioToken", (string)null);
                 });
 
-            modelBuilder.Entity("Acceso", b =>
+            modelBuilder.Entity("Habitia.Models.Acceso", b =>
                 {
                     b.HasOne("Habitia.Models.Autorizacion", "Autorizacion")
                         .WithMany("Accesos")
-                        .HasForeignKey("IdAutorizacion")
+                        .HasForeignKey("TN_IdAutorizacion")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -893,7 +826,7 @@ namespace Habitia.Migrations
                 {
                     b.HasOne("Habitia.Models.Catalogos.TipoArea", "Tipo")
                         .WithMany("Areas")
-                        .HasForeignKey("IdTipo")
+                        .HasForeignKey("TN_IdTipo")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -904,7 +837,7 @@ namespace Habitia.Migrations
                 {
                     b.HasOne("Habitia.Models.AreaComun", "AreaComun")
                         .WithMany("Fotos")
-                        .HasForeignKey("IdAreaComun")
+                        .HasForeignKey("TN_IdAreaComun")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -915,19 +848,19 @@ namespace Habitia.Migrations
                 {
                     b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
                         .WithMany()
-                        .HasForeignKey("IdUsuario")
+                        .HasForeignKey("TC_IdUsuario")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Habitia.Models.Visitante", "Visitante")
                         .WithMany("Autorizaciones")
-                        .HasForeignKey("IdVisitante")
+                        .HasForeignKey("TN_IdVisitante")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Habitia.Models.Vivienda", "Vivienda")
                         .WithMany()
-                        .HasForeignKey("IdVivienda")
+                        .HasForeignKey("TN_IdVivienda")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -942,22 +875,11 @@ namespace Habitia.Migrations
                 {
                     b.HasOne("Habitia.Models.AreaComun", "Area")
                         .WithMany("Disponibilidades")
-                        .HasForeignKey("IdAreaComun")
+                        .HasForeignKey("TN_IdAreaComun")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Area");
-                });
-
-            modelBuilder.Entity("Habitia.Models.ImagenPublicacion", b =>
-                {
-                    b.HasOne("Habitia.Models.Publicacion", "Publicacion")
-                        .WithMany("Imagenes")
-                        .HasForeignKey("IdPublicacion")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Publicacion");
                 });
 
             modelBuilder.Entity("Habitia.Models.Incidencia", b =>
@@ -966,20 +888,20 @@ namespace Habitia.Migrations
                         .WithMany("Incidencias")
                         .HasForeignKey("ApplicationUserId");
 
-                    b.HasOne("Habitia.Models.AreaComun", "AreaComun")
-                        .WithMany()
-                        .HasForeignKey("IdAreaComun")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
                         .WithMany()
-                        .HasForeignKey("IdUsuario")
+                        .HasForeignKey("TC_IdUsuario")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Habitia.Models.AreaComun", "AreaComun")
+                        .WithMany()
+                        .HasForeignKey("TN_IdAreaComun")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Habitia.Models.Vivienda", "Vivienda")
                         .WithMany()
-                        .HasForeignKey("IdVivienda")
+                        .HasForeignKey("TN_IdVivienda")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("AreaComun");
@@ -991,26 +913,26 @@ namespace Habitia.Migrations
 
             modelBuilder.Entity("Habitia.Models.Mantenimiento", b =>
                 {
+                    b.HasOne("Habitia.Models.ApplicationUser", "PersonalAsignado")
+                        .WithMany()
+                        .HasForeignKey("TC_IdPersonalAsignado")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Habitia.Models.AreaComun", "AreaComun")
                         .WithMany()
-                        .HasForeignKey("IdAreaComun")
+                        .HasForeignKey("TN_IdAreaComun")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Habitia.Models.Incidencia", "Incidencia")
                         .WithMany()
-                        .HasForeignKey("IdIncidencia")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Habitia.Models.ApplicationUser", "PersonalAsignado")
-                        .WithMany()
-                        .HasForeignKey("IdPersonalAsignado")
+                        .HasForeignKey("TN_IdIncidencia")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Habitia.Models.Catalogos.TipoMantenimiento", "Tipo")
                         .WithMany("Mantenimientos")
-                        .HasForeignKey("IdTipo")
+                        .HasForeignKey("TN_IdTipo")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1023,42 +945,23 @@ namespace Habitia.Migrations
                     b.Navigation("Tipo");
                 });
 
-            modelBuilder.Entity("Habitia.Models.Publicacion", b =>
-                {
-                    b.HasOne("Habitia.Models.Catalogos.THBT_CAT_CategoriaPublicacion", "Categoria")
-                        .WithMany("Publicaciones")
-                        .HasForeignKey("IdCategoria")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
-                        .WithMany("Publicaciones")
-                        .HasForeignKey("IdUsuario")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Categoria");
-
-                    b.Navigation("Usuario");
-                });
-
             modelBuilder.Entity("Habitia.Models.Reserva", b =>
                 {
-                    b.HasOne("Habitia.Models.DisponibilidadArea", "Disponibilidad")
+                    b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
                         .WithMany("Reservas")
-                        .HasForeignKey("IdDisponibilidad")
+                        .HasForeignKey("TC_IdUsuario")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
+                    b.HasOne("Habitia.Models.DisponibilidadArea", "Disponibilidad")
                         .WithMany("Reservas")
-                        .HasForeignKey("IdUsuario")
+                        .HasForeignKey("TN_IdDisponibilidad")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Habitia.Models.Vivienda", "Vivienda")
                         .WithMany()
-                        .HasForeignKey("IdVivienda")
+                        .HasForeignKey("TN_IdVivienda")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1073,7 +976,7 @@ namespace Habitia.Migrations
                 {
                     b.HasOne("Habitia.Models.Visitante", "Visitante")
                         .WithMany("Vehiculos")
-                        .HasForeignKey("IdVisitante")
+                        .HasForeignKey("TN_IdVisitante")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1084,13 +987,13 @@ namespace Habitia.Migrations
                 {
                     b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
                         .WithMany("Viviendas")
-                        .HasForeignKey("IdUsuario")
+                        .HasForeignKey("TC_IdUsuario")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Habitia.Models.Vivienda", "Vivienda")
                         .WithMany("Usuarios")
-                        .HasForeignKey("IdVivienda")
+                        .HasForeignKey("TN_IdVivienda")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1154,8 +1057,6 @@ namespace Habitia.Migrations
                 {
                     b.Navigation("Incidencias");
 
-                    b.Navigation("Publicaciones");
-
                     b.Navigation("Reservas");
 
                     b.Navigation("Viviendas");
@@ -1173,11 +1074,6 @@ namespace Habitia.Migrations
                     b.Navigation("Accesos");
                 });
 
-            modelBuilder.Entity("Habitia.Models.Catalogos.THBT_CAT_CategoriaPublicacion", b =>
-                {
-                    b.Navigation("Publicaciones");
-                });
-
             modelBuilder.Entity("Habitia.Models.Catalogos.TipoArea", b =>
                 {
                     b.Navigation("Areas");
@@ -1191,11 +1087,6 @@ namespace Habitia.Migrations
             modelBuilder.Entity("Habitia.Models.DisponibilidadArea", b =>
                 {
                     b.Navigation("Reservas");
-                });
-
-            modelBuilder.Entity("Habitia.Models.Publicacion", b =>
-                {
-                    b.Navigation("Imagenes");
                 });
 
             modelBuilder.Entity("Habitia.Models.Visitante", b =>

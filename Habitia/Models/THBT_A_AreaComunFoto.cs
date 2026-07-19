@@ -7,22 +7,33 @@ namespace Habitia.Models
     public class AreaComunFoto
     {
         [Key]
-        public int Id { get; set; }
+        public int TN_Id { get; set; }
 
-        public int IdAreaComun { get; set; }
+
+        [Required]
+        public int TN_IdAreaComun { get; set; }
+
 
         [Required]
         [MaxLength(250)]
-        public string Url { get; set; }
+        public string TC_Url { get; set; }
 
-        public bool EsPrincipal { get; set; }
 
-        public int Orden { get; set; }
+        [Required]
+        public bool TB_EsPrincipal { get; set; }
 
-        public bool Estado { get; set; }
+
+        [Required]
+        [Range(0, 50, ErrorMessage = "El orden debe estar entre 0 y 50")]
+        public int TN_Orden { get; set; }
+
+
+        [Required]
+        public bool TB_Estado { get; set; }
+
 
         // Relación
-        [ForeignKey(nameof(IdAreaComun))]
+        [ForeignKey(nameof(TN_IdAreaComun))]
         public AreaComun AreaComun { get; set; }
     }
 }

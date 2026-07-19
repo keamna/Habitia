@@ -39,7 +39,7 @@ namespace Habitia.Areas.Mantenimiento.Controllers
                 return NotFound();
 
             var idPersonal = _userManager.GetUserId(User);
-            if (tarea.IdPersonalAsignado != idPersonal)
+            if (tarea.TC_IdPersonalAsignado != idPersonal)
                 return Forbid();
 
             return View(tarea);
@@ -54,17 +54,17 @@ namespace Habitia.Areas.Mantenimiento.Controllers
                 return NotFound();
 
             var idPersonal = _userManager.GetUserId(User);
-            if (tarea.IdPersonalAsignado != idPersonal)
+            if (tarea.TC_IdPersonalAsignado != idPersonal)
                 return Forbid();
 
             var model = new MantenimientoEstadoUpdateViewModel
             {
-                Id = tarea.Id,
-                Estado = tarea.Estado,
-                Observaciones = tarea.Observaciones
+                Id = tarea.TN_Id,
+                Estado = tarea.TN_Estado,
+                Observaciones = tarea.TC_Observaciones
             };
 
-            ViewBag.Descripcion = tarea.Descripcion;
+            ViewBag.Descripcion = tarea.TC_Descripcion;
             return View(model);
         }
 

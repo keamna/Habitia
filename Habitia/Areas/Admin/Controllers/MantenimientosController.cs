@@ -47,7 +47,7 @@ namespace Habitia.Areas.Admin.Controllers
                 return NotFound();
 
             // Reglas de negocio validadas también aquí, antes de mostrar el formulario
-            if (incidencia.Responsabilidad == ResponsabilidadEnum.Privado)
+            if (incidencia.TN_Responsabilidad == ResponsabilidadEnum.Privado)
             {
                 TempData["Error"] = "No se puede generar mantenimiento para una incidencia Privada.";
                 return RedirectToAction("Details", "Incidencias", new { id = idIncidencia });
@@ -62,7 +62,7 @@ namespace Habitia.Areas.Admin.Controllers
             var model = new MantenimientoCreateViewModel
             {
                 IdIncidencia = idIncidencia,
-                Descripcion = incidencia.Titulo // valor sugerido, el Admin puede editarlo
+                Descripcion = incidencia.TC_Titulo // valor sugerido, el Admin puede editarlo
             };
 
             await CargarListasAsync(model);
@@ -111,8 +111,8 @@ namespace Habitia.Areas.Admin.Controllers
             var tipos = await _tipoMantenimientoService.ObtenerActivosAsync();
             model.TiposMantenimiento = tipos.Select(t => new SelectListItem
             {
-                Value = t.Id.ToString(),
-                Text = t.Nombre
+                Value = t.TN_Id.ToString(),
+                Text = t.TC_Nombre
             }).ToList();
 
             var personalMantenimiento = await _userManager.GetUsersInRoleAsync("Mantenimiento");

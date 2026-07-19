@@ -25,14 +25,12 @@ namespace Habitia.Data
         public DbSet<ExpiracionReserva> ExpiracionesReserva { get; set; }
         public DbSet<Incidencia> Incidencias { get; set; }
         public DbSet<Mantenimiento> Mantenimientos { get; set; }
-        public DbSet<Publicacion> Publicaciones { get; set; }
         public DbSet<ImagenPublicacion> ImagenesPublicacion { get; set; }
         public DbSet<AreaComunFoto> AreaComunFotos { get; set; }
 
         // Catálogos
         public DbSet<TipoArea> TiposArea { get; set; }
         public DbSet<TipoMantenimiento> TiposMantenimiento { get; set; }
-        public DbSet<THBT_CAT_CategoriaPublicacion> CategoriasPublicacion { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -72,25 +70,25 @@ namespace Habitia.Data
                 // Usuario que reporta la incidencia (residente o seguridad)
                 entity.HasOne(i => i.Usuario)
                     .WithMany()
-                    .HasForeignKey(i => i.IdUsuario)
+                    .HasForeignKey(i => i.TC_IdUsuario)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 // Vivienda (opcional: solo si Tipo == Vivienda)
                 entity.HasOne(i => i.Vivienda)
                     .WithMany()
-                    .HasForeignKey(i => i.IdVivienda)
+                    .HasForeignKey(i => i.TN_IdVivienda)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 // Área común (opcional: solo si Tipo == AreaComun)
                 entity.HasOne(i => i.AreaComun)
                     .WithMany()
-                    .HasForeignKey(i => i.IdAreaComun)
+                    .HasForeignKey(i => i.TN_IdAreaComun)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 // Índices para acelerar filtros de reportes (estado, responsabilidad, fecha)
-                entity.HasIndex(i => i.Estado);
-                entity.HasIndex(i => i.Responsabilidad);
-                entity.HasIndex(i => i.FechaRegistro);
+                entity.HasIndex(i => i.TN_Estado);
+                entity.HasIndex(i => i.TN_Responsabilidad);
+                entity.HasIndex(i => i.TF_FechaRegistro);
             });
 
             // ==========================================================
@@ -101,32 +99,32 @@ namespace Habitia.Data
                 // Trazabilidad: una incidencia genera, a lo sumo, una tarea de mantenimiento
                 entity.HasOne(m => m.Incidencia)
                     .WithMany()
-                    .HasForeignKey(m => m.IdIncidencia)
+                    .HasForeignKey(m => m.TN_IdIncidencia)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasIndex(m => m.IdIncidencia)
+                entity.HasIndex(m => m.TN_IdIncidencia)
                     .IsUnique(); // evita generar más de una tarea por incidencia
 
                 // Tipo de mantenimiento (catálogo dinámico)
                 entity.HasOne(m => m.Tipo)
                     .WithMany(t => t.Mantenimientos)
-                    .HasForeignKey(m => m.IdTipo)
+                    .HasForeignKey(m => m.TN_IdTipo)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 // Área común afectada (opcional)
                 entity.HasOne(m => m.AreaComun)
                     .WithMany()
-                    .HasForeignKey(m => m.IdAreaComun)
+                    .HasForeignKey(m => m.TN_IdAreaComun)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 // Personal de mantenimiento asignado
                 entity.HasOne(m => m.PersonalAsignado)
                     .WithMany()
-                    .HasForeignKey(m => m.IdPersonalAsignado)
+                    .HasForeignKey(m => m.TC_IdPersonalAsignado)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasIndex(m => m.Estado);
-                entity.HasIndex(m => m.FechaProgramada);
+                entity.HasIndex(m => m.TN_Estado);
+                entity.HasIndex(m => m.TF_FechaProgramada);
             });
 
             // ==========================================================
@@ -136,7 +134,7 @@ namespace Habitia.Data
             {
                 // Regla de negocio: "el sistema evitará duplicidad de tipos"
                 // Se refuerza a nivel de BD además de validarse en el Service.
-                entity.HasIndex(t => t.Nombre)
+                entity.HasIndex(t => t.TC_Nombre)
                     .IsUnique();
             });
         }

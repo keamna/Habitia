@@ -31,23 +31,23 @@ else
             @foreach (var m in Model)
             {
                 <tr>
-                    <td>@m.Descripcion</td>
-                    <td>@m.Tipo?.Nombre</td>
+                    <td>@m.TC_Descripcion</td>
+                    <td>@m.Tipo?.TC_Nombre</td>
                     <td>@m.PersonalAsignado?.UserName</td>
-                    <td>@m.FechaProgramada.ToString("dd/MM/yyyy")</td>
+                    <td>@m.TF_FechaProgramada.ToString("dd/MM/yyyy")</td>
                     <td>
-                        <span class="badge @(m.Estado switch {
+                        <span class="badge @(m.TN_Estado switch {
                             Habitia.Enums.EstadoMantenimientoEnum.Programado => "bg-secondary",
                             Habitia.Enums.EstadoMantenimientoEnum.EnProceso => "bg-info text-dark",
                             Habitia.Enums.EstadoMantenimientoEnum.Completado => "bg-success",
                             Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "bg-danger",
                             _ => "bg-secondary"
                         })">
-                            @m.Estado
+                            @m.TN_Estado
                         </span>
                     </td>
                     <td>
-                        <a asp-action="Details" asp-route-id="@m.Id" class="btn btn-sm btn-outline-primary">Ver</a>
+                        <a asp-action="Details" asp-route-id="@m.TN_Id" class="btn btn-sm btn-outline-primary">Ver</a>
                     </td>
                 </tr>
             }

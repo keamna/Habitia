@@ -91,20 +91,20 @@ namespace Habitia.Areas.Seguridad.Controllers
         private async Task CargarListasAsync(IncidenciaCreateViewModel model)
         {
             model.Viviendas = await _context.Viviendas
-                .OrderBy(v => v.Numero)
+                .OrderBy(v => v.TC_Numero)
                 .Select(v => new SelectListItem
                 {
-                    Value = v.Id.ToString(),
-                    Text = v.Numero
+                    Value = v.TN_Id.ToString(),
+                    Text = v.TC_Numero
                 })
                 .ToListAsync();
 
             model.AreasComunes = await _context.AreasComunes
-                .OrderBy(a => a.Nombre)
+                .OrderBy(a => a.TC_Nombre)
                 .Select(a => new SelectListItem
                 {
-                    Value = a.Id.ToString(),
-                    Text = a.Nombre
+                    Value = a.TN_Id.ToString(),
+                    Text = a.TC_Nombre
                 })
                 .ToListAsync();
         }

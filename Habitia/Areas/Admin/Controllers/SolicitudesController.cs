@@ -45,7 +45,7 @@ namespace Habitia.Areas.Admin.Controllers
                 .Include(x => x.Usuario)
                 .Include(x => x.Vivienda)
                 .Where(x =>
-                    x.Estado == EstadoUsuarioEnum.Pendiente)
+                    x.TN_Estado == EstadoUsuarioEnum.Pendiente)
                 .ToListAsync();
 
 
@@ -69,7 +69,7 @@ namespace Habitia.Areas.Admin.Controllers
                 await _context.ViviendaUsuarios
                 .Include(x => x.Usuario)
                 .Include(x => x.Vivienda)
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.TN_Id == id);
 
 
 
@@ -81,13 +81,13 @@ namespace Habitia.Areas.Admin.Controllers
 
 
 
-            solicitud.Estado =
+            solicitud.TN_Estado =
                 EstadoUsuarioEnum.Activo;
 
 
 
 
-            solicitud.Usuario.Estado =
+            solicitud.Usuario.TN_Estado =
                 EstadoUsuarioEnum.Activo;
 
 
@@ -96,12 +96,12 @@ namespace Habitia.Areas.Admin.Controllers
 
             // Si es propietario viviendo ahí
             if (
-                solicitud.TipoRelacion
+                solicitud.TN_TipoRelacion
                 == TipoRelacionEnum.Propietario)
             {
 
 
-                solicitud.Vivienda.Estado =
+                solicitud.Vivienda.TN_Estado =
                     EstadoViviendaEnum.Ocupada;
 
 
@@ -133,7 +133,7 @@ namespace Habitia.Areas.Admin.Controllers
             var solicitud =
                 await _context.ViviendaUsuarios
                 .Include(x => x.Usuario)
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.TN_Id == id);
 
 
 
@@ -143,12 +143,12 @@ namespace Habitia.Areas.Admin.Controllers
 
 
 
-            solicitud.Estado =
+            solicitud.TN_Estado =
                 EstadoUsuarioEnum.Rechazado;
 
 
 
-            solicitud.Usuario.Estado =
+            solicitud.Usuario.TN_Estado =
                 EstadoUsuarioEnum.Rechazado;
 
 

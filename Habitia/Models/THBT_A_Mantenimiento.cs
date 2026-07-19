@@ -9,45 +9,47 @@ namespace Habitia.Models
     public class Mantenimiento
     {
         [Key]
-        public int Id { get; set; }
+        public int TN_Id { get; set; }
 
         [Required]
-        public int IdIncidencia { get; set; }
+        public int TN_IdIncidencia { get; set; }
 
         [Required]
-        public int IdTipo { get; set; }
+        public int TN_IdTipo { get; set; }
 
-        public int? IdAreaComun { get; set; }
-
-        [Required]
-        public string IdPersonalAsignado { get; set; }
+        public int? TN_IdAreaComun { get; set; }
 
         [Required]
-        [MaxLength(200)]
-        public string Descripcion { get; set; }
+        public string TC_IdPersonalAsignado { get; set; }
 
         [Required]
-        public DateTime FechaProgramada { get; set; }
+        [MaxLength(300)]
+        public string TC_Descripcion { get; set; }
 
-        public DateTime FechaInicio { get; set; }
-        public DateTime? FechaFin { get; set; }
+        [Required]
+        public DateTime TF_FechaProgramada { get; set; }
 
-        public EstadoMantenimientoEnum Estado { get; set; }
+        public DateTime? TF_FechaInicio { get; set; }
+        public DateTime? TF_FechaFin { get; set; }
 
-        [MaxLength(100)]
-        public string? Observaciones { get; set; }
+        [Required]
+        public EstadoMantenimientoEnum TN_Estado { get; set; }
+
+        [MaxLength(300)]
+        public string? TC_Observaciones { get; set; }
 
         // Relaciones
-        [ForeignKey(nameof(IdIncidencia))]
+
+        [ForeignKey(nameof(TN_IdIncidencia))]
         public Incidencia Incidencia { get; set; }
 
-        [ForeignKey(nameof(IdTipo))]
+        [ForeignKey(nameof(TN_IdTipo))]
         public TipoMantenimiento Tipo { get; set; }
 
-        [ForeignKey(nameof(IdAreaComun))]
-        public AreaComun AreaComun { get; set; }
+        [ForeignKey(nameof(TN_IdAreaComun))]
+        public AreaComun? AreaComun { get; set; }
 
-        [ForeignKey(nameof(IdPersonalAsignado))]
+        [ForeignKey(nameof(TC_IdPersonalAsignado))]
         public ApplicationUser PersonalAsignado { get; set; }
     }
 }

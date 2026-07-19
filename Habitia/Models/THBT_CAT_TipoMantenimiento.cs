@@ -7,14 +7,21 @@ namespace Habitia.Models.Catalogos
     public class TipoMantenimiento
     {
         [Key]
-        public int Id { get; set; }
+        public int TN_Id { get; set; }
+
 
         [Required]
         [MaxLength(50)]
-        public string Nombre { get; set; }
+        public string TC_Nombre { get; set; }
 
-        public bool Estado { get; set; }
+
+        [Required]
+        public bool TB_Estado { get; set; }
+
+
+        // Relaciones
 
         public ICollection<Mantenimiento> Mantenimientos { get; set; }
+            = new List<Mantenimiento>();
     }
 }

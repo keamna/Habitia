@@ -23,34 +23,34 @@ namespace Habitia.Services
                 .AsQueryable();
 
             if (fechaDesde.HasValue)
-                incidenciasQuery = incidenciasQuery.Where(i => i.FechaRegistro >= fechaDesde.Value.Date);
+                incidenciasQuery = incidenciasQuery.Where(i => i.TF_FechaRegistro >= fechaDesde.Value.Date);
 
             if (fechaHasta.HasValue)
-                incidenciasQuery = incidenciasQuery.Where(i => i.FechaRegistro <= fechaHasta.Value.Date.AddDays(1).AddTicks(-1));
+                incidenciasQuery = incidenciasQuery.Where(i => i.TF_FechaRegistro <= fechaHasta.Value.Date.AddDays(1).AddTicks(-1));
 
             var incidencias = await incidenciasQuery.ToListAsync();
 
             var reporte = new ReporteIncidenciasViewModel
             {
                 TotalIncidencias = incidencias.Count,
-                TotalPendientes = incidencias.Count(i => i.Estado == EstadoIncidenciaEnum.Pendiente),
-                TotalEnProceso = incidencias.Count(i => i.Estado == EstadoIncidenciaEnum.EnProceso),
-                TotalResueltas = incidencias.Count(i => i.Estado == EstadoIncidenciaEnum.Resuelta)
+                TotalPendientes = incidencias.Count(i => i.TN_Estado == EstadoIncidenciaEnum.Pendiente),
+                TotalEnProceso = incidencias.Count(i => i.TN_Estado == EstadoIncidenciaEnum.EnProceso),
+                TotalResueltas = incidencias.Count(i => i.TN_Estado == EstadoIncidenciaEnum.Resuelta)
             };
 
             reporte.PorResponsabilidad = incidencias
-                .Where(i => i.Responsabilidad != 0)
-                .GroupBy(i => i.Responsabilidad.ToString())
+                .Where(i => i.TN_Responsabilidad != 0)
+                .GroupBy(i => i.TN_Responsabilidad.ToString())
                 .ToDictionary(g => g.Key, g => g.Count());
 
             reporte.PorTipoUbicacion = incidencias
-                .GroupBy(i => i.Tipo == TipoIncidenciaEnum.Vivienda ? "Vivienda" : "Área Común")
+                .GroupBy(i => i.TN_Tipo == TipoIncidenciaEnum.Vivienda ? "Vivienda" : "Área Común")
                 .ToDictionary(g => g.Key, g => g.Count());
 
             reporte.UbicacionesMasFrecuentes = incidencias
-                .GroupBy(i => i.Tipo == TipoIncidenciaEnum.Vivienda
-                    ? $"Vivienda: {i.Vivienda?.Numero ?? "N/D"}"
-                    : $"Área común: {i.AreaComun?.Nombre ?? "N/D"}")
+                .GroupBy(i => i.TN_Tipo == TipoIncidenciaEnum.Vivienda
+                    ? $"Vivienda: {i.Vivienda?.TC_Numero ?? "N/D"}"
+                    : $"Área común: {i.AreaComun?.TC_Nombre ?? "N/D"}")
                 .Select(g => new UbicacionFrecuenteViewModel
                 {
                     Ubicacion = g.Key,
@@ -65,19 +65,19 @@ namespace Habitia.Services
                 .AsQueryable();
 
             if (fechaDesde.HasValue)
-                mantenimientosQuery = mantenimientosQuery.Where(m => m.FechaInicio >= fechaDesde.Value.Date);
+                mantenimientosQuery = mantenimientosQuery.Where(m => m.TF_FechaInicio >= fechaDesde.Value.Date);
 
             if (fechaHasta.HasValue)
-                mantenimientosQuery = mantenimientosQuery.Where(m => m.FechaInicio <= fechaHasta.Value.Date.AddDays(1).AddTicks(-1));
+                mantenimientosQuery = mantenimientosQuery.Where(m => m.TF_FechaInicio <= fechaHasta.Value.Date.AddDays(1).AddTicks(-1));
 
             var mantenimientos = await mantenimientosQuery.ToListAsync();
 
-            reporte.TotalMantenimientosRealizados = mantenimientos.Count(m => m.Estado == EstadoMantenimientoEnum.Completado);
+            reporte.TotalMantenimientosRealizados = mantenimientos.Count(m => m.TN_Estado == EstadoMantenimientoEnum.Completado);
             reporte.TotalMantenimientosPendientes = mantenimientos.Count(m =>
-                m.Estado == EstadoMantenimientoEnum.Programado || m.Estado == EstadoMantenimientoEnum.EnProceso);
+                m.TN_Estado == EstadoMantenimientoEnum.Programado || m.TN_Estado == EstadoMantenimientoEnum.EnProceso);
 
             reporte.MantenimientosPorTipo = mantenimientos
-                .GroupBy(m => m.Tipo?.Nombre ?? "Sin tipo")
+                .GroupBy(m => m.Tipo?.TC_Nombre ?? "Sin tipo")
                 .ToDictionary(g => g.Key, g => g.Count());
 
             return reporte;
