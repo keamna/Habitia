@@ -30,41 +30,28 @@ namespace Habitia.Services
                 .AnyAsync(t => t.TC_Nombre.ToLower() == nombreNormalizado);
         }
 
-        /// <summary>
-        /// Devuelve un tipo de mantenimiento existente por Id, o crea uno nuevo si se
-        /// proporciona un nombre. Aplica la regla de negocio: no se permiten tipos duplicados.
-        /// </summary>
         public async Task<TipoMantenimiento> ObtenerOCrearAsync(int? idExistente, string? nombreNuevo)
         {
-            // Caso 1: se seleccionó un tipo existente
             if (idExistente.HasValue)
             {
                 var tipo = await _context.TiposMantenimiento
                     .FirstOrDefaultAsync(t => t.TN_Id == idExistente.Value);
 
                 if (tipo == null)
-                {
-                    throw new InvalidOperationException(
-                        "El tipo de mantenimiento seleccionado no existe.");
-                }
+                    throw new InvalidOperationException("El tipo de mantenimiento seleccionado no existe.");
 
                 return tipo;
             }
 
-            // Caso 2: se ingresó un nombre nuevo
             if (string.IsNullOrWhiteSpace(nombreNuevo))
-            {
-                throw new InvalidOperationException(
-                    "Debe seleccionar un tipo existente o ingresar uno nuevo.");
-            }
+                throw new InvalidOperationException("Debe seleccionar un tipo existente o ingresar uno nuevo.");
 
             var nombreLimpio = nombreNuevo.Trim();
 
             if (await ExisteNombreAsync(nombreLimpio))
             {
                 throw new InvalidOperationException(
-                    $"Ya existe un tipo de mantenimiento llamado '{nombreLimpio}'. " +
-                    "Selecciónelo de la lista en lugar de crear uno nuevo.");
+                    $"Ya existe un tipo de mantenimiento llamado '{nombreLimpio}'. Selecciónelo de la lista.");
             }
 
             var nuevoTipo = new TipoMantenimiento

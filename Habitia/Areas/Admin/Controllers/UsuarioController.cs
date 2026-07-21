@@ -177,14 +177,25 @@ namespace Habitia.Areas.Admin.Controllers
 
 
             // Seguridad:
-            // nunca permitir crear Admin desde formulario
+            // nunca permitir crear Admin ni Residente desde este formulario.
+            // Residente se asigna solo mediante el flujo de Aprobar() vinculado
+            // a una vivienda; Admin nunca se crea desde aquí.
 
             if (model.Roles != null)
             {
                 model.Roles =
                     model.Roles
-                    .Where(x => x != "Admin")
+                    .Where(x => x != "Admin" && x != "Residente")
                     .ToList();
+            }
+
+            if (model.Roles == null || !model.Roles.Any())
+            {
+                ModelState.AddModelError(
+                    "",
+                    "Debe seleccionar al menos un rol válido (Seguridad o Mantenimiento).");
+
+                return View(model);
             }
 
 
@@ -322,10 +333,13 @@ namespace Habitia.Areas.Admin.Controllers
         private void CargarRoles()
         {
 
+            // "Residente" se excluye a propósito: ese rol se asigna
+            // automáticamente al aprobar una solicitud de vivienda,
+            // no se crea manualmente desde este formulario.
+
             ViewBag.Roles =
                 new List<string>
                 {
-                    "Residente",
                     "Seguridad",
                     "Mantenimiento"
                 };

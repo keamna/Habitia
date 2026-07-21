@@ -1,0 +1,247 @@
+﻿/* =========================================================
+   TEMA HABITIA SOBRE BOOTSTRAP 5
+   Sobreescribe las variables de Bootstrap con la paleta
+   definida en habitia.css, para que los componentes
+   (botones, badges, alerts, cards, forms) combinen con
+   el sidebar sin perder el grid/utilidades de Bootstrap.
+========================================================= */
+
+:root {
+    --bs-primary: #336332;
+    --bs-primary-rgb: 51, 99, 50;
+    --bs-body-font-family: 'DM Sans', sans-serif;
+    --bs-border-radius: 10px;
+    --bs-border-radius-sm: 8px;
+    --bs-border-radius-lg: 14px;
+    --bs-body-color: #101010;
+}
+
+body {
+    font-family: 'DM Sans', sans-serif;
+}
+
+/* =========================
+   BOTONES
+========================= */
+
+.btn {
+    font-weight: 600;
+    font-size: 0.88rem;
+    border-radius: 10px;
+    padding: 0.55rem 1.1rem;
+}
+
+.btn-primary {
+    background-color: var(--habitia-green-active);
+    border-color: var(--habitia-green-active);
+}
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        background-color: #275126;
+        border-color: #275126;
+    }
+
+.btn-secondary {
+    background-color: #F5F5F5;
+    border-color: #F5F5F5;
+    color: #101010;
+}
+
+    .btn-secondary:hover {
+        background-color: #E5E5E5;
+        border-color: #E5E5E5;
+        color: #101010;
+    }
+
+.btn-outline-primary {
+    color: var(--habitia-green-active);
+    border-color: var(--habitia-green-active);
+}
+
+    .btn-outline-primary:hover {
+        background-color: var(--habitia-green-active);
+        border-color: var(--habitia-green-active);
+    }
+
+.btn-outline-secondary {
+    color: var(--habitia-text-gray);
+    border-color: var(--habitia-border);
+}
+
+    .btn-outline-secondary:hover {
+        background-color: #F9FAFB;
+        border-color: var(--habitia-border);
+        color: #101010;
+    }
+
+.btn-warning {
+    background-color: #FFF4D6;
+    border-color: #FFE29B;
+    color: #92650A;
+}
+
+    .btn-warning:hover {
+        background-color: #FFE9AD;
+        border-color: #FFD873;
+        color: #6B4A05;
+    }
+
+.btn-danger {
+    background-color: #FEE2E2;
+    border-color: #FCA5A5;
+    color: #DC2626;
+}
+
+    .btn-danger:hover {
+        background-color: #FCD3D3;
+        border-color: #DC2626;
+    }
+
+/* =========================
+   BADGES (estados)
+========================= */
+
+.badge {
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 5px 11px;
+    border-radius: 20px;
+}
+
+    .badge.bg-warning {
+        background-color: #FFF4D6 !important;
+        color: #92650A !important;
+    }
+
+    .badge.bg-info {
+        background-color: #E3F2FD !important;
+        color: #1565C0 !important;
+    }
+
+    .badge.bg-success {
+        background-color: #E8F5E8 !important;
+        color: var(--habitia-green-active) !important;
+    }
+
+    .badge.bg-danger {
+        background-color: #FEE2E2 !important;
+        color: #DC2626 !important;
+    }
+
+    .badge.bg-secondary {
+        background-color: #F5F5F5 !important;
+        color: var(--habitia-text-gray) !important;
+    }
+
+/* =========================
+   ALERTS
+========================= */
+
+.alert {
+    border: none;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    padding: 14px 18px;
+}
+
+.alert-success {
+    background-color: #E8F5E8;
+    color: var(--habitia-green-active);
+}
+
+.alert-danger {
+    background-color: #FEE2E2;
+    color: #DC2626;
+}
+
+.alert-info {
+    background-color: #E3F2FD;
+    color: #1565C0;
+}
+
+/* =========================
+   CARDS
+========================= */
+
+.card {
+    border: 1px solid var(--habitia-border);
+    border-radius: 16px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .04);
+}
+
+.card-header {
+    background-color: #FAFAFA;
+    border-bottom: 1px solid var(--habitia-border);
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #101010;
+    border-radius: 16px 16px 0 0 !important;
+}
+
+/* =========================
+   TABLAS
+========================= */
+
+.table {
+    --bs-table-hover-bg: #F9FAFB;
+}
+
+    .table thead th {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--habitia-text-gray);
+        border-bottom: 1px solid #F0F0F0;
+        text-transform: uppercase;
+        letter-spacing: .02em;
+    }
+
+    .table tbody td {
+        font-size: 13px;
+        color: #101010;
+        vertical-align: middle;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid #F9FAFB;
+    }
+
+/* =========================
+   FORMULARIOS
+========================= */
+
+.form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #101010;
+    margin-bottom: 6px;
+}
+
+.form-control,
+.form-select {
+    border: 1.5px solid #E5E7EB;
+    border-radius: 10px;
+    font-size: 13px;
+    padding: 10px 14px;
+    color: #101010;
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--habitia-green-active);
+        box-shadow: 0 0 0 3px rgba(51, 99, 50, .10);
+    }
+
+    .form-control::placeholder {
+        color: #C4C9D1;
+    }
+
+.form-text {
+    font-size: 12px;
+    color: var(--habitia-text-gray);
+}
+
+.text-danger {
+    color: #DC2626 !important;
+    font-size: 12px;
+}

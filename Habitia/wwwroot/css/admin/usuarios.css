@@ -585,3 +585,212 @@
         background: #FCD3D3;
         border-color: #DC2626;
     }
+
+/* =========================================================
+   MODALES: Asignar roles / Eliminar usuario
+========================================================= */
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+}
+
+    .modal-overlay.visible {
+        display: flex;
+    }
+
+.modal-card {
+    background: #FFFFFF;
+    width: 420px;
+    max-width: 92%;
+    padding: 28px;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    animation: modalFadeIn 0.2s ease forwards;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================
+   ÍCONO DEL MODAL
+========================= */
+
+.modal-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px auto;
+}
+
+.modal-icon-danger {
+    background-color: #FEE2E2;
+}
+
+    .modal-icon-danger i {
+        font-size: 26px;
+        color: #DC2626;
+    }
+
+/* =========================
+   TITULO / DESCRIPCION
+========================= */
+
+.modal-titulo {
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #101010;
+    text-align: center;
+    margin-bottom: 6px;
+}
+
+.modal-desc {
+    font-size: 13.5px;
+    color: #848484;
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+/* =========================
+   ROLES (checkboxes en grid)
+========================= */
+
+.roles-opciones {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.rol-opcion {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    border: 1.5px solid #E5E7EB;
+    border-radius: 10px;
+    background: #FFFFFF;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    color: #101010;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+    .rol-opcion:hover {
+        background: #F9FAFB;
+        border-color: #336332;
+    }
+
+    .rol-opcion input {
+        width: 16px;
+        height: 16px;
+        accent-color: #336332;
+        cursor: pointer;
+    }
+
+/* =========================
+   MENSAJE DE ERROR DEL MODAL
+========================= */
+
+.roles-error {
+    color: #DC2626;
+    background-color: #FEE2E2;
+    font-size: 12.5px;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 16px;
+}
+
+/* =========================
+   FOOTER DE BOTONES
+========================= */
+
+.modal-footer {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.btn-modal-cancelar,
+.btn-modal-guardar,
+.btn-modal-eliminar {
+    height: 42px;
+    padding: 0 22px;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s ease;
+}
+
+.btn-modal-cancelar {
+    background: #F5F5F5;
+    color: #101010;
+}
+
+    .btn-modal-cancelar:hover {
+        background: #E5E5E5;
+    }
+
+.btn-modal-guardar {
+    background: #336332;
+    color: #FFFFFF;
+}
+
+    .btn-modal-guardar:hover {
+        background: #275126;
+    }
+
+.btn-modal-eliminar {
+    background: #DC2626;
+    color: #FFFFFF;
+}
+
+    .btn-modal-eliminar:hover {
+        background: #B91C1C;
+    }
+
+    .btn-modal-eliminar:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 500px) {
+    .modal-card {
+        padding: 22px;
+    }
+
+    .roles-opciones {
+        grid-template-columns: 1fr;
+    }
+}

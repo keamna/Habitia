@@ -1,147 +1,62 @@
 ﻿@model Habitia.ViewModels.Vivienda.ViviendaViewModel
-
 @{
     ViewData["Title"] = "Crear vivienda";
 }
 
-
-<div class="vivienda-form-card">
-
-
-    <div class="vivienda-form-titulo">
-        Registrar vivienda
-    </div>
-
-
-    <div class="vivienda-form-descripcion">
-        Agregue una nueva vivienda al condominio
-    </div>
-
-
-
-    <form asp-action="Crear"
-          method="post">
-
-
-        @Html.AntiForgeryToken()
-
-
-
-        <div class="vivienda-form-group">
-
-
-            <label>
-                Código de vivienda
-            </label>
-
-
-            <input asp-for="Numero"
-                   placeholder="Ejemplo: A-101" />
-
-
-            <span asp-validation-for="Numero"
-                  class="field-validation-error">
-            </span>
-
-
-        </div>
-
-
-
-
-
-        <div class="vivienda-form-group">
-
-
-            <label>
-                Tipo de vivienda
-            </label>
-
-
-            <select asp-for="Tipo">
-
-                <option value="">
-                    Seleccione
-                </option>
-
-                <option value="Casa">
-                    Casa
-                </option>
-
-                <option value="Departamento">
-                    Departamento
-                </option>
-
-            </select>
-
-
-
-            <span asp-validation-for="Tipo"
-                  class="field-validation-error">
-            </span>
-
-
-        </div>
-
-
-
-
-
-        <div class="vivienda-estado">
-
-
-            <span>
-                Estado inicial
-            </span>
-
-
-
-            <div class="estado-badge">
-
-                Disponible
-
-            </div>
-
-
-        </div>
-
-
-
-
-
-        <div class="vivienda-form-footer">
-
-
-            <a asp-action="Index"
-               class="btn-vivienda-cancelar">
-
-                Cancelar
-
-            </a>
-
-
-
-            <button type="submit"
-                    class="btn-vivienda-guardar">
-
-                Guardar
-
-            </button>
-
-
-        </div>
-
-
-
-    </form>
-
-
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Registrar vivienda</h2>
 </div>
 
+<div class="card" style="max-width: 560px;">
+    <div class="card-body p-4">
+        <p class="text-muted mb-4">Agregue una nueva vivienda al condominio</p>
 
+        <form asp-action="Crear" method="post" id="formCrearVivienda">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label class="form-label">Código de vivienda</label>
+                <input asp-for="Numero" class="form-control" placeholder="Ejemplo: A-101" />
+                <span asp-validation-for="Numero" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Tipo de vivienda</label>
+                <select asp-for="Tipo" class="form-select"
+                        asp-items="Html.GetEnumSelectList<Habitia.Enums.TipoViviendaEnum>()">
+                    <option value="">Seleccione</option>
+                </select>
+                <span asp-validation-for="Tipo" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Cantidad de inquilinos</label>
+                <input asp-for="CantidadInquilinos" type="number" min="0" max="10" class="form-control" />
+                <span asp-validation-for="CantidadInquilinos" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="form-label mb-0">Estado inicial</span>
+                <span class="badge bg-success">Disponible</span>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary" id="btnGuardarVivienda">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 @section Scripts {
-
     <partial name="_ValidationScriptsPartial" />
-
+    <script>
+        document.getElementById("formCrearVivienda").addEventListener("submit", function (e) {
+            if (!this.checkValidity || this.checkValidity()) {
+                const boton = document.getElementById("btnGuardarVivienda");
+                boton.disabled = true;
+                boton.innerHTML = "Guardando...";
+            }
+        });
+    </script>
 }

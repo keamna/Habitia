@@ -24,35 +24,27 @@
 
 <div class="row g-3 mb-4">
     <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <h6 class="text-muted">Total Incidencias</h6>
-                <h3>@Model.TotalIncidencias</h3>
-            </div>
+        <div class="reporte-stat-card">
+            <h6>Total Incidencias</h6>
+            <h3>@Model.TotalIncidencias</h3>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <h6 class="text-muted">Pendientes</h6>
-                <h3 class="text-warning">@Model.TotalPendientes</h3>
-            </div>
+        <div class="reporte-stat-card">
+            <h6>Pendientes</h6>
+            <h3 class="text-warning">@Model.TotalPendientes</h3>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <h6 class="text-muted">En Proceso</h6>
-                <h3 class="text-info">@Model.TotalEnProceso</h3>
-            </div>
+        <div class="reporte-stat-card">
+            <h6>En Proceso</h6>
+            <h3 class="text-info">@Model.TotalEnProceso</h3>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <h6 class="text-muted">Resueltas</h6>
-                <h3 class="text-success">@Model.TotalResueltas</h3>
-            </div>
+        <div class="reporte-stat-card">
+            <h6>Resueltas</h6>
+            <h3 class="text-success">@Model.TotalResueltas</h3>
         </div>
     </div>
 </div>
@@ -61,34 +53,34 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">Incidencias por Responsabilidad</div>
-            <ul class="list-group list-group-flush">
-                @foreach (var item in Model.PorResponsabilidad)
-                {
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>@item.Key</span>
-                        <strong>@item.Value</strong>
-                    </li>
-                }
-                @if (!Model.PorResponsabilidad.Any())
-                {
-                    <li class="list-group-item text-muted">Sin datos clasificados aún.</li>
-                }
-            </ul>
+            @foreach (var item in Model.PorResponsabilidad)
+            {
+                <div class="reporte-lista-item">
+                    <span>@item.Key</span>
+                    <strong>@item.Value</strong>
+                </div>
+            }
+            @if (!Model.PorResponsabilidad.Any())
+            {
+                <div class="reporte-lista-item text-muted">Sin datos clasificados aún.</div>
+            }
         </div>
     </div>
 
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">Incidencias por Tipo de Ubicación</div>
-            <ul class="list-group list-group-flush">
-                @foreach (var item in Model.PorTipoUbicacion)
-                {
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>@item.Key</span>
-                        <strong>@item.Value</strong>
-                    </li>
-                }
-            </ul>
+            @foreach (var item in Model.PorTipoUbicacion)
+            {
+                <div class="reporte-lista-item">
+                    <span>@item.Key</span>
+                    <strong>@item.Value</strong>
+                </div>
+            }
+            @if (!Model.PorTipoUbicacion.Any())
+            {
+                <div class="reporte-lista-item text-muted">Sin datos en el rango seleccionado.</div>
+            }
         </div>
     </div>
 </div>
@@ -97,57 +89,49 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">Ubicaciones más Frecuentes (Top 5)</div>
-            <ul class="list-group list-group-flush">
-                @foreach (var item in Model.UbicacionesMasFrecuentes)
-                {
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>@item.Ubicacion</span>
-                        <strong>@item.CantidadIncidencias</strong>
-                    </li>
-                }
-                @if (!Model.UbicacionesMasFrecuentes.Any())
-                {
-                    <li class="list-group-item text-muted">Sin datos en el rango seleccionado.</li>
-                }
-            </ul>
+            @foreach (var item in Model.UbicacionesMasFrecuentes)
+            {
+                <div class="reporte-lista-item">
+                    <span>@item.Ubicacion</span>
+                    <strong>@item.CantidadIncidencias</strong>
+                </div>
+            }
+            @if (!Model.UbicacionesMasFrecuentes.Any())
+            {
+                <div class="reporte-lista-item text-muted">Sin datos en el rango seleccionado.</div>
+            }
         </div>
     </div>
 
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">Mantenimientos por Tipo</div>
-            <ul class="list-group list-group-flush">
-                @foreach (var item in Model.MantenimientosPorTipo)
-                {
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>@item.Key</span>
-                        <strong>@item.Value</strong>
-                    </li>
-                }
-                @if (!Model.MantenimientosPorTipo.Any())
-                {
-                    <li class="list-group-item text-muted">Sin mantenimientos registrados.</li>
-                }
-            </ul>
+            @foreach (var item in Model.MantenimientosPorTipo)
+            {
+                <div class="reporte-lista-item">
+                    <span>@item.Key</span>
+                    <strong>@item.Value</strong>
+                </div>
+            }
+            @if (!Model.MantenimientosPorTipo.Any())
+            {
+                <div class="reporte-lista-item text-muted">Sin mantenimientos registrados.</div>
+            }
         </div>
     </div>
 </div>
 
 <div class="row g-3">
     <div class="col-md-6">
-        <div class="card text-center">
-            <div class="card-body">
-                <h6 class="text-muted">Mantenimientos Realizados</h6>
-                <h3 class="text-success">@Model.TotalMantenimientosRealizados</h3>
-            </div>
+        <div class="reporte-stat-card">
+            <h6>Mantenimientos Realizados</h6>
+            <h3 class="text-success">@Model.TotalMantenimientosRealizados</h3>
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card text-center">
-            <div class="card-body">
-                <h6 class="text-muted">Mantenimientos Pendientes</h6>
-                <h3 class="text-warning">@Model.TotalMantenimientosPendientes</h3>
-            </div>
+        <div class="reporte-stat-card">
+            <h6>Mantenimientos Pendientes</h6>
+            <h3 class="text-warning">@Model.TotalMantenimientosPendientes</h3>
         </div>
     </div>
 </div>

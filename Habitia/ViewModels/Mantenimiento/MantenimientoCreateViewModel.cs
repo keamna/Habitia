@@ -29,6 +29,8 @@ namespace Habitia.ViewModels.Mantenimiento
         [Display(Name = "Descripción de la tarea")]
         public string Descripcion { get; set; }
 
+        public List<SelectListItem>? IncidenciasElegibles { get; set; }
+
         public List<SelectListItem>? TiposMantenimiento { get; set; }
         public List<SelectListItem>? PersonalMantenimiento { get; set; }
 

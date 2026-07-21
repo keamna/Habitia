@@ -4,443 +4,173 @@
     ViewData["Title"] = "Viviendas";
 }
 
-
-<div class="tabla-card">
-
-
-    <!-- HEADER -->
-    <div class="tabla-header">
-
-
-        <div class="tabla-titulo">
-            Viviendas registradas
-        </div>
-
-
-
-        <div class="tabla-acciones">
-
-
-            <!-- BUSCADOR -->
-            <div class="buscador">
-
-                <i class="bi bi-search"></i>
-
-                <input type="text"
-                       placeholder="Buscar vivienda..." />
-
-            </div>
-
-
-
-
-            <!-- FILTRO -->
-            <select class="filtro-select">
-
-                <option value="">
-                    Todas
-                </option>
-
-                <option value="Casa">
-                    Casa
-                </option>
-
-                <option value="Departamento">
-                    Departamento
-                </option>
-
-            </select>
-
-
-
-
-            <!-- AGREGAR -->
-            <a asp-area="Admin"
-               asp-controller="Viviendas"
-               asp-action="Crear"
-               class="btn-agregar">
-
-                <i class="bi bi-plus-lg"></i>
-
-            </a>
-
-
-        </div>
-
-
-    </div>
-
-
-
-
-
-    <!-- TABLA -->
-
-    <table class="tabla">
-
-
-        <thead>
-
-            <tr>
-
-                <th></th>
-
-                <th>Código</th>
-
-                <th>Tipo</th>
-
-                <th>Estado</th>
-
-                <th>Propietario</th>
-
-                <th>Inquilinos</th>
-
-                <th></th>
-
-            </tr>
-
-
-        </thead>
-
-
-
-
-
-        <tbody>
-
-
-            @if (Model.Any())
-            {
-
-                foreach (var vivienda in Model)
-                {
-
-
-                    <tr>
-
-
-                        <!-- CHECK -->
-
-                        <td>
-
-                            <input type="checkbox"
-                                   class="tabla-checkbox" />
-
-                        </td>
-
-
-
-
-
-                        <!-- CODIGO -->
-
-                        <td>
-
-                            <strong>
-                                @vivienda.Numero
-                            </strong>
-
-                        </td>
-
-
-
-
-
-
-                        <!-- TIPO -->
-
-                        <td>
-
-                            @vivienda.Tipo
-
-                        </td>
-
-
-
-
-
-
-
-                        <!-- ESTADO -->
-
-                        <td>
-
-
-                            @if (vivienda.Estado == Habitia.Enums.EstadoViviendaEnum.Disponible)
-                            {
-
-                                <span class="badge badge-activo">
-
-                                    <span class="badge-dot"></span>
-
-                                    Disponible
-
-                                </span>
-
-                            }
-                            else
-                            {
-
-                                <span class="badge badge-inactivo">
-
-                                    <span class="badge-dot"></span>
-
-                                    Inactiva
-
-                                </span>
-
-                            }
-
-
-                        </td>
-
-
-
-
-
-
-
-
-                        <!-- PROPIETARIO -->
-
-                        <td>
-
-
-                            @if (!string.IsNullOrEmpty(vivienda.PropietarioNombre))
-                            {
-
-                                @vivienda.PropietarioNombre
-
-                            }
-                            else
-                            {
-
-                                <span class="text-muted">
-                                    Sin propietario
-                                </span>
-
-                            }
-
-
-                        </td>
-
-
-
-
-
-
-
-
-                        <!-- INQUILINOS -->
-
-                        <td>
-
-                            @vivienda.InquilinosActuales /
-                            @vivienda.CantidadInquilinos
-
-
-                        </td>
-
-
-
-
-
-
-
-
-
-                        <!-- ACCIONES -->
-
-                        <td>
-
-
-                            <div class="fila-acciones">
-
-
-
-                                <button class="btn-menu-fila">
-
-                                    <i class="bi bi-three-dots-vertical"></i>
-
-                                </button>
-
-
-
-
-
-
-                                <div class="dropdown-menu-fila">
-
-
-                                    <a href="#"
-                                       class="dropdown-item">
-
-
-                                        <i class="bi bi-eye"></i>
-
-
-                                        Ver detalle
-
-
-                                    </a>
-
-
-
-
-
-
-                                    <a href="#"
-                                       class="dropdown-item">
-
-
-                                        <i class="bi bi-pencil"></i>
-
-
-                                        Editar
-
-
-                                    </a>
-
-
-
-
-
-
-
-
-                                    <a href="#"
-                                       class="dropdown-item eliminar">
-
-
-                                        <i class="bi bi-trash"></i>
-
-
-                                        Eliminar
-
-
-                                    </a>
-
-
-
-                                </div>
-
-
-                            </div>
-
-
-                        </td>
-
-
-
-
-                    </tr>
-
-
-                }
-
-
-            }
-            else
-            {
-
-
-                <tr>
-
-                    <td colspan="7">
-
-                        <div class="tabla-vacia">
-
-                            No hay viviendas registradas.
-
-                        </div>
-
-                    </td>
-
-                </tr>
-
-
-            }
-
-
-
-        </tbody>
-
-
-
-    </table>
-
-
-
-
+@Html.AntiForgeryToken()
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Viviendas registradas</h2>
+    <a asp-area="Admin" asp-controller="Viviendas" asp-action="Crear" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Nueva Vivienda
+    </a>
 </div>
 
+@if (TempData["MensajeExito"] != null)
+{
+    <div class="alert alert-success">@TempData["MensajeExito"]</div>
+}
 
+<div class="card">
+    <div class="card-body">
 
+        <div class="d-flex justify-content-end gap-2 mb-3">
+            <div class="input-group" style="max-width: 260px;">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" placeholder="Buscar vivienda..." />
+            </div>
 
+            <select class="form-select" style="max-width: 180px;">
+                <option value="">Todas</option>
+                <option value="Casa">Casa</option>
+                <option value="Apartamento">Departamento</option>
+            </select>
+        </div>
 
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Propietario</th>
+                    <th>Inquilinos</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var vivienda in Model)
+                    {
+                        <tr>
+                            <td><strong>@vivienda.Numero</strong></td>
+                            <td>@vivienda.Tipo</td>
+                            <td>
+                                @if (vivienda.Estado == Habitia.Enums.EstadoViviendaEnum.Disponible)
+                                {
+                                    <span class="badge bg-success">Disponible</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Inactiva</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(vivienda.PropietarioNombre))
+                                {
+                                    @vivienda.PropietarioNombre
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Sin propietario</span>
+                                }
+                            </td>
+                            <td>@vivienda.InquilinosActuales / @vivienda.CantidadInquilinos</td>
+                            <td>
+                                <div class="fila-acciones">
+                                    <button class="btn-menu-fila">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+
+                                    <div class="dropdown-menu-fila">
+                                        <a href="#" class="dropdown-item">
+                                            <i class="bi bi-eye"></i> Ver detalle
+                                        </a>
+                                        <a href="#" class="dropdown-item">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </a>
+                                        <a href="#" class="dropdown-item eliminar"
+                                           onclick='abrirEliminarVivienda(@vivienda.Id, @Html.Raw(Json.Serialize(vivienda.Numero)))'>
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6">
+                            <div class="text-center text-muted py-4">
+                                No hay viviendas registradas.
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<!-- MODAL ELIMINAR VIVIENDA (Bootstrap) -->
+<div class="modal fade" id="modalEliminarVivienda" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+            <div class="modal-body text-center">
+                <div class="modal-icon-danger mx-auto mb-3">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+
+                <h5 class="mb-2">Eliminar vivienda</h5>
+                <p class="text-muted mb-3">
+                    ¿Estás seguro de que querés eliminar la vivienda
+                    <strong id="eliminarViviendaNumero"></strong>?
+                    <br />
+                    Esta acción no se puede deshacer.
+                </p>
+
+                <div class="alert alert-danger text-start" id="eliminarViviendaError" style="display:none;"></div>
+
+                <input type="hidden" id="eliminarViviendaId" />
+
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-danger" id="btnConfirmarEliminarVivienda" onclick="confirmarEliminarVivienda()">
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts
 {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
 
-<script>
+            const botones = document.querySelectorAll(".btn-menu-fila");
 
-document.addEventListener("DOMContentLoaded", function(){
+            botones.forEach(btn => {
+                btn.addEventListener("click", function (e) {
+                    e.stopPropagation();
 
+                    document.querySelectorAll(".dropdown-menu-fila").forEach(menu => {
+                        menu.classList.remove("visible");
+                    });
 
-    const botones =
-    document.querySelectorAll(".btn-menu-fila");
-
-
-
-    botones.forEach(btn => {
-
-
-        btn.addEventListener("click", function(e){
-
-
-            e.stopPropagation();
-
-
-
-            document
-            .querySelectorAll(".dropdown-menu-fila")
-            .forEach(menu =>
-            {
-                menu.classList.remove("visible");
+                    this.nextElementSibling.classList.toggle("visible");
+                });
             });
 
-
-
-            this
-            .nextElementSibling
-            .classList.toggle("visible");
-
+            document.addEventListener("click", function () {
+                document.querySelectorAll(".dropdown-menu-fila").forEach(menu => {
+                    menu.classList.remove("visible");
+                });
+            });
 
         });
+    </script>
 
-
-    });
-
-
-
-
-    document.addEventListener("click", function(){
-
-
-        document
-        .querySelectorAll(".dropdown-menu-fila")
-        .forEach(menu =>
-        {
-            menu.classList.remove("visible");
-        });
-
-
-    });
-
-
-
-});
-
-</script>
-
+    <script src="~/js/admin/viviendas.js"></script>
 }

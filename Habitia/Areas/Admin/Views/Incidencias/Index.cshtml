@@ -4,7 +4,10 @@
     var filtro = ViewBag.Filtro as Habitia.ViewModels.Incidencias.IncidenciaFiltroViewModel;
 }
 
-<h2>Gestión de Incidencias</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Gestión de Incidencias</h2>
+    <a asp-action="Create" class="btn btn-primary">+ Registrar Incidencia</a>
+</div>
 
 @if (TempData["Success"] != null)
 {
@@ -16,10 +19,6 @@
 }
 
 <form asp-action="Index" method="get" class="row g-2 mb-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Gestión de Incidencias</h2>
-    <a asp-action="Create" class="btn btn-primary">+ Registrar Incidencia</a>
-        </div>
     <div class="col-md-2">
         <select name="Estado" class="form-select" asp-items="Html.GetEnumSelectList<Habitia.Enums.EstadoIncidenciaEnum>()">
             <option value="">Todos los estados</option>

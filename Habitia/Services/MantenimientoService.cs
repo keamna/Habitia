@@ -28,14 +28,12 @@ namespace Habitia.Services
             if (incidencia == null)
                 throw new InvalidOperationException("La incidencia no existe.");
 
-            // Regla de negocio: solo incidencias Comunes o Mixtas generan tarea de mantenimiento
             if (incidencia.TN_Responsabilidad == ResponsabilidadEnum.Privado)
             {
                 throw new InvalidOperationException(
                     "No se puede generar una tarea de mantenimiento para una incidencia de tipo Privado.");
             }
 
-            // Regla de negocio: trazabilidad 1 a 1 (una incidencia, una tarea como máximo)
             var yaTieneMantenimiento = await _context.Mantenimientos
                 .AnyAsync(m => m.TN_IdIncidencia == model.IdIncidencia);
 
@@ -45,7 +43,6 @@ namespace Habitia.Services
                     "Esta incidencia ya tiene una tarea de mantenimiento asociada.");
             }
 
-            // Resuelve el tipo de mantenimiento (existente o nuevo, sin duplicados)
             var tipoMantenimiento = await _tipoMantenimientoService.ObtenerOCrearAsync(
                 model.IdTipoMantenimiento,
                 model.NuevoTipoMantenimiento);
@@ -64,7 +61,6 @@ namespace Habitia.Services
 
             _context.Mantenimientos.Add(mantenimiento);
 
-            // La incidencia pasa a "En proceso" al generarse la tarea
             incidencia.TN_Estado = EstadoIncidenciaEnum.EnProceso;
 
             await _context.SaveChangesAsync();
@@ -102,7 +98,6 @@ namespace Habitia.Services
             if (mantenimiento == null)
                 throw new InvalidOperationException("La tarea de mantenimiento no existe.");
 
-            // Regla de seguridad: solo el personal asignado puede actualizar su propia tarea
             if (mantenimiento.TC_IdPersonalAsignado != idPersonalQueActualiza)
             {
                 throw new UnauthorizedAccessException(
@@ -116,7 +111,6 @@ namespace Habitia.Services
             {
                 mantenimiento.TF_FechaFin = DateTime.Now;
 
-                // Al completarse el mantenimiento, la incidencia asociada se marca Resuelta
                 if (mantenimiento.Incidencia != null)
                 {
                     mantenimiento.Incidencia.TN_Estado = EstadoIncidenciaEnum.Resuelta;

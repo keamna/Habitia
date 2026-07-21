@@ -1,0 +1,243 @@
+﻿/* =========================================================
+   MÓDULO: INCIDENCIAS Y MANTENIMIENTO
+========================================================= */
+
+/* =========================
+   ENCABEZADO DE SECCIÓN
+   (usado en Admin/Incidencias/Create para separar
+   "Datos de la Incidencia", "Clasificación", "Tarea")
+========================= */
+
+.incidencia-form h5 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--habitia-green-active);
+    margin-top: 28px;
+    margin-bottom: 4px;
+}
+
+.incidencia-form hr {
+    border: none;
+    border-top: 1px solid var(--habitia-border);
+    margin-bottom: 20px;
+}
+
+/* Sección condicional de mantenimiento: cuando se muestra,
+   se resalta con un borde izquierdo para diferenciarla
+   visualmente del resto del formulario */
+#seccionMantenimiento {
+    background-color: var(--habitia-bg);
+    border-left: 3px solid var(--habitia-green-active);
+    border-radius: 0 12px 12px 0;
+    padding: 20px 24px 4px;
+    margin-top: 8px;
+}
+
+/* =========================
+   TARJETA DE CONTEXTO
+   (usada en Admin/Incidencias/Clasificar y en Details)
+========================= */
+
+.incidencia-contexto {
+    background: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+}
+
+    .incidencia-contexto h5 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #101010;
+        margin-bottom: 8px;
+    }
+
+    .incidencia-contexto p {
+        font-size: 13.5px;
+        color: #3A3A3A;
+        margin-bottom: 10px;
+    }
+
+    .incidencia-contexto .meta {
+        font-size: 12.5px;
+        color: var(--habitia-text-gray);
+    }
+
+/* =========================
+   PASTILLAS DE RESPONSABILIDAD
+   (distintas de los badges de estado, para no confundir
+   "Pendiente/En proceso/Resuelta" con "Privado/Común/Mixto")
+========================= */
+
+.pill-responsabilidad {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pill-privado {
+    background-color: #F5F0FF;
+    color: #6D28D9;
+}
+
+.pill-comun {
+    background-color: #E0F2FE;
+    color: #0369A1;
+}
+
+.pill-mixto {
+    background-color: #FFF1E6;
+    color: #C2410C;
+}
+
+.pill-sin-clasificar {
+    background-color: #F5F5F5;
+    color: var(--habitia-text-gray);
+}
+
+/* =========================
+   EVIDENCIA (imagen adjunta)
+========================= */
+
+.evidencia-preview {
+    display: block;
+    max-width: 320px;
+    border-radius: 12px;
+    border: 1px solid var(--habitia-border);
+    margin-top: 8px;
+}
+
+.evidencia-vacia {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--habitia-text-gray);
+    font-size: 13px;
+    font-style: italic;
+}
+
+/* =========================
+   TARJETAS DE REPORTES (Admin/Reportes)
+========================= */
+
+.reporte-stat-card {
+    background: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 16px;
+    padding: 18px;
+    text-align: center;
+}
+
+    .reporte-stat-card h6 {
+        font-size: 12px;
+        color: var(--habitia-text-gray);
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        margin-bottom: 6px;
+    }
+
+    .reporte-stat-card h3 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        margin: 0;
+    }
+
+.reporte-lista-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 18px;
+    font-size: 13px;
+    border-bottom: 1px solid #F9FAFB;
+}
+
+    .reporte-lista-item:last-child {
+        border-bottom: none;
+    }
+
+    .reporte-lista-item strong {
+        color: var(--habitia-green-active);
+    }
+
+/* =========================
+   TARJETA DE TAREA (Mantenimiento/Tareas)
+========================= */
+
+.tarea-card {
+    background: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+    .tarea-card .tarea-titulo {
+        font-weight: 700;
+        font-size: 14px;
+        color: #101010;
+        margin-bottom: 4px;
+    }
+
+    .tarea-card .tarea-meta {
+        font-size: 12.5px;
+        color: var(--habitia-text-gray);
+    }
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 700px) {
+    #seccionMantenimiento {
+        padding: 16px;
+    }
+
+    .tarea-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* =========================
+   TABS: Mantenimientos / Tipos
+========================= */
+
+.mantenimiento-tabs {
+    border-bottom: 1px solid var(--habitia-border);
+}
+
+    .mantenimiento-tabs .nav-link {
+        border: none;
+        border-bottom: 2px solid transparent;
+        border-radius: 0;
+        color: var(--habitia-text-gray);
+        font-weight: 600;
+        font-size: 0.88rem;
+        padding: 10px 4px;
+        margin-right: 28px;
+    }
+
+        .mantenimiento-tabs .nav-link i {
+            margin-right: 6px;
+        }
+
+        .mantenimiento-tabs .nav-link:hover {
+            color: var(--habitia-green-active);
+            border-color: transparent;
+        }
+
+        .mantenimiento-tabs .nav-link.active {
+            color: var(--habitia-green-active);
+            border-bottom-color: var(--habitia-green-active);
+            background: none;
+        }

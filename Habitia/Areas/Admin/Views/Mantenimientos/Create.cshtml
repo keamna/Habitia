@@ -1,0 +1,78 @@
+﻿@model Habitia.ViewModels.Mantenimiento.MantenimientoCreateViewModel
+@{
+    ViewData["Title"] = "Crear Tarea de Mantenimiento";
+    var incidenciaFija = Model.IdIncidencia != 0 && Model.IncidenciasElegibles == null;
+}
+
+<partial name="_MantenimientoTabs" />
+
+<h2>Crear Tarea de Mantenimiento</h2>
+
+<form asp-action="Create" method="post" class="incidencia-form">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    @if (incidenciaFija)
+    {
+        <input type="hidden" asp-for="IdIncidencia" />
+        <div class="alert alert-info">
+            Generando tarea para la incidencia: <strong>@Model.Descripcion</strong>
+        </div>
+    }
+    else
+    {
+        <div class="mb-3">
+            <label asp-for="IdIncidencia" class="form-label">Incidencia</label>
+            <select asp-for="IdIncidencia" class="form-select" asp-items="Model.IncidenciasElegibles">
+                <option value="">-- Seleccione una incidencia --</option>
+            </select>
+            <span asp-validation-for="IdIncidencia" class="text-danger"></span>
+            <div class="form-text">
+                Solo se muestran incidencias clasificadas como Común o Mixto que aún no tienen tarea asignada.
+            </div>
+        </div>
+    }
+
+    <div class="mb-3">
+        <label asp-for="Descripcion" class="form-label"></label>
+        <input asp-for="Descripcion" class="form-control" />
+        <span asp-validation-for="Descripcion" class="text-danger"></span>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="IdTipoMantenimiento" class="form-label"></label>
+            <select asp-for="IdTipoMantenimiento" class="form-select" asp-items="Model.TiposMantenimiento">
+                <option value="">-- Seleccione un tipo existente --</option>
+            </select>
+            <span asp-validation-for="IdTipoMantenimiento" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label asp-for="NuevoTipoMantenimiento" class="form-label"></label>
+            <input asp-for="NuevoTipoMantenimiento" class="form-control" placeholder="Ej: Jardinería" />
+            <span asp-validation-for="NuevoTipoMantenimiento" class="text-danger"></span>
+            <div class="form-text">Complete este campo solo si el tipo no existe en la lista.</div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="IdPersonalAsignado" class="form-label"></label>
+        <select asp-for="IdPersonalAsignado" class="form-select" asp-items="Model.PersonalMantenimiento">
+            <option value="">-- Seleccione personal de mantenimiento --</option>
+        </select>
+        <span asp-validation-for="IdPersonalAsignado" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="FechaProgramada" class="form-label"></label>
+        <input asp-for="FechaProgramada" type="date" class="form-control" />
+        <span asp-validation-for="FechaProgramada" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Crear Tarea</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -137,6 +137,12 @@ namespace Habitia.Data
                 entity.HasIndex(t => t.TC_Nombre)
                     .IsUnique();
             });
+
+            builder.Entity<Vivienda>(entity =>
+            {
+                entity.HasIndex(v => v.TC_Numero)
+                    .IsUnique();
+            });
         }
     }
 }

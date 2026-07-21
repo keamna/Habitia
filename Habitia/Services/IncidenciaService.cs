@@ -204,5 +204,22 @@ namespace Habitia.Services
                 TieneMantenimientoAsociado = idsConMantenimiento.Contains(i.TN_Id)
             };
         }
+
+        public async Task<List<Incidencia>> ObtenerElegiblesParaMantenimientoAsync()
+        {
+            var idsConMantenimiento = await _context.Mantenimientos
+                .Select(m => m.TN_IdIncidencia)
+                .ToListAsync();
+
+            return await _context.Incidencias
+                .Include(i => i.Vivienda)
+                .Include(i => i.AreaComun)
+                .Where(i =>
+                    (i.TN_Responsabilidad == ResponsabilidadEnum.Comun || i.TN_Responsabilidad == ResponsabilidadEnum.Mixto) &&
+                    !idsConMantenimiento.Contains(i.TN_Id))
+                .OrderByDescending(i => i.TF_FechaRegistro)
+                .ToListAsync();
+        }
+
     }
 }

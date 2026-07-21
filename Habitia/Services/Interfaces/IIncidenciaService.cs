@@ -22,5 +22,7 @@ namespace Habitia.Services.Interfaces
 
         Task<(Incidencia Incidencia, Mantenimiento? Mantenimiento)> CrearPorAdminAsync(
     IncidenciaAdminCreateViewModel model, string idAdmin, string? imagenUrl);
+
+        Task<List<Incidencia>> ObtenerElegiblesParaMantenimientoAsync();
     }
 }

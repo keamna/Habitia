@@ -38,34 +38,36 @@ namespace Habitia.Areas.Admin.Controllers
             return View(mantenimientos);
         }
 
-        // GET: /Admin/Mantenimientos/Create?idIncidencia=5
-        public async Task<IActionResult> Create(int idIncidencia)
+        // GET: /Admin/Mantenimientos/Create
+        // GET: /Admin/Mantenimientos/Create?idIncidencia=5   (viniendo desde Clasificar)
+        public async Task<IActionResult> Create(int? idIncidencia)
         {
-            var incidencia = await _incidenciaService.ObtenerPorIdAsync(idIncidencia);
+            var model = new MantenimientoCreateViewModel();
 
-            if (incidencia == null)
-                return NotFound();
-
-            // Reglas de negocio validadas también aquí, antes de mostrar el formulario
-            if (incidencia.TN_Responsabilidad == ResponsabilidadEnum.Privado)
+            if (idIncidencia.HasValue)
             {
-                TempData["Error"] = "No se puede generar mantenimiento para una incidencia Privada.";
-                return RedirectToAction("Details", "Incidencias", new { id = idIncidencia });
+                var incidencia = await _incidenciaService.ObtenerPorIdAsync(idIncidencia.Value);
+
+                if (incidencia == null)
+                    return NotFound();
+
+                if (incidencia.TN_Responsabilidad == ResponsabilidadEnum.Privado)
+                {
+                    TempData["Error"] = "No se puede generar mantenimiento para una incidencia Privada.";
+                    return RedirectToAction("Details", "Incidencias", new { id = idIncidencia.Value });
+                }
+
+                if (await _incidenciaService.TieneMantenimientoAsociadoAsync(idIncidencia.Value))
+                {
+                    TempData["Error"] = "Esta incidencia ya tiene una tarea de mantenimiento asociada.";
+                    return RedirectToAction("Details", "Incidencias", new { id = idIncidencia.Value });
+                }
+
+                model.IdIncidencia = idIncidencia.Value;
+                model.Descripcion = incidencia.TC_Titulo;
             }
 
-            if (await _incidenciaService.TieneMantenimientoAsociadoAsync(idIncidencia))
-            {
-                TempData["Error"] = "Esta incidencia ya tiene una tarea de mantenimiento asociada.";
-                return RedirectToAction("Details", "Incidencias", new { id = idIncidencia });
-            }
-
-            var model = new MantenimientoCreateViewModel
-            {
-                IdIncidencia = idIncidencia,
-                Descripcion = incidencia.TC_Titulo // valor sugerido, el Admin puede editarlo
-            };
-
-            await CargarListasAsync(model);
+            await CargarListasAsync(model, idIncidencia.HasValue);
             return View(model);
         }
 
@@ -76,21 +78,21 @@ namespace Habitia.Areas.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
-                await CargarListasAsync(model);
+                await CargarListasAsync(model, false);
                 return View(model);
             }
 
             try
             {
-                var mantenimiento = await _mantenimientoService.ConvertirDesdeIncidenciaAsync(model);
+                await _mantenimientoService.ConvertirDesdeIncidenciaAsync(model);
 
-                TempData["Success"] = "Tarea de mantenimiento generada correctamente.";
+                TempData["Success"] = "Tarea de mantenimiento creada y asignada correctamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (InvalidOperationException ex)
             {
                 ModelState.AddModelError(string.Empty, ex.Message);
-                await CargarListasAsync(model);
+                await CargarListasAsync(model, false);
                 return View(model);
             }
         }
@@ -106,7 +108,7 @@ namespace Habitia.Areas.Admin.Controllers
             return View(mantenimiento);
         }
 
-        private async Task CargarListasAsync(MantenimientoCreateViewModel model)
+        private async Task CargarListasAsync(MantenimientoCreateViewModel model, bool incidenciaFija)
         {
             var tipos = await _tipoMantenimientoService.ObtenerActivosAsync();
             model.TiposMantenimiento = tipos.Select(t => new SelectListItem
@@ -123,6 +125,17 @@ namespace Habitia.Areas.Admin.Controllers
                     Value = u.Id,
                     Text = u.UserName
                 }).ToList();
+
+            // Solo se carga el selector de incidencias cuando NO viene fija desde Clasificar
+            if (!incidenciaFija)
+            {
+                var elegibles = await _incidenciaService.ObtenerElegiblesParaMantenimientoAsync();
+                model.IncidenciasElegibles = elegibles.Select(i => new SelectListItem
+                {
+                    Value = i.TN_Id.ToString(),
+                    Text = $"{i.TC_Titulo} ({i.TN_Responsabilidad})"
+                }).ToList();
+            }
         }
     }
 }
