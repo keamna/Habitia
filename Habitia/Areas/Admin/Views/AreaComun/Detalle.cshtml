@@ -13,7 +13,7 @@
 
 <h1 class="page-titulo">
 
-    @Model.Nombre (@Model.Codigo)
+    @Model.TC_Nombre (@Model.TC_Codigo)
 
 </h1>
 
@@ -62,13 +62,13 @@
 
 
 
-    <div class="fotos-galeria">
+    <div class="area-fotos-galeria">
 
 
         @if (fotos == null || !fotos.Any())
         {
 
-            <div class="foto-item foto-vacia">
+            <div class="area-foto-item area-foto-vacia">
 
 
                 <img src="~/img/area-default.png" />
@@ -87,14 +87,14 @@
         {
 
 
-            foreach (var foto in fotos.Where(x => x.Estado))
+            foreach (var foto in fotos.Where(x => x.TB_Estado))
             {
 
-                <div class="foto-item">
+                <div class="area-foto-item">
 
 
-                    <img src="@foto.Url"
-                         alt="@Model.Nombre" />
+                    <img src="@foto.TC_Url"
+                         alt="@Model.TC_Nombre" />
 
 
 
@@ -110,17 +110,17 @@
 
                         <input type="hidden"
                                name="fotoId"
-                               value="@foto.Id" />
+                               value="@foto.TN_Id" />
 
 
                         <input type="hidden"
                                name="areaId"
-                               value="@Model.Id" />
+                               value="@Model.TN_Id" />
 
 
 
                         <button type="submit"
-                                class="btn-eliminar-foto">
+                                class="btn-eliminar-area-foto">
 
 
                             ✕
@@ -150,7 +150,7 @@
 
 
 
-    @if (fotos == null || fotos.Count(x => x.Estado) < 3)
+    @if (fotos == null || fotos.Count(x => x.TB_Estado) < 3)
     {
 
 
@@ -167,7 +167,7 @@
 
             <input type="hidden"
                    name="areaId"
-                   value="@Model.Id" />
+                   value="@Model.TN_Id" />
 
 
 
@@ -186,7 +186,7 @@
 
 
 
-            <button class="btn-modal-guardar btn-subir-foto">
+            <button class="btn-guardar-area btn-subir-foto">
 
                 Subir foto
 
@@ -246,7 +246,7 @@
           asp-controller="AreaComun"
           asp-action="AgregarDisponibilidad"
           method="post"
-          class="disponibilidad-form">
+          class="disponibilidad-area-form">
 
 
         @Html.AntiForgeryToken()
@@ -255,68 +255,110 @@
 
         <input type="hidden"
                name="IdAreaComun"
-               value="@Model.Id" />
+               value="@Model.TN_Id" />
 
 
 
-        <div class="modal-form-group">
+        <div class="fecha-hora-area">
 
 
-            <label>
+            <div class="modal-form-group">
 
-                Fecha
+                <label>
+                    Fecha
+                </label>
 
-            </label>
+                <input type="date"
+                       name="Fecha"
+                       required />
 
-
-            <input type="date"
-                   name="Fecha"
-                   required />
-
-        </div>
-
-
-
-
-        <div class="modal-form-group">
-
-
-            <label>
-
-                Hora inicio
-
-            </label>
-
-
-            <input type="time"
-                   name="HoraInicio"
-                   required />
-
-        </div>
+            </div>
 
 
 
 
-        <div class="modal-form-group">
+            <div class="modal-form-group">
+
+                <label>
+                    Hora inicio
+                </label>
+
+                <div class="hora-selector">
+
+                    <select name="HoraInicioHora" required>
+                        <option value="">HH</option>
+                        @for (int h = 1; h <= 12; h++)
+                        {
+                            <option value="@h">@h.ToString("00")</option>
+                        }
+                    </select>
+
+                    <span>:</span>
+
+                    <select name="HoraInicioMinuto" required>
+                        <option value="">MM</option>
+                        <option value="0">00</option>
+                        <option value="15">15</option>
+                        <option value="30">30</option>
+                        <option value="45">45</option>
+                    </select>
+
+                    <select name="HoraInicioAmPm" required>
+                        <option value="">--</option>
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                    </select>
+
+                </div>
+
+            </div>
 
 
-            <label>
-
-                Hora fin
-
-            </label>
 
 
-            <input type="time"
-                   name="HoraFin"
-                   required />
+            <div class="modal-form-group">
+
+                <label>
+                    Hora fin
+                </label>
+
+                <div class="hora-selector">
+
+                    <select name="HoraFinHora" required>
+                        <option value="">HH</option>
+                        @for (int h = 1; h <= 12; h++)
+                        {
+                            <option value="@h">@h.ToString("00")</option>
+                        }
+                    </select>
+
+                    <span>:</span>
+
+                    <select name="HoraFinMinuto" required>
+                        <option value="">MM</option>
+                        <option value="0">00</option>
+                        <option value="15">15</option>
+                        <option value="30">30</option>
+                        <option value="45">45</option>
+                    </select>
+
+                    <select name="HoraFinAmPm" required>
+                        <option value="">--</option>
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                    </select>
+
+                </div>
+
+            </div>
+
 
         </div>
 
 
 
         <button type="submit"
-                class="btn-modal-guardar btn-guardar-horario">
+                class="btn-guardar-horario">
 
 
             Guardar horario
@@ -439,7 +481,7 @@
 
                         <td data-label="Fecha">
 
-                            @d.Fecha.ToString("dd/MM/yyyy")
+                            @d.TF_Fecha.ToString("dd/MM/yyyy")
 
                         </td>
 
@@ -447,7 +489,7 @@
 
                         <td data-label="Inicio">
 
-                            @d.HoraInicio.ToString(@"hh\:mm")
+                            @DateTime.Today.Add(d.TF_HoraInicio).ToString("hh:mm tt")
 
                         </td>
 
@@ -455,7 +497,7 @@
 
                         <td data-label="Fin">
 
-                            @d.HoraFin.ToString(@"hh\:mm")
+                            @DateTime.Today.Add(d.TF_HoraFin).ToString("hh:mm tt")
 
                         </td>
 
@@ -465,7 +507,7 @@
                         <td data-label="Estado">
 
 
-                            @if (d.Estado)
+                            @if (d.TB_Estado)
                             {
 
                                 <span class="badge badge-activo">
@@ -513,12 +555,12 @@
 
                                 <input type="hidden"
                                        name="id"
-                                       value="@d.Id" />
+                                       value="@d.TN_Id" />
 
 
                                 <input type="hidden"
                                        name="areaId"
-                                       value="@Model.Id" />
+                                       value="@Model.TN_Id" />
 
 
 

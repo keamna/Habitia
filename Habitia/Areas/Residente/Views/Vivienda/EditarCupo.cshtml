@@ -1,0 +1,51 @@
+﻿@model Habitia.ViewModels.Vivienda.CupoViviendaViewModel
+@{
+    ViewData["Title"] = "Editar cupo de inquilinos";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Cupo de inquilinos — @Model.Numero</h2>
+</div>
+
+<div class="card" style="max-width: 560px;">
+    <div class="card-body p-4">
+        <p class="text-muted mb-1">
+            Actualmente hay <strong>@Model.InquilinosActuales</strong> inquilino(s) registrado(s) o pendiente(s).
+        </p>
+        <p class="text-muted mb-4">
+            No podés fijar un número menor a esa cantidad.
+        </p>
+
+        <form asp-action="EditarCupo" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Numero" />
+            <input type="hidden" asp-for="InquilinosActuales" />
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label">Cantidad máxima de inquilinos</label>
+                <input asp-for="CantidadInquilinos" type="number" min="0" max="10" class="form-control" />
+                <span asp-validation-for="CantidadInquilinos" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

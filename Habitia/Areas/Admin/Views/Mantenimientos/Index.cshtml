@@ -1,0 +1,63 @@
+﻿@model List<Habitia.Models.Mantenimiento>
+@{
+    ViewData["Title"] = "Tareas de Mantenimiento";
+}
+
+<partial name="_MantenimientoTabs" />
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Tareas de Mantenimiento</h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Crear Tarea
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No hay tareas de mantenimiento registradas.</div>
+}
+else
+{
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Descripción</th>
+                <th>Tipo</th>
+                <th>Asignado a</th>
+                <th>Fecha Programada</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in Model)
+            {
+                <tr>
+                    <td>@m.TC_Descripcion</td>
+                    <td>@m.Tipo?.TC_Nombre</td>
+                    <td>@m.PersonalAsignado?.UserName</td>
+                    <td>@m.TF_FechaProgramada.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        <span class="badge @(m.TN_Estado switch {
+                            Habitia.Enums.EstadoMantenimientoEnum.Programado => "bg-secondary",
+                            Habitia.Enums.EstadoMantenimientoEnum.EnProceso => "bg-info text-dark",
+                            Habitia.Enums.EstadoMantenimientoEnum.Completado => "bg-success",
+                            Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "bg-danger",
+                            _ => "bg-secondary"
+                        })">
+                            @m.TN_Estado
+                        </span>
+                    </td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@m.TN_Id" class="btn btn-sm btn-outline-primary">Ver</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

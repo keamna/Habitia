@@ -1,0 +1,20 @@
+﻿@{
+    var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
+    var esMantenimientos = string.Equals(controladorActual, "Mantenimientos", StringComparison.OrdinalIgnoreCase);
+    var esTipos = string.Equals(controladorActual, "TiposMantenimiento", StringComparison.OrdinalIgnoreCase);
+}
+
+<ul class="nav nav-tabs mantenimiento-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link @(esMantenimientos ? "active" : "")"
+           asp-area="Admin" asp-controller="Mantenimientos" asp-action="Index">
+            <i class="bi bi-tools"></i> Tareas de Mantenimiento
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(esTipos ? "active" : "")"
+           asp-area="Admin" asp-controller="TiposMantenimiento" asp-action="Index">
+            <i class="bi bi-tags-fill"></i> Tipos de Mantenimiento
+        </a>
+    </li>
+</ul>

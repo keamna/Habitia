@@ -8,17 +8,21 @@ namespace Habitia.Models
     public class ExpiracionReserva
     {
         [Key]
-        public int Id { get; set; }
+        public int TN_Id { get; set; }
 
 
         // Tiempo mínimo requerido antes de cancelar
-        public int Cantidad { get; set; }
+        [Required]
+        [Range(1, 1000, ErrorMessage = "La cantidad debe ser mayor a 0")]
+        public int TN_Cantidad { get; set; }
 
 
         // 1 = Horas, 2 = Días, 3 = Minutos
-        public TipoTiempoEnum Tipo { get; set; }
+        [Required]
+        public TipoTiempoEnum TN_Tipo { get; set; }
 
 
-        public bool Estado { get; set; }
+        [Required]
+        public bool TB_Estado { get; set; }
     }
 }

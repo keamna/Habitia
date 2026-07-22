@@ -1,0 +1,93 @@
+﻿/* =========================================================
+   CATÁLOGO: TIPOS DE MANTENIMIENTO
+   Estilos específicos sobre la base de Bootstrap +
+   habitia-bootstrap-theme.css
+========================================================= */
+
+/* =========================
+   ENCABEZADO DE PÁGINA
+========================= */
+
+.tipos-mantenimiento-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+    .tipos-mantenimiento-header h2 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #101010;
+        margin: 0;
+    }
+
+/* =========================
+   TARJETA DE TABLA
+========================= */
+
+.tipos-mantenimiento-card {
+    background: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 16px;
+    padding: 8px 24px;
+}
+
+    .tipos-mantenimiento-card .table {
+        margin-bottom: 0;
+    }
+
+/* =========================
+   ESTADO VACÍO
+========================= */
+
+.tipos-mantenimiento-vacio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 48px 20px;
+    color: var(--habitia-text-gray);
+    text-align: center;
+}
+
+    .tipos-mantenimiento-vacio i {
+        font-size: 2rem;
+        color: #D9D9D9;
+    }
+
+    .tipos-mantenimiento-vacio p {
+        font-size: 13.5px;
+        margin: 0;
+    }
+
+/* =========================
+   FORMULARIO DE CREACIÓN
+   (un solo campo, así que se limita el ancho
+   para que no se vea vacío en pantallas grandes)
+========================= */
+
+.tipo-mantenimiento-form-card {
+    background: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 480px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 700px) {
+    .tipos-mantenimiento-card {
+        padding: 8px 14px;
+    }
+
+    .tipo-mantenimiento-form-card {
+        max-width: 100%;
+        padding: 20px;
+    }
+}

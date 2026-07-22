@@ -62,25 +62,23 @@ namespace Habitia.Areas.Admin.Controllers
 
 
                 var viviendas = relaciones
-                    .Where(x => x.IdUsuario == user.Id)
+                    .Where(x => x.TC_IdUsuario == user.Id)
                     .Select(x => new ViviendaResumenViewModel
                     {
 
-                        ViviendaId = x.IdVivienda,
-
-                        Codigo = x.Vivienda.Numero,
+                        ViviendaId = x.TN_IdVivienda,
+                        Codigo = x.Vivienda.TC_Numero,
 
                         TipoVivienda =
-                            x.Vivienda.Tipo.ToString(),
-
+                            x.Vivienda.TN_Tipo.ToString(),
                         TipoRelacion =
-                            x.TipoRelacion.ToString(),
+                            x.TN_TipoRelacion.ToString(),
 
                         Estado =
-                            x.Estado.ToString(),
+                            x.TN_Estado.ToString(),
 
                         ViveAhi =
-                            x.ViveAhi
+                            x.TB_ViveAhi
 
                     })
                     .ToList();
@@ -93,22 +91,22 @@ namespace Habitia.Areas.Admin.Controllers
                     Id = user.Id,
 
                     TipoIdentificacion =
-                        user.TipoIdentificacion.ToString(),
+                        user.TN_TipoIdentificacion.ToString(),
 
                     NumeroIdentificacion =
-                        user.Identificacion,
+                        user.TC_Identificacion,
 
                     NombreCompleto =
-                        user.Nombre + " " + user.Apellido,
+                        user.TC_Nombre + " " + user.TC_Apellido,
 
                     Email =
                         user.Email,
 
                     Telefono =
-                        user.Telefono,
+                        user.TC_Telefono,
 
                     Estado =
-                        user.Estado.ToString(),
+                        user.TN_Estado.ToString(),
 
                     Roles =
                         roles.ToList(),
@@ -179,14 +177,25 @@ namespace Habitia.Areas.Admin.Controllers
 
 
             // Seguridad:
-            // nunca permitir crear Admin desde formulario
+            // nunca permitir crear Admin ni Residente desde este formulario.
+            // Residente se asigna solo mediante el flujo de Aprobar() vinculado
+            // a una vivienda; Admin nunca se crea desde aquí.
 
             if (model.Roles != null)
             {
                 model.Roles =
                     model.Roles
-                    .Where(x => x != "Admin")
+                    .Where(x => x != "Admin" && x != "Residente")
                     .ToList();
+            }
+
+            if (model.Roles == null || !model.Roles.Any())
+            {
+                ModelState.AddModelError(
+                    "",
+                    "Debe seleccionar al menos un rol válido (Seguridad o Mantenimiento).");
+
+                return View(model);
             }
 
 
@@ -206,29 +215,28 @@ namespace Habitia.Areas.Admin.Controllers
                 EmailConfirmed = true,
 
 
-                Nombre = model.Nombre,
+                TC_Nombre = model.Nombre,
 
 
-                Apellido = model.Apellido,
+                TC_Apellido = model.Apellido,
 
-
-                TipoIdentificacion =
+                TN_TipoIdentificacion =
                     model.TipoIdentificacion,
 
 
-                Identificacion =
+                TC_Identificacion =
                     model.Identificacion,
 
 
-                Telefono =
+                TC_Telefono =
                     model.Telefono,
 
 
-                Estado =
+                TN_Estado =
                     EstadoUsuarioEnum.Activo,
 
 
-                FechaRegistro =
+                TF_FechaRegistro =
                     DateTime.Now
 
             };
@@ -325,10 +333,13 @@ namespace Habitia.Areas.Admin.Controllers
         private void CargarRoles()
         {
 
+            // "Residente" se excluye a propósito: ese rol se asigna
+            // automáticamente al aprobar una solicitud de vivienda,
+            // no se crea manualmente desde este formulario.
+
             ViewBag.Roles =
                 new List<string>
                 {
-                    "Residente",
                     "Seguridad",
                     "Mantenimiento"
                 };
@@ -374,7 +385,7 @@ namespace Habitia.Areas.Admin.Controllers
 
 
 
-            user.Nombre = model.Nombre;
+            user.TC_Nombre = model.Nombre;
 
             user.Email = model.Email;
 
@@ -536,18 +547,18 @@ namespace Habitia.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Usuario no encontrado" });
             }
 
-            usuario.Estado = EstadoUsuarioEnum.Activo;
+            usuario.TN_Estado = EstadoUsuarioEnum.Activo;
             usuario.EmailConfirmed = true;
 
             await _userManager.UpdateAsync(usuario);
 
             var viviendaUsuario =
                 await _context.ViviendaUsuarios
-                .FirstOrDefaultAsync(x => x.IdUsuario == model.Id);
+                .FirstOrDefaultAsync(x => x.TC_IdUsuario == model.Id);
 
             if (viviendaUsuario != null)
             {
-                viviendaUsuario.Estado = EstadoUsuarioEnum.Activo;
+                viviendaUsuario.TN_Estado = EstadoUsuarioEnum.Activo;
                 _context.ViviendaUsuarios.Update(viviendaUsuario);
                 await _context.SaveChangesAsync();
             }
@@ -585,16 +596,16 @@ namespace Habitia.Areas.Admin.Controllers
                 return Json(new { success = false });
             }
 
-            usuario.Estado = EstadoUsuarioEnum.Rechazado;
+            usuario.TN_Estado = EstadoUsuarioEnum.Rechazado;
             await _userManager.UpdateAsync(usuario);
 
             var viviendaUsuario =
                 await _context.ViviendaUsuarios
-                .FirstOrDefaultAsync(x => x.IdUsuario == model.Id);
+                .FirstOrDefaultAsync(x => x.TC_IdUsuario == model.Id);
 
             if (viviendaUsuario != null)
             {
-                viviendaUsuario.Estado = EstadoUsuarioEnum.Rechazado;
+                viviendaUsuario.TN_Estado = EstadoUsuarioEnum.Rechazado;
                 _context.ViviendaUsuarios.Update(viviendaUsuario);
                 await _context.SaveChangesAsync();
             }
@@ -634,7 +645,7 @@ namespace Habitia.Areas.Admin.Controllers
 
             var relaciones =
                 await _context.ViviendaUsuarios
-                .Where(x => x.IdUsuario == model.Id)
+                .Where(x => x.TC_IdUsuario == model.Id)
                 .ToListAsync();
 
             if (relaciones.Any())

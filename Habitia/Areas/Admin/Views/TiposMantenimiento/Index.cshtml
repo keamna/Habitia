@@ -1,0 +1,52 @@
+﻿@model List<Habitia.Models.Catalogos.TipoMantenimiento>
+@{
+    ViewData["Title"] = "Tipos de Mantenimiento";
+}
+
+<partial name="_MantenimientoTabs" />
+
+<div class="tipos-mantenimiento-header">
+    <h2>Tipos de Mantenimiento</h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Nuevo Tipo
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<div class="tipos-mantenimiento-card">
+    @if (!Model.Any())
+    {
+        <div class="tipos-mantenimiento-vacio">
+            <i class="bi bi-tools"></i>
+            <p>Aún no hay tipos de mantenimiento registrados.</p>
+        </div>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var tipo in Model)
+                {
+                    <tr>
+                        <td>@tipo.TC_Nombre</td>
+                        <td>
+                            <span class="badge @(tipo.TB_Estado ? "bg-success" : "bg-secondary")">
+                                @(tipo.TB_Estado ? "Activo" : "Inactivo")
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

@@ -2,6 +2,7 @@
 using Habitia.Models;
 using Habitia.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace Habitia.Areas.Admin.Controllers
@@ -45,6 +46,7 @@ namespace Habitia.Areas.Admin.Controllers
         // =========================
         public IActionResult Create()
         {
+            ViewBag.Tipos = new SelectList(_context.TiposArea, "Id", "Nombre");
             return View();
         }
 
@@ -61,17 +63,20 @@ namespace Habitia.Areas.Admin.Controllers
         {
 
             if (!ModelState.IsValid)
+            {
+                ViewBag.Tipos = new SelectList(_context.TiposArea, "Id", "Nombre", vm.IdTipo);
                 return View(vm);
+            }
 
 
 
             var area = new AreaComun
             {
-                Nombre = vm.Nombre,
-                Codigo = vm.Codigo,
-                IdTipo = vm.IdTipo,
-                Capacidad = vm.Capacidad,
-                Estado = true
+                TC_Nombre = vm.Nombre,
+                TC_Codigo = vm.Codigo,
+                TN_IdTipo = vm.IdTipo,
+                TN_Capacidad = vm.Capacidad,
+                TB_Estado = true
             };
 
 
@@ -81,7 +86,7 @@ namespace Habitia.Areas.Admin.Controllers
 
 
 
-            await GuardarFotos(vm.Fotos, area.Id);
+            await GuardarFotos(vm.Fotos, area.TN_Id);
 
 
 
@@ -101,7 +106,7 @@ namespace Habitia.Areas.Admin.Controllers
 
             var area = _context.AreasComunes
                 .Include(a => a.Fotos)
-                .FirstOrDefault(a => a.Id == id);
+                .FirstOrDefault(a => a.TN_Id == id);
 
 
             if (area == null)
@@ -109,16 +114,20 @@ namespace Habitia.Areas.Admin.Controllers
 
 
 
+            ViewBag.Tipos = new SelectList(_context.TiposArea, "Id", "TC_Nombre", area.TN_IdTipo);
+
+
+
             var vm = new AreaComunVM
             {
-                Id = area.Id,
-                Nombre = area.Nombre,
-                Codigo = area.Codigo,
-                IdTipo = area.IdTipo,
-                Capacidad = area.Capacidad,
-                Estado = area.Estado,
+                Id = area.TN_Id,
+                Nombre = area.TC_Nombre,
+                Codigo = area.TC_Codigo,
+                IdTipo = area.TN_IdTipo,
+                Capacidad = area.TN_Capacidad,
+                Estado = area.TB_Estado,
                 FotosExistentes = area.Fotos
-                    .Where(f => f.Estado)
+                    .Where(f => f.TB_Estado)
                     .ToList()
             };
 
@@ -140,7 +149,8 @@ namespace Habitia.Areas.Admin.Controllers
         {
 
             var area = await _context.AreasComunes
-                .FirstOrDefaultAsync(a => a.Id == vm.Id);
+                .Include(a => a.Fotos)
+                .FirstOrDefaultAsync(a => a.TN_Id == vm.Id);
 
 
 
@@ -149,15 +159,25 @@ namespace Habitia.Areas.Admin.Controllers
 
 
 
-            area.Nombre = vm.Nombre;
-            area.Codigo = vm.Codigo;
-            area.IdTipo = vm.IdTipo;
-            area.Capacidad = vm.Capacidad;
-            area.Estado = vm.Estado;
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Tipos = new SelectList(_context.TiposArea, "Id", "Nombre", vm.IdTipo);
+                vm.FotosExistentes = area.Fotos
+                    .Where(f => f.TB_Estado)
+                    .ToList();
+                return View(vm);
+            }
 
 
 
-            await GuardarFotos(vm.Fotos, area.Id);
+            area.TC_Nombre = vm.Nombre;
+            area.TC_Codigo = vm.Codigo;
+            area.TN_IdTipo = vm.IdTipo;
+            area.TN_Capacidad = vm.Capacidad;
+            area.TB_Estado = vm.Estado;
+
+
+            await GuardarFotos(vm.Fotos, area.TN_Id);
 
 
 
@@ -180,7 +200,7 @@ namespace Habitia.Areas.Admin.Controllers
 
             var area = _context.AreasComunes
                 .Include(a => a.Fotos)
-                .FirstOrDefault(a => a.Id == id);
+                .FirstOrDefault(a => a.TN_Id == id);
 
 
 
@@ -191,9 +211,9 @@ namespace Habitia.Areas.Admin.Controllers
 
             ViewBag.Disponibilidades =
                 _context.Disponibilidades
-                .Where(d => d.IdAreaComun == id)
-                .OrderBy(d => d.Fecha)
-                .ThenBy(d => d.HoraInicio)
+                .Where(d => d.TN_IdAreaComun == id)
+                .OrderBy(d => d.TF_Fecha)
+                .ThenBy(d => d.TF_HoraInicio)
                 .ToList();
 
 
@@ -253,13 +273,13 @@ namespace Habitia.Areas.Admin.Controllers
 
 
             var foto = await _context.AreaComunFotos
-                .FirstOrDefaultAsync(f => f.Id == fotoId);
+                .FirstOrDefaultAsync(f => f.TN_Id == fotoId);
 
 
 
             if (foto != null)
             {
-                foto.Estado = false;
+                foto.TB_Estado = false;
 
                 await _context.SaveChangesAsync();
             }
@@ -284,11 +304,71 @@ namespace Habitia.Areas.Admin.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AgregarDisponibilidad(
-            DisponibilidadArea disponibilidad)
+            DisponibilidadFormVM vm)
         {
 
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Complete todos los campos del horario.";
+                return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
+            }
 
-            disponibilidad.Estado = true;
+
+
+            TimeSpan horaInicio;
+            TimeSpan horaFin;
+
+            try
+            {
+                horaInicio = DateTime.ParseExact(
+                    $"{vm.HoraInicioHora}:{vm.HoraInicioMinuto:D2} {vm.HoraInicioAmPm}",
+                    "h:mm tt",
+                    System.Globalization.CultureInfo.InvariantCulture).TimeOfDay;
+
+                horaFin = DateTime.ParseExact(
+                    $"{vm.HoraFinHora}:{vm.HoraFinMinuto:D2} {vm.HoraFinAmPm}",
+                    "h:mm tt",
+                    System.Globalization.CultureInfo.InvariantCulture).TimeOfDay;
+            }
+            catch (FormatException)
+            {
+                TempData["Error"] = "La hora ingresada no es válida.";
+                return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
+            }
+
+
+
+            if (horaInicio >= horaFin)
+            {
+                TempData["Error"] = "La hora de inicio debe ser menor que la hora de finalización.";
+                return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
+            }
+
+
+
+            bool existeDuplicado = await _context.Disponibilidades
+                .AnyAsync(d =>
+                    d.TN_IdAreaComun == vm.IdAreaComun &&
+                    d.TF_Fecha == vm.Fecha.Date &&
+                    d.TF_HoraInicio == horaInicio &&
+                    d.TF_HoraFin == horaFin &&
+                    d.TB_Estado);
+            if (existeDuplicado)
+            {
+                TempData["Error"] = "Ya existe ese horario registrado para esta área y fecha.";
+                return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
+            }
+
+
+
+            var disponibilidad = new DisponibilidadArea
+            {
+                TN_IdAreaComun = vm.IdAreaComun,
+                TF_Fecha = vm.Fecha.Date,
+                TF_HoraInicio = horaInicio,
+                TF_HoraFin = horaFin,
+                TB_Estado = true
+            };
 
 
             _context.Disponibilidades
@@ -299,10 +379,11 @@ namespace Habitia.Areas.Admin.Controllers
             await _context.SaveChangesAsync();
 
 
+            TempData["Exito"] = "Horario agregado correctamente.";
 
             return RedirectToAction(
                 nameof(Detalle),
-                new { id = disponibilidad.IdAreaComun });
+                new { id = vm.IdAreaComun });
 
         }
 
@@ -325,13 +406,13 @@ namespace Habitia.Areas.Admin.Controllers
 
             var disponibilidad =
                 await _context.Disponibilidades
-                .FirstOrDefaultAsync(d => d.Id == id);
+                .FirstOrDefaultAsync(d => d.TN_Id == id);
 
 
 
             if (disponibilidad != null)
             {
-                disponibilidad.Estado = false;
+                disponibilidad.TB_Estado = false;
 
                 await _context.SaveChangesAsync();
             }
@@ -379,7 +460,7 @@ namespace Habitia.Areas.Admin.Controllers
 
             int orden =
                 await _context.AreaComunFotos
-                .CountAsync(f => f.IdAreaComun == areaId) + 1;
+                .CountAsync(f => f.TN_IdAreaComun == areaId) + 1;
 
 
 
@@ -410,11 +491,11 @@ namespace Habitia.Areas.Admin.Controllers
                 _context.AreaComunFotos.Add(
                     new AreaComunFoto
                     {
-                        IdAreaComun = areaId,
-                        Url = "/uploads/areas/" + nombre,
-                        Orden = orden,
-                        EsPrincipal = orden == 1,
-                        Estado = true
+                        TN_IdAreaComun = areaId,
+                        TC_Url = "/uploads/areas/" + nombre,
+                        TN_Orden = orden,
+                        TB_EsPrincipal = orden == 1,
+                        TB_Estado = true
                     });
 
 

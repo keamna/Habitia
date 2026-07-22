@@ -1,0 +1,48 @@
+﻿@model Habitia.ViewModels.Incidencias.IncidenciaClasificarViewModel
+@{
+    ViewData["Title"] = "Clasificar Incidencia";
+}
+
+<h2>Clasificar Incidencia</h2>
+
+<div class="incidencia-contexto">
+    <div class="card-body">
+        <h5 class="card-title">@Model.Titulo</h5>
+        <p class="card-text">@Model.Descripcion</p>
+        <p class="text-muted mb-0">
+            Reportado por <strong>@Model.NombreUsuarioReporta</strong>
+            el @Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")
+        </p>
+    </div>
+</div>
+
+<form asp-action="Clasificar" method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="Titulo" />
+    <input type="hidden" asp-for="Descripcion" />
+    <input type="hidden" asp-for="NombreUsuarioReporta" />
+    <input type="hidden" asp-for="FechaRegistro" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="mb-3">
+        <label asp-for="Responsabilidad" class="form-label"></label>
+        <select asp-for="Responsabilidad" class="form-select"
+                asp-items="Html.GetEnumSelectList<Habitia.Enums.ResponsabilidadEnum>()">
+            <option value="">-- Seleccione --</option>
+        </select>
+        <span asp-validation-for="Responsabilidad" class="text-danger"></span>
+        <div class="form-text">
+            <strong>Privado:</strong> dentro de una unidad habitacional, responsabilidad del residente.<br />
+            <strong>Común:</strong> áreas compartidas del condominio.<br />
+            <strong>Mixto:</strong> involucra tanto áreas privadas como comunes.
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar Clasificación</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

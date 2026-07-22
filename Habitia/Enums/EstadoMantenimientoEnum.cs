@@ -2,8 +2,9 @@
 {
     public enum EstadoMantenimientoEnum
     {
-        Pendiente = 1,
+        Programado = 1,
         EnProceso = 2,
-        Finalizada = 3
+        Completado = 3,
+        Cancelado = 4
     }
 }

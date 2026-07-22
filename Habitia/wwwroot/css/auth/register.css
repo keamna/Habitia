@@ -28,16 +28,13 @@ body {
 /* ── Progreso ── */
 .register-progress {
     height: 4px;
+    border-radius: 0;
     background-color: var(--gris-borde);
-    width: 100%;
 }
 
-.register-progress-bar {
-    height: 100%;
-    background-color: var(--verde-check);
-    transition: width 0.4s ease;
-    width: 33%;
-}
+    .register-progress .progress-bar {
+        transition: width 0.4s ease;
+    }
 
 /* ── Botón volver ── */
 .btn-back {
@@ -59,21 +56,14 @@ body {
 
     .btn-back:hover {
         border-color: var(--negro);
+        color: var(--negro);
     }
 
 /* ── Layout principal ── */
 .register-container {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 80px;
     max-width: 1100px;
-    margin: 0 auto;
-    padding: 40px 60px 60px 60px;
-}
-
-/* ── Columna izquierda ── */
-.register-left {
-    padding-top: 4px;
+    padding-top: 40px;
+    padding-bottom: 60px;
 }
 
 .register-titulo {
@@ -129,9 +119,8 @@ body {
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-    .step-icon svg {
-        width: 18px;
-        height: 18px;
+    .step-icon i {
+        font-size: 16px;
         color: #9CA3AF;
         transition: color 0.3s ease;
     }
@@ -142,8 +131,8 @@ body {
     border-color: var(--verde-check-bg);
 }
 
-    .step-item.activo .step-icon svg,
-    .step-item.completado .step-icon svg {
+    .step-item.activo .step-icon i,
+    .step-item.completado .step-icon i {
         color: var(--verde-check);
     }
 
@@ -164,15 +153,10 @@ body {
     color: var(--negro);
 }
 
-/* ── Columna derecha — formulario ── */
-.register-form-area {
-    padding-top: 4px;
-}
-
+/* ── Formulario ── */
 .form-paso {
     display: none;
     flex-direction: column;
-    gap: 24px;
     animation: fadeInUp 0.3s ease forwards;
 }
 
@@ -192,85 +176,41 @@ body {
     }
 }
 
-/* ── Filas de campos ── */
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+.paso-titulo {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--negro);
+    margin-bottom: 4px;
 }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 0;
+/* ── Inputs (sobre Bootstrap) ── */
+.form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--negro);
+    letter-spacing: 0.01em;
+    margin-bottom: 6px;
 }
 
-    .form-group label {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--negro);
-        letter-spacing: 0.01em;
-    }
+.form-control,
+.form-select {
+    font-family: var(--font);
+    font-size: 14px;
+    color: var(--negro);
+    border: 1.5px solid var(--gris-borde);
+    border-radius: 10px;
+    padding: 13px 16px;
+    height: 48px;
+}
 
-    .form-group input,
-    .form-group select {
-        font-family: var(--font);
-        font-size: 14px;
-        color: var(--negro);
-        background-color: var(--blanco);
-        border: 1.5px solid var(--gris-borde);
-        border-radius: 10px;
-        padding: 13px 16px;
-        outline: none;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        width: 100%;
-        height: 48px;
-    }
-
-    .form-group select {
-        appearance: auto;
-        cursor: pointer;
-    }
-
-    .form-group input::placeholder {
+    .form-control::placeholder {
         color: #C4C9D1;
     }
 
-    .form-group input:focus,
-    .form-group select:focus {
+    .form-control:focus,
+    .form-select:focus {
         border-color: var(--verde);
         box-shadow: 0 0 0 3px rgba(51, 99, 50, 0.08);
-    }
-
-/* ── Input con ícono (contraseña) ── */
-.input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
-    .input-wrapper input {
-        padding-right: 44px;
-        width: 100%;
-    }
-
-.toggle-password {
-    position: absolute;
-    right: 14px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #9CA3AF;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    transition: color 0.2s ease;
-}
-
-    .toggle-password:hover {
-        color: var(--negro);
     }
 
 /* ── Errores ── */
@@ -280,7 +220,7 @@ body {
     min-height: 16px;
 }
 
-.alert-error {
+.alert-danger {
     font-size: 13px;
     color: var(--error);
     background-color: #FEF2F2;
@@ -290,32 +230,12 @@ body {
     line-height: 1.6;
 }
 
-/* ── Tarjetas selección ── */
-.section-titulo {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--negro);
-    margin-bottom: 4px;
-}
-
-.cards-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-}
-
+/* ── Tarjetas de selección (relación / tipo de vivienda) ── */
 .selection-card {
     border: 1.5px solid var(--gris-borde);
     border-radius: 12px;
-    padding: 24px 16px;
     cursor: pointer;
     transition: border-color 0.2s ease, background-color 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    text-align: center;
-    background-color: var(--blanco);
     user-select: none;
 }
 
@@ -323,25 +243,13 @@ body {
         border-color: var(--verde-check);
     }
 
-    .selection-card.seleccionada {
-        border-color: var(--verde-check);
-        background-color: #F2FDF2;
-    }
-
-    .selection-card.desactivada {
-        opacity: 0.38;
-        pointer-events: none;
-    }
-
-    .selection-card svg {
-        width: 26px;
-        height: 26px;
+    .selection-card i {
         color: #9CA3AF;
         transition: color 0.2s ease;
     }
 
-    .selection-card.seleccionada svg {
-        color: var(--verde);
+    .selection-card.border-success i {
+        color: var(--verde) !important;
     }
 
 .selection-card-titulo {
@@ -363,66 +271,46 @@ body {
     gap: 10px;
 }
 
-    .vive-ahi-section.visible {
-        display: flex;
-    }
-
-.toggle-options {
-    display: flex;
-    gap: 12px;
-}
-
 .toggle-option {
-    flex: 1;
-    border: 1.5px solid var(--gris-borde);
-    border-radius: 10px;
-    padding: 12px;
-    cursor: pointer;
-    text-align: center;
+    font-family: var(--font);
     font-size: 14px;
     font-weight: 500;
-    color: var(--negro);
-    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
-    background-color: var(--blanco);
-    user-select: none;
 }
 
-    .toggle-option:hover {
-        border-color: var(--verde-check);
+    .toggle-option.active {
+        background-color: var(--verde) !important;
+        border-color: var(--verde) !important;
+        color: var(--blanco) !important;
     }
-
-    .toggle-option.seleccionada {
-        border-color: var(--verde-check);
-        background-color: #F2FDF2;
-        color: var(--verde);
-        font-weight: 600;
-    }
-
-/* ── Select filial ── */
-#filialSelectWrapper {
-    display: none;
-}
 
 /* ── Botones ── */
-.btn-siguiente {
-    font-family: var(--font);
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--blanco);
+.btn-success {
     background-color: var(--verde);
-    border: none;
+    border-color: var(--verde);
+    font-family: var(--font);
+    font-weight: 600;
+    letter-spacing: 0.01em;
     border-radius: 10px;
     padding: 15px;
-    cursor: pointer;
-    width: 100%;
-    transition: background-color 0.2s ease, transform 0.15s ease;
-    margin-top: 4px;
-    letter-spacing: 0.01em;
 }
 
-    .btn-siguiente:hover {
+    .btn-success:hover,
+    .btn-success:focus {
         background-color: #275126;
-        transform: translateY(-1px);
+        border-color: #275126;
+    }
+
+.btn-outline-success {
+    color: var(--verde);
+    border-color: var(--gris-borde);
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+    .btn-outline-success:hover {
+        background-color: #F2FDF2;
+        border-color: var(--verde-check);
+        color: var(--verde);
     }
 
 /* ── Link ya tengo cuenta ── */
@@ -441,271 +329,3 @@ body {
         .register-login-link a:hover {
             color: var(--verde);
         }
-
-/* ── Modal solicitud pendiente ── */
-.modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.35);
-    z-index: 999;
-    align-items: center;
-    justify-content: center;
-}
-
-    .modal-overlay.visible {
-        display: flex;
-    }
-
-.modal-card {
-    background-color: var(--blanco);
-    border-radius: 18px;
-    padding: 44px 40px;
-    max-width: 380px;
-    width: 90%;
-    text-align: center;
-    animation: fadeInUp 0.3s ease forwards;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-}
-
-.modal-icon {
-    width: 68px;
-    height: 68px;
-    border-radius: 50%;
-    background-color: #FEF3C7;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 22px auto;
-}
-
-    .modal-icon svg {
-        width: 32px;
-        height: 32px;
-        color: #D97706;
-    }
-
-.modal-titulo {
-    font-family: var(--font);
-    font-weight: 700;
-    font-size: 20px;
-    color: var(--negro);
-    margin-bottom: 10px;
-}
-
-.modal-desc {
-    font-size: 14px;
-    color: var(--gris-texto);
-    line-height: 1.7;
-    margin-bottom: 30px;
-}
-
-.modal-btn {
-    font-family: var(--font);
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--blanco);
-    background-color: var(--verde);
-    border: none;
-    border-radius: 10px;
-    padding: 13px 36px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-    .modal-btn:hover {
-        background-color: #275126;
-    }
-
-/* ── TELÉFONO — código de país a la izquierda, número a la derecha ──
-   Especificidad alta + !important para ganarle a .form-group select/input ── */
-.form-group .telefono-wrapper {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 8px;
-    width: 100%;
-}
-
-    .form-group .telefono-wrapper .select-codigo-pais {
-        flex: 0 0 100px !important;
-        width: 100px !important;
-        min-width: 100px !important;
-        max-width: 100px !important;
-        font-family: var(--font);
-        font-size: 13px;
-        color: var(--negro);
-        background-color: var(--blanco);
-        border: 1.5px solid var(--gris-borde);
-        border-radius: 10px;
-        padding: 13px 6px;
-        outline: none;
-        cursor: pointer;
-        transition: border-color 0.2s ease;
-        height: 48px;
-    }
-
-        .form-group .telefono-wrapper .select-codigo-pais:focus {
-            border-color: var(--verde);
-            box-shadow: 0 0 0 3px rgba(51, 99, 50, 0.08);
-        }
-
-    .form-group .telefono-wrapper input[type="text"] {
-        flex: 1 1 auto !important;
-        min-width: 0 !important;
-        width: auto !important;
-    }
-
-/* ── Responsive ── */
-@media (max-width: 900px) {
-    .register-container {
-        grid-template-columns: 200px 1fr;
-        gap: 40px;
-        padding: 32px 32px 60px 32px;
-    }
-}
-
-@media (max-width: 700px) {
-    .btn-back {
-        margin: 16px 0 0 20px;
-    }
-
-    .register-container {
-        grid-template-columns: 1fr;
-        gap: 28px;
-        padding: 20px 20px 60px 20px;
-    }
-
-    .register-left {
-        padding-top: 0;
-    }
-
-    .register-titulo {
-        font-size: 24px;
-        margin-bottom: 6px;
-    }
-
-    .register-subtitulo {
-        margin-bottom: 24px;
-    }
-
-    /* Pasos en horizontal en mobile */
-    .register-steps {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .step-item:not(:last-child)::after {
-        top: 20px;
-        left: 40px;
-        width: calc(100% - 10px);
-        height: 2px;
-    }
-
-    .step-info {
-        display: none;
-    }
-
-    .step-icon {
-        width: 40px;
-        height: 40px;
-    }
-
-    .form-row {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-
-    .cards-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-
-    .selection-card {
-        padding: 18px 12px;
-    }
-
-    .form-group .telefono-wrapper .select-codigo-pais {
-        flex: 0 0 90px !important;
-        width: 90px !important;
-        min-width: 90px !important;
-        max-width: 90px !important;
-        font-size: 12px;
-        padding: 13px 4px;
-    }
-}
-
-@media (max-width: 400px) {
-    .cards-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* ── Ocultar el ícono nativo del navegador para mostrar contraseña ── */
-input[type="password"]::-ms-reveal,
-input[type="password"]::-ms-clear {
-    display: none;
-}
-
-input::-webkit-credentials-auto-fill-button,
-input::-webkit-strong-password-auto-fill-button {
-    display: none !important;
-    visibility: hidden;
-    pointer-events: none;
-    position: absolute;
-    right: 0;
-}
-
-/* OCULTO por defecto */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: none; 
-    justify-content: center;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9999;
-}
-
-    /* CUANDO SE ACTIVA */
-    .modal-overlay.visible {
-        display: flex; 
-    }
-
-
-/* ========================= */
-/* MODAL */
-/* ========================= */
-
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: none; 
-    justify-content: center;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9999;
-}
-
-    .modal-overlay.visible {
-        display: flex; 
-    }
-
-.modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    text-align: center;
-}
-
-#btnContinuar {
-    margin-top: 20px;
-    padding: 10px 20px;
-    cursor: pointer;
-}

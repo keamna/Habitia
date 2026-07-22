@@ -20,14 +20,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Habitia</title>
 
+    <!-- BOOTSTRAP ICONS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
-    
+
+    <!-- BOOTSTRAP para las vistas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+
     <!-- AQUI VAN TODOS LOS CSS -->
     <link rel="stylesheet" href="~/css/habitia.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin/usuarios.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/css/admin/viviendas.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/css/dashboard/areas-comunes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin/tipos-mantenimiento.css" asp-append-version="true" />
 
+    <link rel="stylesheet" href="~/css/habitia-bootstrap-theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/incidencias/incidencias.css" asp-append-version="true" />
 
 </head>
 <body>
@@ -53,63 +60,93 @@
                         <span>Panel</span>
                     </a>
 
-                    <!-- ===== ADMIN ===== -->
-                    @if (User.IsInRole("Admin"))
-                    {
-                        <a class="habitia-nav-item @(esUsuarios ? "active" : "")"
-                           asp-area="Admin" asp-controller="Usuarios" asp-action="Index">
-                            <i class="bi bi-people-fill"></i>
-                            <span>Usuarios</span>
-                        </a>
+                   <!-- ===== ADMIN ===== -->
+@if (User.IsInRole("Admin"))
+{
+    <a class="habitia-nav-item @(esUsuarios ? "active" : "")"
+       asp-area="Admin" asp-controller="Usuarios" asp-action="Index">
+        <i class="bi bi-people-fill"></i>
+        <span>Usuarios</span>
+    </a>
 
-                        <a class="habitia-nav-item @(esViviendas ? "active" : "")"
-                           asp-area="Admin" asp-controller="Viviendas" asp-action="Index">
-                            <i class="bi bi-house-fill"></i>
-                            <span>Viviendas</span>
-                        </a>
+    <a class="habitia-nav-item @(esViviendas ? "active" : "")"
+       asp-area="Admin" asp-controller="Viviendas" asp-action="Index">
+        <i class="bi bi-house-fill"></i>
+        <span>Viviendas</span>
+    </a>
 
-                        <a class="habitia-nav-item @(esAreasComunes ? "active" : "")"
-                           asp-area="Admin" asp-controller="AreaComun" asp-action="Index">
-                            <i class="bi bi-building"></i>
-                            <span>Áreas Comunes</span>
-                        </a>
-                    }
+    <a class="habitia-nav-item @(esAreasComunes ? "active" : "")"
+       asp-area="Admin" asp-controller="AreaComun" asp-action="Index">
+        <i class="bi bi-building"></i>
+        <span>Áreas Comunes</span>
+    </a>
 
-                    <!-- ===== RESIDENTE ===== -->
-                    @if (User.IsInRole("Residente"))
-                    {
-                        <a class="habitia-nav-item"
-                           asp-area="Residente" asp-controller="Home" asp-action="Index">
-                            <i class="bi bi-house-door-fill"></i>
-                            <span>Mi Vivienda</span>
-                        </a>
+    <a class="habitia-nav-item @(string.Equals(controladorActual, "Incidencias", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+       asp-area="Admin" asp-controller="Incidencias" asp-action="Index">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>Incidencias</span>
+    </a>
 
-                        <a class="habitia-nav-item"
-                           asp-area="Residente" asp-controller="Reservas" asp-action="Index">
-                            <i class="bi bi-calendar-check"></i>
-                            <span>Reservas</span>
-                        </a>
-                    }
+    <a class="habitia-nav-item @(string.Equals(controladorActual, "Mantenimientos", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+       asp-area="Admin" asp-controller="Mantenimientos" asp-action="Index">
+        <i class="bi bi-tools"></i>
+        <span>Mantenimientos</span>
+    </a>
 
-                    <!-- ===== SEGURIDAD ===== -->
-                    @if (User.IsInRole("Seguridad"))
-                    {
-                        <a class="habitia-nav-item"
-                           asp-area="Seguridad" asp-controller="Visitas" asp-action="Index">
-                            <i class="bi bi-shield-check"></i>
-                            <span>Visitas</span>
-                        </a>
-                    }
+    <a class="habitia-nav-item @(string.Equals(controladorActual, "Reportes", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+       asp-area="Admin" asp-controller="Reportes" asp-action="Index">
+        <i class="bi bi-bar-chart-fill"></i>
+        <span>Reportes</span>
+    </a>
+}
 
-                    <!-- ===== MANTENIMIENTO ===== -->
-                    @if (User.IsInRole("Mantenimiento"))
-                    {
-                        <a class="habitia-nav-item"
-                           asp-area="Mantenimiento" asp-controller="Incidencias" asp-action="Index">
-                            <i class="bi bi-tools"></i>
-                            <span>Incidencias</span>
-                        </a>
-                    }
+<!-- ===== RESIDENTE ===== -->
+@if (User.IsInRole("Residente"))
+{
+    <a class="habitia-nav-item"
+   asp-area="Residente" asp-controller="Vivienda" asp-action="Index">
+    <i class="bi bi-house-door-fill"></i>
+    <span>Mi Vivienda</span>
+    </a>
+
+    <a class="habitia-nav-item"
+       asp-area="Residente" asp-controller="Reservas" asp-action="Index">
+        <i class="bi bi-calendar-check"></i>
+        <span>Reservas</span>
+    </a>
+
+    <a class="habitia-nav-item @(string.Equals(controladorActual, "Incidencias", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+       asp-area="Residente" asp-controller="Incidencias" asp-action="Index">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>Mis Incidencias</span>
+    </a>
+}
+
+<!-- ===== SEGURIDAD ===== -->
+@if (User.IsInRole("Seguridad"))
+{
+    <a class="habitia-nav-item"
+       asp-area="Seguridad" asp-controller="Visitas" asp-action="Index">
+        <i class="bi bi-shield-check"></i>
+        <span>Visitas</span>
+    </a>
+
+    <a class="habitia-nav-item @(string.Equals(controladorActual, "Incidencias", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+       asp-area="Seguridad" asp-controller="Incidencias" asp-action="Index">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>Incidencias</span>
+    </a>
+}
+
+<!-- ===== MANTENIMIENTO ===== -->
+@if (User.IsInRole("Mantenimiento"))
+{
+    <a class="habitia-nav-item @(string.Equals(controladorActual, "Tareas", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+       asp-area="Mantenimiento" asp-controller="Tareas" asp-action="Index">
+        <i class="bi bi-tools"></i>
+        <span>Mis Tareas</span>
+    </a>
+}
 
                 </nav>
             </div>
@@ -126,7 +163,7 @@
                     </div>
                 </div>
 
-                <form asp-controller="Account" asp-action="Logout" method="post">
+                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
                     <button type="submit" class="habitia-logout">
                         <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                     </button>

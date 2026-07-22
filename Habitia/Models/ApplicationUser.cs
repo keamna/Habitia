@@ -9,38 +9,30 @@ namespace Habitia.Models
 
         [Required]
         [MaxLength(100)]
-        public string Nombre { get; set; }
-
+        public string TC_Nombre { get; set; }
 
 
         [Required]
         [MaxLength(100)]
-        public string Apellido { get; set; }
+        public string TC_Apellido { get; set; }
 
 
-
-        public TipoIdentificacionEnum TipoIdentificacion { get; set; }
-
+        public TipoIdentificacionEnum TN_TipoIdentificacion { get; set; }
 
 
         [Required]
         [MaxLength(20)]
-        public string Identificacion { get; set; }
-
+        public string TC_Identificacion { get; set; }
 
 
         [MaxLength(20)]
-        public string Telefono { get; set; }
+        public string TC_Telefono { get; set; }
 
 
-
-        public EstadoUsuarioEnum Estado { get; set; }
-
+        public EstadoUsuarioEnum TN_Estado { get; set; }
 
 
-        public DateTime FechaRegistro { get; set; }
-
-
+        public DateTime TF_FechaRegistro { get; set; }
 
 
         // Relaciones
@@ -49,14 +41,8 @@ namespace Habitia.Models
             = new List<ViviendaUsuario>();
 
 
-
         public ICollection<Reserva> Reservas { get; set; }
             = new List<Reserva>();
-
-
-
-        public ICollection<Publicacion> Publicaciones { get; set; }
-            = new List<Publicacion>();
 
 
 

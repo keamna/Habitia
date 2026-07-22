@@ -1,0 +1,87 @@
+﻿@model Habitia.ViewModels.Incidencias.IncidenciaCreateViewModel
+@{
+    ViewData["Title"] = "Reportar Incidencia";
+}
+
+<h2>Reportar Incidencia</h2>
+
+<div class="row">
+    <div class="col-md-7">
+        <form asp-action="Create" enctype="multipart/form-data" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Titulo" class="form-label"></label>
+                <input asp-for="Titulo" class="form-control" placeholder="Ej: Fuga de agua en el pasillo" />
+                <span asp-validation-for="Titulo" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Descripcion" class="form-label"></label>
+                <textarea asp-for="Descripcion" class="form-control" rows="4"
+                          placeholder="Describa el problema con el mayor detalle posible"></textarea>
+                <span asp-validation-for="Descripcion" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Tipo" class="form-label"></label>
+                <select asp-for="Tipo" class="form-select" id="selectTipo"
+                        asp-items="Html.GetEnumSelectList<Habitia.Enums.TipoIncidenciaEnum>()">
+                    <option value="">-- Seleccione --</option>
+                </select>
+                <span asp-validation-for="Tipo" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3" id="grupoVivienda">
+                <label asp-for="IdVivienda" class="form-label"></label>
+                <select asp-for="IdVivienda" class="form-select" asp-items="Model.Viviendas">
+                    <option value="">-- Seleccione su vivienda --</option>
+                </select>
+                <span asp-validation-for="IdVivienda" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3" id="grupoAreaComun">
+                <label asp-for="IdAreaComun" class="form-label"></label>
+                <select asp-for="IdAreaComun" class="form-select" asp-items="Model.AreasComunes">
+                    <option value="">-- Seleccione el área común --</option>
+                </select>
+                <span asp-validation-for="IdAreaComun" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Evidencia" class="form-label"></label>
+                <input asp-for="Evidencia" type="file" class="form-control" accept=".jpg,.jpeg,.png" />
+                <div class="form-text">Formatos permitidos: JPG, PNG. Tamaño máximo: 5 MB.</div>
+                <span asp-validation-for="Evidencia" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ComentarioAdicional" class="form-label"></label>
+                <textarea asp-for="ComentarioAdicional" class="form-control" rows="2"></textarea>
+                <span asp-validation-for="ComentarioAdicional" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Registrar Incidencia</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Muestra solo el campo correspondiente según el tipo de incidencia seleccionado
+        function toggleCamposUbicacion() {
+            const tipo = document.getElementById('selectTipo').value;
+            const grupoVivienda = document.getElementById('grupoVivienda');
+            const grupoAreaComun = document.getElementById('grupoAreaComun');
+
+            // TipoIncidenciaEnum: Vivienda = 1, AreaComun = 2
+            grupoVivienda.style.display = tipo === '1' ? 'block' : 'none';
+            grupoAreaComun.style.display = tipo === '2' ? 'block' : 'none';
+        }
+
+        document.getElementById('selectTipo').addEventListener('change', toggleCamposUbicacion);
+        document.addEventListener('DOMContentLoaded', toggleCamposUbicacion);
+    </script>
+}

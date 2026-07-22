@@ -1,6 +1,5 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
 
-
     const pasos = document.querySelectorAll(".form-paso");
     const steps = document.querySelectorAll(".step-item");
 
@@ -81,15 +80,15 @@
 
 
     // ==========================
-    // PASO 2
+    // PASO 2 — RELACIÓN CON LA VIVIENDA
     // ==========================
     document.querySelectorAll(".card-relacion").forEach(card => {
 
         card.addEventListener("click", function () {
 
-            document.querySelectorAll(".card-relacion").forEach(c => c.classList.remove("selected"));
+            document.querySelectorAll(".card-relacion").forEach(c => c.classList.remove("border-success", "bg-light"));
 
-            this.classList.add("selected");
+            this.classList.add("border-success", "bg-light");
 
             tipoRelacion = this.dataset.valor;
 
@@ -122,9 +121,9 @@
 
         opcion.addEventListener("click", function () {
 
-            document.querySelectorAll(".toggle-option").forEach(o => o.classList.remove("selected"));
+            document.querySelectorAll(".toggle-option").forEach(o => o.classList.remove("active"));
 
-            this.classList.add("selected");
+            this.classList.add("active");
 
             document.getElementById("TB_ViveAhi").value = this.dataset.valor;
 
@@ -163,15 +162,15 @@
 
 
     // ==========================
-    // PASO 3
+    // PASO 3 — TIPO DE VIVIENDA
     // ==========================
     document.querySelectorAll(".card-vivienda").forEach(card => {
 
         card.addEventListener("click", function () {
 
-            document.querySelectorAll(".card-vivienda").forEach(c => c.classList.remove("selected"));
+            document.querySelectorAll(".card-vivienda").forEach(c => c.classList.remove("border-success", "bg-light"));
 
-            this.classList.add("selected");
+            this.classList.add("border-success", "bg-light");
 
             tipoVivienda = this.dataset.valor;
 
@@ -192,8 +191,10 @@
 
         select.innerHTML = `<option value="">Seleccione una vivienda</option>`;
 
+        const relacion = document.getElementById("TC_TipoRelacion").value; // "1" Propietario, "2" Inquilino
+
         try {
-            const respuesta = await fetch(`/Account/ObtenerViviendas?tipo=${tipo}`);
+            const respuesta = await fetch(`/Account/ObtenerViviendas?tipo=${tipo}&relacion=${relacion}`);
             const viviendas = await respuesta.json();
 
             viviendas.forEach(v => {
@@ -248,68 +249,46 @@
 
 
     // ==========================
-    // MODAL REGISTRO
+    // MODAL REGISTRO (Bootstrap)
     // ==========================
     const registroPendiente = document.getElementById("registroPendiente");
+    const modalEl = document.getElementById("modalPendiente");
 
-    if (registroPendiente &&
+    console.log("DEBUG registroPendiente element:", registroPendiente);
+    console.log("DEBUG registroPendiente.value:", registroPendiente ? registroPendiente.value : "ELEMENTO NO ENCONTRADO");
+    console.log("DEBUG modalEl:", modalEl);
+    console.log("DEBUG bootstrap disponible:", typeof bootstrap);
+
+    if (registroPendiente && modalEl &&
         registroPendiente.value.trim().toLowerCase() === "true") {
 
-        const modal = document.getElementById("modalPendiente");
+        console.log("DEBUG condición cumplida, intentando mostrar modal...");
 
-        if (modal) {
-            modal.classList.add("visible");
-            modal.style.display = "flex"; // 👈 asegura que se vea
+        try {
+            const modal = new bootstrap.Modal(modalEl, {
+                backdrop: "static",
+                keyboard: false
+            });
+
+            modal.show();
+
+            console.log("DEBUG modal.show() ejecutado sin errores");
+        } catch (err) {
+            console.error("DEBUG error al mostrar el modal:", err);
         }
+
+    } else {
+        console.log("DEBUG condición NO cumplida, el modal no se muestra");
     }
 
-
-    // ==========================
-    // BOTON CONTINUAR → INICIO
-    // ==========================
     const btnContinuar = document.getElementById("btnContinuar");
 
     if (btnContinuar) {
 
-        btnContinuar.addEventListener("click", function (e) {
-
-            e.preventDefault(); 
-            window.location.href = "/";
-
-        });
-
-    }
-
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    // ==========================
-    // MOSTRAR MODAL SI VIENE DE REGISTRO
-    // ==========================
-    const input = document.getElementById("registroPendiente");
-
-    console.log("Valor TempData:", input?.value);
-
-    if (input && input.value && input.value.toLowerCase() === "true") {
-
-        const modal = document.getElementById("modalPendiente");
-
-        if (modal) {
-            modal.classList.add("visible");
-        }
-    }
-
-
-    // ==========================
-    // BOTÓN → IR AL INICIO
-    // ==========================
-    const btn = document.getElementById("btnContinuar");
-
-    if (btn) {
-        btn.addEventListener("click", function () {
+        btnContinuar.addEventListener("click", function () {
             window.location.href = "/";
         });
+
     }
 
 });

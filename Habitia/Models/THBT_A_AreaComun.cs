@@ -8,44 +8,42 @@ namespace Habitia.Models
     public class AreaComun
     {
         [Key]
-        public int Id { get; set; }
-
+        public int TN_Id { get; set; }
 
 
         [Required]
         [MaxLength(100)]
-        public string Nombre { get; set; }
-
+        public string TC_Nombre { get; set; }
 
 
         [Required]
         [MaxLength(20)]
-        public string Codigo { get; set; }
+        public string TC_Codigo { get; set; }
 
 
-
-        public int IdTipo { get; set; }
-
-
-
-        public int Capacidad { get; set; }
+        [Required]
+        public int TN_IdTipo { get; set; }
 
 
+        [Required]
+        [Range(1, 1000, ErrorMessage = "La capacidad debe ser mayor a 0")]
+        public int TN_Capacidad { get; set; }
 
-        public bool Estado { get; set; }
 
+        [Required]
+        public bool TB_Estado { get; set; }
 
 
         // Relaciones
 
-
-        [ForeignKey(nameof(IdTipo))]
+        [ForeignKey(nameof(TN_IdTipo))]
         public TipoArea Tipo { get; set; }
 
 
-
         public ICollection<DisponibilidadArea> Disponibilidades { get; set; }
+            = new List<DisponibilidadArea>();
 
         public ICollection<AreaComunFoto> Fotos { get; set; }
+            = new List<AreaComunFoto>();
     }
 }

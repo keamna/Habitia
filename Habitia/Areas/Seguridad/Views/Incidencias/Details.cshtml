@@ -1,0 +1,65 @@
+﻿@model Habitia.Models.Incidencia
+@{
+    ViewData["Title"] = "Detalle de Incidencia";
+}
+
+<h2>Detalle de Incidencia</h2>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">@Model.TC_Titulo</h5>
+        <p class="card-text">@Model.TC_Descripcion</p>
+
+        <dl class="row">
+            <dt class="col-sm-3">Reportado por</dt>
+            <dd class="col-sm-9">@Model.Usuario?.UserName</dd>
+
+            <dt class="col-sm-3">Ubicación</dt>
+            <dd class="col-sm-9">
+                @(Model.TN_Tipo == Habitia.Enums.TipoIncidenciaEnum.Vivienda
+                    ? $"Vivienda: {Model.Vivienda?.TC_Numero}"
+                    : $"Área común: {Model.AreaComun?.TC_Nombre}")
+            </dd>
+
+            <dt class="col-sm-3">Fecha de registro</dt>
+            <dd class="col-sm-9">@Model.TF_FechaRegistro.ToString("dd/MM/yyyy HH:mm")</dd>
+
+            <dt class="col-sm-3">Estado</dt>
+            <dd class="col-sm-9">
+                <span class="badge @(Model.TN_Estado switch {
+                    Habitia.Enums.EstadoIncidenciaEnum.Pendiente => "bg-warning text-dark",
+                    Habitia.Enums.EstadoIncidenciaEnum.EnProceso => "bg-info text-dark",
+                    Habitia.Enums.EstadoIncidenciaEnum.Resuelta => "bg-success",
+                    _ => "bg-secondary"
+                })">
+                    @Model.TN_Estado
+                </span>
+            </dd>
+
+            <dt class="col-sm-3">Responsabilidad</dt>
+            <dd class="col-sm-9">@(Model.TN_Responsabilidad == 0 ? "Sin clasificar aún" : Model.TN_Responsabilidad.ToString())</dd>
+
+            @if (!string.IsNullOrEmpty(Model.TC_ComentarioAdicional))
+            {
+                <dt class="col-sm-3">Comentario adicional</dt>
+                <dd class="col-sm-9">@Model.TC_ComentarioAdicional</dd>
+            }
+        </dl>
+
+        @if (!string.IsNullOrEmpty(Model.TC_ImagenUrl))
+        {
+            <div class="mt-3">
+                <label class="form-label d-block">Evidencia</label>
+                <img src="@Model.TC_ImagenUrl" alt="Evidencia de la incidencia" class="img-fluid rounded" style="max-width: 400px;" />
+            </div>
+        }
+    </div>
+</div>
+
+<div class="mt-3">
+    @if (Model.TN_Responsabilidad == 0)
+    {
+        <a asp-action="Clasificar" asp-route-id="@Model.TN_Id" class="btn btn-warning">Clasificar</a>
+    }
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</div>

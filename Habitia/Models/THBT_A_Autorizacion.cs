@@ -8,45 +8,61 @@ namespace Habitia.Models
     public class Autorizacion
     {
         [Key]
-        public int Id { get; set; }
+        public int TN_Id { get; set; }
 
-        public int IdVisitante { get; set; }
 
         [Required]
-        public string IdUsuario { get; set; }
+        public int TN_IdVisitante { get; set; }
 
-        public int IdVivienda { get; set; }
+
+        [Required]
+        public string TC_IdUsuario { get; set; }
+
+
+        [Required]
+        public int TN_IdVivienda { get; set; }
+
 
         [Required]
         [MaxLength(100)]
-        public string Codigo { get; set; }
+        public string TC_Codigo { get; set; }
 
-        public DateTime Inicio { get; set; }
 
-        public DateTime Fin { get; set; }
+        [Required]
+        public DateTime TF_Inicio { get; set; }
+
+
+        [Required]
+        public DateTime TF_Fin { get; set; }
+
 
         [MaxLength(200)]
-        public string Motivo { get; set; }
+        public string TC_Motivo { get; set; }
 
-        public DateTime FechaRegistro { get; set; }
 
-        public EstadoAutorizacionEnum Estado { get; set; }
+        [Required]
+        public DateTime TF_FechaRegistro { get; set; }
+
+
+        [Required]
+        public EstadoAutorizacionEnum TN_Estado { get; set; }
+
 
         // Relaciones
 
-
-        [ForeignKey(nameof(IdVisitante))]
+        [ForeignKey(nameof(TN_IdVisitante))]
         public Visitante Visitante { get; set; }
 
 
-        [ForeignKey(nameof(IdUsuario))]
+        [ForeignKey(nameof(TC_IdUsuario))]
         public ApplicationUser Usuario { get; set; }
 
 
-        [ForeignKey(nameof(IdVivienda))]
+        [ForeignKey(nameof(TN_IdVivienda))]
         public Vivienda Vivienda { get; set; }
 
 
         public ICollection<Acceso> Accesos { get; set; }
+            = new List<Acceso>();
     }
 }

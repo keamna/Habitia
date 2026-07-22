@@ -7,24 +7,37 @@ namespace Habitia.Models
     public class DisponibilidadArea
     {
         [Key]
-        public int Id { get; set; }
+        public int TN_Id { get; set; }
 
-        public int IdAreaComun { get; set; }
 
-        public DateTime Fecha { get; set; }
+        [Required]
+        public int TN_IdAreaComun { get; set; }
 
-        public TimeSpan HoraInicio { get; set; }
 
-        public TimeSpan HoraFin { get; set; }
+        [Required]
+        [DataType(DataType.Date)]
+        public DateTime TF_Fecha { get; set; }
 
-        public bool Estado { get; set; }
+
+        [Required]
+        public TimeSpan TF_HoraInicio { get; set; }
+
+
+        [Required]
+        public TimeSpan TF_HoraFin { get; set; }
+
+
+        [Required]
+        public bool TB_Estado { get; set; }
+
 
         // Relaciones
 
-
-        [ForeignKey(nameof(IdAreaComun))]
+        [ForeignKey(nameof(TN_IdAreaComun))]
         public AreaComun Area { get; set; }
 
+
         public ICollection<Reserva> Reservas { get; set; }
+            = new List<Reserva>();
     }
 }

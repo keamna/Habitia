@@ -8,39 +8,36 @@ namespace Habitia.Models
     public class Reserva
     {
         [Key]
-        public int Id { get; set; }
-
+        public int TN_Id { get; set; }
 
         [Required]
-        public string IdUsuario { get; set; }
+        public string TC_IdUsuario { get; set; }
 
+        [Required]
+        public int TN_IdVivienda { get; set; }
 
-        public int IdVivienda { get; set; }
+        [Required]
+        public int TN_IdDisponibilidad { get; set; }
 
+        [Required]
+        [Range(1, 100, ErrorMessage = "Cantidad inválida")]
+        public int TN_Cantidad { get; set; }
 
-        public int IdDisponibilidad { get; set; }
+        [Required]
+        public EstadoReservaEnum TN_Estado { get; set; }
 
-
-        public int Cantidad { get; set; }
-
-
-        public EstadoReservaEnum Estado { get; set; }
-
-
-        public DateTime FechaRegistro { get; set; }
-
+        [Required]
+        public DateTime TF_FechaRegistro { get; set; }
 
         // Relaciones
 
-        [ForeignKey(nameof(IdUsuario))]
+        [ForeignKey(nameof(TC_IdUsuario))]
         public ApplicationUser Usuario { get; set; }
 
-
-        [ForeignKey(nameof(IdVivienda))]
+        [ForeignKey(nameof(TN_IdVivienda))]
         public Vivienda Vivienda { get; set; }
 
-
-        [ForeignKey(nameof(IdDisponibilidad))]
+        [ForeignKey(nameof(TN_IdDisponibilidad))]
         public DisponibilidadArea Disponibilidad { get; set; }
     }
 }

@@ -1,0 +1,137 @@
+﻿@model Habitia.ViewModels.Reportes.ReporteIncidenciasViewModel
+@{
+    ViewData["Title"] = "Reportes de Incidencias y Mantenimiento";
+}
+
+<h2>Reportes de Incidencias y Mantenimiento</h2>
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-3">
+        <label class="form-label">Desde</label>
+        <input type="date" name="fechaDesde" class="form-control" value="@ViewBag.FechaDesde" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Hasta</label>
+        <input type="date" name="fechaHasta" class="form-control" value="@ViewBag.FechaHasta" />
+    </div>
+    <div class="col-md-2 align-self-end">
+        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+    </div>
+    <div class="col-md-2 align-self-end">
+        <a asp-action="Index" class="btn btn-outline-secondary w-100">Limpiar</a>
+    </div>
+</form>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="reporte-stat-card">
+            <h6>Total Incidencias</h6>
+            <h3>@Model.TotalIncidencias</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="reporte-stat-card">
+            <h6>Pendientes</h6>
+            <h3 class="text-warning">@Model.TotalPendientes</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="reporte-stat-card">
+            <h6>En Proceso</h6>
+            <h3 class="text-info">@Model.TotalEnProceso</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="reporte-stat-card">
+            <h6>Resueltas</h6>
+            <h3 class="text-success">@Model.TotalResueltas</h3>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Incidencias por Responsabilidad</div>
+            @foreach (var item in Model.PorResponsabilidad)
+            {
+                <div class="reporte-lista-item">
+                    <span>@item.Key</span>
+                    <strong>@item.Value</strong>
+                </div>
+            }
+            @if (!Model.PorResponsabilidad.Any())
+            {
+                <div class="reporte-lista-item text-muted">Sin datos clasificados aún.</div>
+            }
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Incidencias por Tipo de Ubicación</div>
+            @foreach (var item in Model.PorTipoUbicacion)
+            {
+                <div class="reporte-lista-item">
+                    <span>@item.Key</span>
+                    <strong>@item.Value</strong>
+                </div>
+            }
+            @if (!Model.PorTipoUbicacion.Any())
+            {
+                <div class="reporte-lista-item text-muted">Sin datos en el rango seleccionado.</div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Ubicaciones más Frecuentes (Top 5)</div>
+            @foreach (var item in Model.UbicacionesMasFrecuentes)
+            {
+                <div class="reporte-lista-item">
+                    <span>@item.Ubicacion</span>
+                    <strong>@item.CantidadIncidencias</strong>
+                </div>
+            }
+            @if (!Model.UbicacionesMasFrecuentes.Any())
+            {
+                <div class="reporte-lista-item text-muted">Sin datos en el rango seleccionado.</div>
+            }
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Mantenimientos por Tipo</div>
+            @foreach (var item in Model.MantenimientosPorTipo)
+            {
+                <div class="reporte-lista-item">
+                    <span>@item.Key</span>
+                    <strong>@item.Value</strong>
+                </div>
+            }
+            @if (!Model.MantenimientosPorTipo.Any())
+            {
+                <div class="reporte-lista-item text-muted">Sin mantenimientos registrados.</div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="reporte-stat-card">
+            <h6>Mantenimientos Realizados</h6>
+            <h3 class="text-success">@Model.TotalMantenimientosRealizados</h3>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="reporte-stat-card">
+            <h6>Mantenimientos Pendientes</h6>
+            <h3 class="text-warning">@Model.TotalMantenimientosPendientes</h3>
+        </div>
+    </div>
+</div>

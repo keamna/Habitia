@@ -79,7 +79,7 @@ namespace Habitia.Controllers
 
 
 
-            if (usuario.Estado == EstadoUsuarioEnum.Pendiente)
+            if (usuario.TN_Estado == EstadoUsuarioEnum.Pendiente)
             {
 
                 ModelState.AddModelError(
@@ -94,7 +94,7 @@ namespace Habitia.Controllers
 
 
 
-            if (usuario.Estado == EstadoUsuarioEnum.Rechazado)
+            if (usuario.TN_Estado == EstadoUsuarioEnum.Rechazado)
             {
 
                 ModelState.AddModelError(
@@ -280,7 +280,7 @@ namespace Habitia.Controllers
             var vivienda =
                 await _context.Viviendas
                 .FirstOrDefaultAsync(x =>
-                    x.Id == model.TN_ViviendaId
+                    x.TN_Id == model.TN_ViviendaId
                 );
 
 
@@ -320,11 +320,11 @@ namespace Habitia.Controllers
                 bool existePropietario =
                     await _context.ViviendaUsuarios
                     .AnyAsync(x =>
-                        x.IdVivienda == vivienda.Id &&
-                        x.TipoRelacion == TipoRelacionEnum.Propietario &&
+                        x.TN_IdVivienda == vivienda.TN_Id &&
+                        x.TN_TipoRelacion == TipoRelacionEnum.Propietario &&
                         (
-                            x.Estado == EstadoUsuarioEnum.Activo ||
-                            x.Estado == EstadoUsuarioEnum.Pendiente
+                            x.TN_Estado == EstadoUsuarioEnum.Activo ||
+                            x.TN_Estado == EstadoUsuarioEnum.Pendiente
                         )
                     );
 
@@ -366,9 +366,9 @@ namespace Habitia.Controllers
                 var propietario =
                     await _context.ViviendaUsuarios
                     .FirstOrDefaultAsync(x =>
-                        x.IdVivienda == vivienda.Id &&
-                        x.TipoRelacion == TipoRelacionEnum.Propietario &&
-                        x.Estado == EstadoUsuarioEnum.Activo
+                        x.TN_IdVivienda == vivienda.TN_Id &&
+                        x.TN_TipoRelacion == TipoRelacionEnum.Propietario &&
+                        x.TN_Estado == EstadoUsuarioEnum.Activo
                     );
 
 
@@ -427,28 +427,28 @@ namespace Habitia.Controllers
                     EmailConfirmed = true,
 
 
-                    Nombre = nombre,
+                    TC_Nombre = nombre,
 
-                    Apellido = apellido,
+                    TC_Apellido = apellido,
 
 
-                    TipoIdentificacion =
+                    TN_TipoIdentificacion =
                          model.TC_TipoIdentificacion.Value,
 
 
-                    Identificacion =
+                    TC_Identificacion =
                         model.TC_NumeroIdentificacion,
 
 
-                    Telefono =
+                    TC_Telefono =
                         model.TC_Telefono,
 
 
-                    Estado =
+                    TN_Estado =
                         EstadoUsuarioEnum.Pendiente,
 
 
-                    FechaRegistro =
+                    TF_FechaRegistro =
                         DateTime.Now
 
                 };
@@ -522,27 +522,27 @@ namespace Habitia.Controllers
                 new ViviendaUsuario
                 {
 
-                    IdUsuario =
+                    TC_IdUsuario =
                         usuario.Id,
 
 
-                    IdVivienda =
-                        vivienda.Id,
+                    TN_IdVivienda =
+                        vivienda.TN_Id,
 
 
-                    TipoRelacion =
+                    TN_TipoRelacion =
                         model.TC_TipoRelacion.Value,
 
 
-                    Estado =
+                    TN_Estado =
                         EstadoUsuarioEnum.Pendiente,
 
 
-                    ViveAhi =
+                    TB_ViveAhi =
                         model.TB_ViveAhi,
 
 
-                    FechaRegistro =
+                    TF_FechaRegistro =
                         DateTime.Now
 
                 };
@@ -586,37 +586,89 @@ namespace Habitia.Controllers
 
 
         // =====================================================
-        // OBTENER VIVIENDAS
+        // OBTENER VIVIENDAS DISPONIBLES (según tipo y relación)
         // =====================================================
-
 
         [HttpGet]
         public async Task<IActionResult> ObtenerViviendas(
-            TipoViviendaEnum tipo)
+            TipoViviendaEnum tipo,
+            TipoRelacionEnum relacion)
         {
-
 
             var viviendas =
                 await _context.Viviendas
+                .Include(v => v.Usuarios)
                 .Where(x =>
-                    x.Tipo == tipo &&
-                    x.Estado == EstadoViviendaEnum.Disponible
+                    x.TN_Tipo == tipo &&
+                    x.TN_Estado == EstadoViviendaEnum.Disponible
                 )
-                .Select(x => new
-                {
-
-                    id = x.Id,
-
-                    numero = x.Numero
-
-                })
                 .ToListAsync();
 
 
+            var resultado = new List<object>();
 
 
-            return Json(viviendas);
+            foreach (var vivienda in viviendas)
+            {
 
+                bool disponible = false;
+
+
+                if (relacion == TipoRelacionEnum.Propietario)
+                {
+                    // Solo se puede elegir como Propietario si nadie más
+                    // la tiene reclamada (ni Activo ni Pendiente de aprobación)
+                    var propietario =
+                        vivienda.Usuarios
+                        .FirstOrDefault(x =>
+                            x.TN_TipoRelacion == TipoRelacionEnum.Propietario &&
+                            (
+                                x.TN_Estado == EstadoUsuarioEnum.Activo ||
+                                x.TN_Estado == EstadoUsuarioEnum.Pendiente
+                            ));
+
+                    disponible = propietario == null;
+                }
+                else if (relacion == TipoRelacionEnum.Inquilino)
+                {
+                    // Para Inquilino se necesita un propietario ya Activo
+                    // (no Pendiente), y que aún haya cupo de inquilinos,
+                    // contando también las solicitudes Pendientes para no
+                    // sobrevender el cupo mientras se aprueban.
+                    var propietarioActivo =
+                        vivienda.Usuarios
+                        .FirstOrDefault(x =>
+                            x.TN_TipoRelacion == TipoRelacionEnum.Propietario &&
+                            x.TN_Estado == EstadoUsuarioEnum.Activo);
+
+                    if (propietarioActivo != null)
+                    {
+                        var inquilinosOcupados =
+                            vivienda.Usuarios
+                            .Count(x =>
+                                x.TN_TipoRelacion == TipoRelacionEnum.Inquilino &&
+                                (
+                                    x.TN_Estado == EstadoUsuarioEnum.Activo ||
+                                    x.TN_Estado == EstadoUsuarioEnum.Pendiente
+                                ));
+
+                        disponible = inquilinosOcupados < vivienda.TN_CantidadInquilinos;
+                    }
+                }
+
+
+                if (disponible)
+                {
+                    resultado.Add(new
+                    {
+                        id = vivienda.TN_Id,
+                        numero = vivienda.TC_Numero
+                    });
+                }
+            }
+
+
+            return Json(resultado);
 
         }
 
@@ -633,17 +685,13 @@ namespace Habitia.Controllers
         // =====================================================
 
 
+        // POST: /Account/Logout
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-
             await _signInManager.SignOutAsync();
-
-
-            return RedirectToAction(
-                "Login"
-            );
-
+            return RedirectToAction("Index", "Home");
         }
 
 

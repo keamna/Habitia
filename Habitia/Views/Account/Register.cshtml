@@ -5,1072 +5,253 @@
     Layout = null;
 }
 
-
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-
     <meta charset="utf-8" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>Registrarse - Habitia</title>
 
-
-    <link rel="stylesheet" href="~/css/auth/register.css" />
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/auth/register.css" asp-append-version="true" />
 </head>
-
-
 <body class="register-page">
 
+    <input type="hidden" id="registroPendiente" value="@TempData["RegistroPendiente"]" />
 
-
-    <input type="hidden"
-           id="registroPendiente"
-           value="@TempData["RegistroPendiente"]" />
-
-
-
-
-
-    <div class="register-progress">
-
-        <div class="register-progress-bar"
-             id="progressBar">
-        </div>
-
+    <div class="progress register-progress" role="progressbar">
+        <div class="progress-bar bg-success" id="progressBar" style="width: 33.3%"></div>
     </div>
 
-
-
-
-
-    <a href="/"
-       class="btn-back">
-
-
-        <svg xmlns="http://www.w3.org/2000/svg"
-             width="18"
-             height="18"
-             fill="none"
-             viewBox="0 0 24 24"
-             stroke="currentColor"
-             stroke-width="2">
-
-
-            <path stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M15 19l-7-7 7-7" />
-
-
-        </svg>
-
-
+    <a href="/" class="btn-back">
+        <i class="bi bi-arrow-left"></i>
     </a>
 
+    <div class="container register-container">
+        <div class="row g-5">
 
+            <!-- ====== PASOS IZQUIERDA ====== -->
+            <div class="col-lg-4">
+                <h1 class="register-titulo">Registrarse</h1>
+                <p class="register-subtitulo">Completa los pasos para crear tu cuenta</p>
 
-
-
-
-
-
-
-    <div class="register-container">
-
-
-
-        <!-- ======================
-             PASOS IZQUIERDA
-        ====================== -->
-
-
-        <div>
-
-
-            <h1 class="register-titulo">
-                Registrarse
-            </h1>
-
-
-            <p class="register-subtitulo">
-                Completa los pasos para crear tu cuenta
-            </p>
-
-
-
-
-
-
-
-            <div class="register-steps">
-
-
-
-                <div class="step-item activo"
-                     id="step1">
-
-
-                    <div class="step-icon">
-
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                             fill="none"
-                             viewBox="0 0 24 24"
-                             stroke="currentColor"
-                             stroke-width="2">
-
-
-                            <path stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  d="M5 13l4 4L19 7" />
-
-
-                        </svg>
-
-
+                <div class="register-steps">
+                    <div class="step-item activo" id="step1">
+                        <div class="step-icon"><i class="bi bi-check-lg"></i></div>
+                        <div class="step-info">
+                            <span class="step-label">Ingresa tus datos personales</span>
+                        </div>
                     </div>
 
-
-
-                    <div class="step-info">
-
-                        <span class="step-label">
-
-                            Ingresa tus datos personales
-
-                        </span>
-
+                    <div class="step-item" id="step2">
+                        <div class="step-icon"><i class="bi bi-people"></i></div>
+                        <div class="step-info">
+                            <span class="step-label">Selecciona la relación con la vivienda</span>
+                        </div>
                     </div>
 
-
+                    <div class="step-item" id="step3">
+                        <div class="step-icon"><i class="bi bi-house-door"></i></div>
+                        <div class="step-info">
+                            <span class="step-label">Selecciona tu vivienda</span>
+                        </div>
+                    </div>
                 </div>
-
-
-
-
-
-
-
-
-                <div class="step-item"
-                     id="step2">
-
-
-                    <div class="step-icon">
-
-
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                             fill="none"
-                             viewBox="0 0 24 24"
-                             stroke="currentColor"
-                             stroke-width="2">
-
-
-                            <path stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2" />
-
-
-                        </svg>
-
-
-                    </div>
-
-
-
-
-                    <div class="step-info">
-
-                        <span class="step-label">
-
-                            Selecciona la relación con la vivienda
-
-                        </span>
-
-                    </div>
-
-
-                </div>
-
-
-
-
-
-
-
-
-                <div class="step-item"
-                     id="step3">
-
-
-                    <div class="step-icon">
-
-
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                             fill="none"
-                             viewBox="0 0 24 24"
-                             stroke="currentColor"
-                             stroke-width="2">
-
-
-                            <path stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3" />
-
-
-                        </svg>
-
-
-                    </div>
-
-
-
-
-
-                    <div class="step-info">
-
-
-                        <span class="step-label">
-
-                            Selecciona tu vivienda
-
-                        </span>
-
-
-                    </div>
-
-
-                </div>
-
-
-
             </div>
 
+            <!-- ====== FORMULARIO ====== -->
+            <div class="col-lg-8">
 
-
-        </div>
-
-
-
-
-
-
-
-
-        <!-- ======================
-             FORMULARIO
-        ====================== -->
-
-
-        <div class="register-form-area">
-
-
-
-            @using (Html.BeginForm(
-                        "Register",
-                        "Account",
-                        FormMethod.Post,
-                        new { id = "registerForm" }))
-            {
-
-
-                @Html.AntiForgeryToken()
-
-
-
-
-
-                <!-- CAMPOS OCULTOS -->
-
-
-                <input type="hidden"
-                       id="TC_TipoRelacion"
-                       name="TC_TipoRelacion"
-                       value="" />
-
-
-                <input type="hidden"
-                       id="TB_ViveAhi"
-                       name="TB_ViveAhi"
-                       value="false" />
-
-
-                <input type="hidden"
-                       id="TC_TipoVivienda"
-                       name="TC_TipoVivienda"
-                       value="" />
-
-
-
-
-
-
-                @if (!ViewData.ModelState.IsValid)
+                @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { id = "registerForm" }))
                 {
+                    @Html.AntiForgeryToken()
 
-                    <div class="alert-error">
+                    <input type="hidden" id="TC_TipoRelacion" name="TC_TipoRelacion" value="" />
+                    <input type="hidden" id="TB_ViveAhi" name="TB_ViveAhi" value="false" />
+                    <input type="hidden" id="TC_TipoVivienda" name="TC_TipoVivienda" value="" />
 
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <div>@error.ErrorMessage</div>
+                            }
+                        </div>
+                    }
 
-                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                        {
+                    <!-- ================= PASO 1 ================= -->
+                    <div class="form-paso activo" id="paso1">
 
-                            <div>
-
-                                @error.ErrorMessage
-
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tipo de identificación</label>
+                                <select id="TC_TipoIdentificacion" name="TC_TipoIdentificacion" class="form-select">
+                                    <option value="">Seleccione</option>
+                                    <option value="1">Cédula</option>
+                                    <option value="2">Pasaporte</option>
+                                </select>
+                                <div class="field-error" id="errTipoId"></div>
                             </div>
 
-                        }
+                            <div class="col-md-6">
+                                <label class="form-label">Número de identificación</label>
+                                <input type="text" id="TC_NumeroIdentificacion" name="TC_NumeroIdentificacion"
+                                       class="form-control" placeholder="000000000" maxlength="20" />
+                                <div class="field-error" id="errNumeroId"></div>
+                            </div>
+                        </div>
 
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre completo</label>
+                                <input type="text" id="TC_NombreCompleto" name="TC_NombreCompleto"
+                                       class="form-control" placeholder="Juan Pérez" />
+                                <div class="field-error" id="errNombre"></div>
+                            </div>
 
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono</label>
+                                <input type="text" id="TC_Telefono" name="TC_Telefono"
+                                       class="form-control" placeholder="88888888" maxlength="20" />
+                                <div class="field-error" id="errTelefono"></div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <label class="form-label">Correo</label>
+                            <input type="email" id="Email" name="Email" class="form-control" placeholder="correo@ejemplo.com" />
+                            <div class="field-error" id="errEmail"></div>
+                        </div>
+
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <label class="form-label">Contraseña</label>
+                                <input type="password" id="Password" name="Password" class="form-control" placeholder="••••••••" />
+                                <div class="field-error" id="errPassword"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Confirmar contraseña</label>
+                                <input type="password" id="ConfirmPassword" name="ConfirmPassword" class="form-control" placeholder="••••••••" />
+                                <div class="field-error" id="errConfirmPassword"></div>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-success w-100 mt-4" id="btnPaso1">Siguiente</button>
+
+                        <p class="register-login-link mt-3">
+                            ¿Ya tenés una cuenta?
+                            <a asp-controller="Account" asp-action="Login">Iniciá sesión</a>
+                        </p>
                     </div>
 
+                    <!-- ================= PASO 2 ================= -->
+                    <div class="form-paso" id="paso2">
+
+                        <p class="paso-titulo">Seleccioná la relación con la propiedad</p>
+
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="card selection-card card-relacion h-100" data-valor="Propietario">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-person-badge fs-2"></i>
+                                        <div class="selection-card-titulo mt-2">Dueño</div>
+                                        <div class="selection-card-desc">Propietario de una vivienda</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="card selection-card card-relacion h-100" data-valor="Inquilino">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-key fs-2"></i>
+                                        <div class="selection-card-titulo mt-2">Inquilino</div>
+                                        <div class="selection-card-desc">Alquiler de una vivienda</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field-error mt-2" id="errRelacion"></div>
+
+                        <div class="vive-ahi-section mt-3" id="viveAhiSection" style="display:none;">
+                            <label class="form-label">¿Vivís en esta vivienda?</label>
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-outline-success toggle-option" data-valor="true">Sí</button>
+                                <button type="button" class="btn btn-outline-success toggle-option" data-valor="false">No, la alquilo</button>
+                            </div>
+                            <div class="field-error" id="errViveAhi"></div>
+                        </div>
+
+                        <button type="button" class="btn btn-success w-100 mt-4" id="btnPaso2">Siguiente</button>
+                    </div>
+
+                    <!-- ================= PASO 3 ================= -->
+                    <div class="form-paso" id="paso3">
+
+                        <p class="paso-titulo">Seleccioná tu vivienda</p>
+
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="card selection-card card-vivienda h-100" data-valor="1">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-house fs-2"></i>
+                                        <div class="selection-card-titulo mt-2">Casa</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="card selection-card card-vivienda h-100" data-valor="2">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-buildings fs-2"></i>
+                                        <div class="selection-card-titulo mt-2">Departamento</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field-error mt-2" id="errTipoVivienda"></div>
+
+                        <div class="mt-3" id="viviendaSelectWrapper" style="display:none;">
+                            <label class="form-label" for="TN_ViviendaId">Seleccioná el código de vivienda</label>
+                            <select id="TN_ViviendaId" name="TN_ViviendaId" class="form-select">
+                                <option value="">Seleccione una vivienda</option>
+                            </select>
+                            <div class="field-error" id="errVivienda"></div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 mt-4" id="btnPaso3">Crear cuenta</button>
+                    </div>
                 }
 
-
-
-
-
-
-
-
-
-                <!-- ======================
-                     PASO 1
-                ====================== -->
-
-
-                <div class="form-paso activo"
-                     id="paso1">
-
-
-
-
-
-
-
-                    <div class="form-row">
-
-
-                        <div class="form-group">
-
-
-                            <label>
-
-                                Tipo de identificación
-
-                            </label>
-
-
-
-
-
-                            <select id="TC_TipoIdentificacion"
-                                    name="TC_TipoIdentificacion">
-
-
-                                <option value="">
-
-                                    Seleccione
-
-                                </option>
-
-
-
-                                <option value="1">
-
-                                    Cédula
-
-                                </option>
-
-
-                                <option value="2">
-
-                                    Pasaporte
-
-                                </option>
-
-
-                            </select>
-
-
-
-                            <span class="field-error"
-                                  id="errTipoId">
-
-                            </span>
-
-
-
-                        </div>
-
-
-
-
-
-
-
-
-                        <div class="form-group">
-
-
-                            <label>
-
-                                Número de identificación
-
-                            </label>
-
-
-
-
-                            <input type="text"
-                                   id="TC_NumeroIdentificacion"
-                                   name="TC_NumeroIdentificacion"
-                                   placeholder="000000000"
-                                   maxlength="20" />
-
-
-
-
-                            <span class="field-error"
-                                  id="errNumeroId">
-
-                            </span>
-
-
-
-                        </div>
-
-
-
-                    </div>
-
-
-
-
-
-
-
-
-                    <div class="form-row">
-
-
-
-                        <div class="form-group">
-
-
-                            <label>
-
-                                Nombre completo
-
-                            </label>
-
-
-
-
-                            <input type="text"
-                                   id="TC_NombreCompleto"
-                                   name="TC_NombreCompleto"
-                                   placeholder="Juan Pérez" />
-
-
-
-
-
-                            <span class="field-error"
-                                  id="errNombre">
-
-                            </span>
-
-
-
-                        </div>
-
-
-
-
-
-
-
-                        <div class="form-group">
-
-
-                            <label>
-
-                                Teléfono
-
-                            </label>
-
-
-
-
-                            <input type="text"
-                                   id="TC_Telefono"
-                                   name="TC_Telefono"
-                                   placeholder="88888888"
-                                   maxlength="20" />
-
-
-
-
-                            <span class="field-error"
-                                  id="errTelefono">
-
-                            </span>
-
-
-                        </div>
-
-
-
-                    </div>
-
-
-
-
-
-                    <div class="form-group">
-
-
-                        <label>
-
-                            Correo
-
-                        </label>
-
-
-
-                        <input type="email"
-                               id="Email"
-                               name="Email"
-                               placeholder="correo@ejemplo.com" />
-
-
-
-                        <span class="field-error"
-                              id="errEmail">
-
-                        </span>
-
-
-
-                    </div>
-
-
-
-
-
-                    <div class="form-row">
-
-
-                        <div class="form-group">
-
-
-                            <label>
-
-                                Contraseña
-
-                            </label>
-
-
-
-                            <input type="password"
-                                   id="Password"
-                                   name="Password"
-                                   placeholder="••••••••" />
-
-
-
-                            <span class="field-error"
-                                  id="errPassword">
-
-                            </span>
-
-
-
-                        </div>
-
-
-
-
-
-
-
-                        <div class="form-group">
-
-
-                            <label>
-
-                                Confirmar contraseña
-
-                            </label>
-
-
-
-
-                            <input type="password"
-                                   id="ConfirmPassword"
-                                   name="ConfirmPassword"
-                                   placeholder="••••••••" />
-
-
-
-                            <span class="field-error"
-                                  id="errConfirmPassword">
-
-                            </span>
-
-
-
-                        </div>
-
-
-                    </div>
-
-
-
-
-
-
-
-                    <button type="button"
-                            class="btn-siguiente"
-                            id="btnPaso1">
-
-                        Siguiente
-
-                    </button>
-
-
-
-
-                    <p class="register-login-link">
-
-                        ¿Ya tenés una cuenta?
-
-                        <a asp-controller="Account"
-                           asp-action="Login">
-
-                            Iniciá sesión
-
-                        </a>
-
-                    </p>
-
-
-
-                </div>
-
-                <!-- ================= PASO 2 ================= -->
-
-                <div class="form-paso" id="paso2">
-
-
-                    <p class="paso3-titulo">
-                        Seleccioná la relación con la propiedad
-                    </p>
-
-
-
-                    <div class="cards-grid">
-
-
-                        <!-- DUEÑO -->
-
-                        <div class="selection-card card-relacion"
-                             data-valor="Propietario">
-
-
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                 fill="none"
-                                 viewBox="0 0 24 24"
-                                 stroke="currentColor"
-                                 stroke-width="1.5">
-
-                                <path stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-
-                            </svg>
-
-
-                            <span class="selection-card-titulo">
-                                Dueño
-                            </span>
-
-
-                            <span class="selection-card-desc">
-                                Propietario de una vivienda
-                            </span>
-
-
-                        </div>
-
-
-
-
-
-                        <!-- INQUILINO -->
-
-                        <div class="selection-card card-relacion"
-                             data-valor="Inquilino">
-
-
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                 fill="none"
-                                 viewBox="0 0 24 24"
-                                 stroke="currentColor"
-                                 stroke-width="1.5">
-
-
-                                <path stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-
-
-                            </svg>
-
-
-                            <span class="selection-card-titulo">
-                                Inquilino
-                            </span>
-
-
-                            <span class="selection-card-desc">
-                                Alquiler de una vivienda
-                            </span>
-
-
-                        </div>
-
-
-
-                    </div>
-
-
-
-
-                    <span class="field-error"
-                          id="errRelacion">
-                    </span>
-
-
-
-
-
-                    <!-- SOLO APARECE SI ES DUEÑO -->
-
-                    <div class="vive-ahi-section"
-                         id="viveAhiSection"
-                         style="display:none;">
-
-
-                        <label>
-                            ¿Vivís en esta vivienda?
-                        </label>
-
-
-
-                        <div class="toggle-options">
-
-
-                            <div class="toggle-option"
-                                 data-valor="true">
-
-                                Sí
-
-                            </div>
-
-
-
-                            <div class="toggle-option"
-                                 data-valor="false">
-
-                                No, la alquilo
-
-                            </div>
-
-
-                        </div>
-
-
-
-                        <span class="field-error"
-                              id="errViveAhi">
-                        </span>
-
-
-                    </div>
-
-
-
-
-
-                    <button type="button"
-                            class="btn-siguiente"
-                            id="btnPaso2">
-
-                        Siguiente
-
-                    </button>
-
-
-
-                </div>
-
-                <!-- ================= PASO 3 ================= -->
-
-                <div class="form-paso" id="paso3">
-
-
-                    <p class="paso3-titulo">
-                        Seleccioná tu vivienda
-                    </p>
-
-
-
-
-                    <!-- Tipo de vivienda -->
-
-                    <div class="cards-grid">
-
-
-                        <!-- CASA -->
-
-                        <div class="selection-card card-vivienda"
-                             data-valor="1">
-
-
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                 fill="none"
-                                 viewBox="0 0 24 24"
-                                 stroke="currentColor"
-                                 stroke-width="1.5">
-
-                                <path stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      d="M3 10.5L12 3l9 7.5M5.25 9v10.125c0 .621.504 1.125 1.125 1.125h11.25c.621 0 1.125-.504 1.125-1.125V9M9 20.25v-6h6v6" />
-
-                            </svg>
-
-
-
-                            <span class="selection-card-titulo">
-                                Casa
-                            </span>
-
-
-                        </div>
-
-
-
-
-
-                        <!-- DEPARTAMENTO -->
-
-                        <div class="selection-card card-vivienda"
-                             data-valor="2">
-
-
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                 fill="none"
-                                 viewBox="0 0 24 24"
-                                 stroke="currentColor"
-                                 stroke-width="1.5">
-
-
-                                <path stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      d="M3.75 21h16.5M4.5 21V5.25A1.5 1.5 0 016 3.75h12a1.5 1.5 0 011.5 1.5V21M9 7.5h1.5M13.5 7.5H15M9 11h1.5M13.5 11H15M9 14.5h1.5M13.5 14.5H15" />
-
-
-                            </svg>
-
-
-
-                            <span class="selection-card-titulo">
-                                Departamento
-                            </span>
-
-
-
-                        </div>
-
-
-
-                    </div>
-
-
-
-
-
-                    <span class="field-error"
-                          id="errTipoVivienda">
-                    </span>
-
-
-
-
-
-
-
-                    <!-- LISTADO DE VIVIENDAS DISPONIBLES -->
-
-
-                    <div class="form-group"
-                         id="viviendaSelectWrapper"
-                         style="display:none;">
-
-
-
-                        <label for="TN_ViviendaId">
-
-                            Seleccioná el código de vivienda
-
-                        </label>
-
-
-
-
-                        <select id="TN_ViviendaId"
-                                name="TN_ViviendaId">
-
-
-                            <option value="">
-                                Seleccione una vivienda
-                            </option>
-
-
-                        </select>
-
-
-
-
-                        <span class="field-error"
-                              id="errVivienda">
-                        </span>
-
-
-
-                    </div>
-
-
-
-
-
-
-
-                    <button type="submit"
-                            class="btn-siguiente"
-                            id="btnPaso3">
-
-                        Crear cuenta
-
-                    </button>
-
-
-
-
-                </div>
-
-            }
-            <!-- FIN BeginForm -->
-
-
-        </div>
-        <!-- FIN register-form-area -->
-
-
-    </div>
-    <!-- FIN register-container -->
-    <!-- ================= MODAL SOLICITUD PENDIENTE ================= -->
-
-
-    <div class="modal-overlay" id="modalPendiente">
-
-
-        <div class="modal-card">
-
-
-
-            <div class="modal-icon">
-
-
-                <svg xmlns="http://www.w3.org/2000/svg"
-                     fill="none"
-                     viewBox="0 0 24 24"
-                     stroke="currentColor"
-                     stroke-width="2.5">
-
-
-                    <path stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-
-
-                </svg>
-
-
             </div>
-
-
-
-
-
-            <h2 class="modal-titulo">
-
-                Solicitud enviada
-
-            </h2>
-
-
-
-
-
-            <p class="modal-desc">
-
-
-                Tu solicitud de acceso fue registrada correctamente.
-
-
-                <br />
-
-
-                Un administrador debe aprobar tu vivienda antes de ingresar.
-
-
-            </p>
-
-
-
-
-
-            <button type="button"
-                    class="modal-btn"
-                    id="btnContinuar">
-                Ir al inicio
-            </button>
-
-
-
-
-
         </div>
-
-
     </div>
 
+    <!-- ================= MODAL SOLICITUD PENDIENTE (Bootstrap real) ================= -->
+    <div class="modal fade" id="modalPendiente" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center p-4">
+                <div class="modal-body">
+                    <div class="modal-icon mx-auto mb-3">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <h2 class="modal-titulo">Solicitud enviada</h2>
+                    <p class="modal-desc">
+                        Tu solicitud de acceso fue registrada correctamente.
+                        <br />
+                        Un administrador debe aprobar tu vivienda antes de ingresar.
+                    </p>
+                    <button type="button" class="btn btn-success px-4" id="btnContinuar">Ir al inicio</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-
-
-
-
-    <script src="~/js/auth/register.js?v=5"></script>
-
-
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/auth/register.js?v=6"></script>
 
 </body>
-
 </html>

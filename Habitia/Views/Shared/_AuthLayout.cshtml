@@ -1,0 +1,33 @@
+﻿@{
+    var authImage = ViewData["AuthImage"] as string ?? "login.png";
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Habitia</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/auth/login.css" asp-append-version="true" />
+</head>
+<body class="auth-body">
+
+    <a href="javascript:history.back()" class="auth-back" aria-label="Volver">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+
+    <div class="auth-wrap">
+        <div class="auth-form-col">
+            <div class="auth-form-inner">
+                @RenderBody()
+            </div>
+        </div>
+        <div class="auth-image-col">
+            <div class="auth-image" style="background-image:url('@Url.Content("~/img/" + authImage)')"></div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

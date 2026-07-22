@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Net;
 using Habitia.Enums;
 
 namespace Habitia.Models
@@ -9,29 +8,28 @@ namespace Habitia.Models
     public class Visitante
     {
         [Key]
-        public int Id { get; set; }
+        public int TN_Id { get; set; }
 
+        [Required]
+        public TipoIdentificacionEnum TN_TipoIdentificacion { get; set; }
 
         [Required]
         [MaxLength(20)]
-        public string Identificacion { get; set; }
-
+        public string TC_Identificacion { get; set; }
 
         [Required]
-        [MaxLength(100)]
-        public string Nombre { get; set; }
-
+        [MaxLength(150)]
+        public string TC_Nombre { get; set; }
 
         [MaxLength(20)]
-        public string Telefono { get; set; }
+        public string? TC_Telefono { get; set; }
 
-
+        [Required]
+        public bool TB_Estado { get; set; }
 
         // Relaciones
 
         public ICollection<Autorizacion> Autorizaciones { get; set; }
-
-        public TipoIdentificacionEnum TipoIdentificacion { get; set; }
 
         public ICollection<Vehiculo> Vehiculos { get; set; }
     }
