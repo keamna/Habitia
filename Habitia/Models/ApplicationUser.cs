@@ -35,6 +35,12 @@ namespace Habitia.Models
         public DateTime TF_FechaRegistro { get; set; }
 
 
+        // ===== MARKETPLACE =====
+
+        [MaxLength(300)]
+        public string? TC_FotoPerfil { get; set; }
+
+
         // Relaciones
 
         public ICollection<ViviendaUsuario> Viviendas { get; set; }

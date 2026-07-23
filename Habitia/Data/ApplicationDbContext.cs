@@ -26,6 +26,11 @@ namespace Habitia.Data
         public DbSet<Incidencia> Incidencias { get; set; }
         public DbSet<Mantenimiento> Mantenimientos { get; set; }
         public DbSet<ImagenPublicacion> ImagenesPublicacion { get; set; }
+        public DbSet<Publicacion> Publicaciones { get; set; }
+        public DbSet<THBT_CAT_CategoriaPublicacion> CategoriasPublicacion { get; set; }
+
+        public DbSet<ResenaPublicacion> ResenasPublicacion { get; set; }
+
         public DbSet<AreaComunFoto> AreaComunFotos { get; set; }
 
         // Catálogos

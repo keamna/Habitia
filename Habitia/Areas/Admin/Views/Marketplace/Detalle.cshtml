@@ -1,0 +1,140 @@
+﻿@using Habitia.Enums
+@model Habitia.Models.Publicacion
+
+@{
+    ViewData["Title"] = Model.TC_Titulo;
+
+    var esServicio = Model.TN_Tipo == TipoPublicacionEnum.Servicio;
+    var imagenes = Model.Imagenes?.ToList() ?? new List<Habitia.Models.ImagenPublicacion>();
+}
+
+
+<div class="marketplace-container">
+
+    <a asp-area="Admin" asp-controller="Marketplace" asp-action="Index"
+       class="btn btn-mk-outline btn-sm mb-3">
+        <i class="bi bi-arrow-left me-1"></i> Volver al Marketplace
+    </a>
+
+
+    <div class="row g-4">
+
+        <!-- GALERIA -->
+        <div class="col-lg-6">
+            <div class="card mk-card">
+                <div class="card-body p-3">
+                    @if (imagenes.Any())
+                    {
+                        <img id="imagenPrincipal" src="@imagenes.First().TC_Url" alt="@Model.TC_Titulo"
+                             class="mk-detalle-img" />
+                        @if (imagenes.Count > 1)
+                        {
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+                                @for (int i = 0; i < imagenes.Count; i++)
+                                {
+                                    <img src="@imagenes[i].TC_Url" alt="Imagen @(i + 1)"
+                                         class="mk-mini @(i == 0 ? "activa" : "")" />
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="mk-detalle-img-ph">
+                            <i class="bi @(esServicio ? "bi-tools" : "bi-box-seam")"></i>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+
+        <!-- INFO -->
+        <div class="col-lg-6">
+            <div class="card mk-card">
+                <div class="card-body p-4">
+
+                    <span class="badge mk-badge-static @(esServicio ? "mk-badge-servicio" : "mk-badge-producto") mb-2">
+                        @(esServicio ? "Servicio" : "Producto")
+                    </span>
+
+                    <h2 class="mk-detalle-titulo mb-1">@Model.TC_Titulo</h2>
+                    <span class="mk-categoria">@Model.Categoria?.TC_Nombre</span>
+
+                    @if (Model.TN_Precio > 0)
+                    {
+                        <div class="mk-detalle-precio my-3">₡@Model.TN_Precio.ToString("N0")</div>
+                    }
+                    else
+                    {
+                        <div class="my-3 fw-semibold text-muted fs-5">Precio a convenir</div>
+                    }
+
+                    <p class="mk-detalle-desc">@Model.TC_Descripcion</p>
+
+
+                    @if (!esServicio && !string.IsNullOrWhiteSpace(Model.TC_Especificaciones))
+                    {
+                        <div class="mk-bloque mt-3">
+                            <h6><i class="bi bi-list-check me-1"></i> Especificaciones</h6>
+                            <p class="mb-0">@Model.TC_Especificaciones</p>
+                        </div>
+                    }
+
+                    @if (esServicio && Model.TF_FechaServicio.HasValue)
+                    {
+                        <div class="mk-bloque mt-3">
+                            <h6><i class="bi bi-calendar-event me-1"></i> Disponibilidad del servicio</h6>
+                            <p class="mb-0">
+                                <strong>@Model.TF_FechaServicio.Value.ToString("dddd dd 'de' MMMM, yyyy", new System.Globalization.CultureInfo("es-ES"))</strong>
+                                @if (Model.TT_HoraInicioServicio.HasValue && Model.TT_HoraFinServicio.HasValue)
+                                {
+                                    <br />
+                            
+                                    @:De @Model.TT_HoraInicioServicio.Value.ToString(@"hh\:mm") a @Model.TT_HoraFinServicio.Value.ToString(@"hh\:mm")
+                                }
+                            </p>
+                        </div>
+                    }
+
+
+                    <div class="mk-meta mt-4 pt-3">
+                        <div>
+                            <i class="bi bi-person-circle me-2"></i>
+                            Publicado por <strong>@Model.Usuario?.TC_Nombre @Model.Usuario?.TC_Apellido</strong>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(Model.TC_Contacto))
+                        {
+                            <div><i class="bi bi-telephone me-2"></i>Contacto: <strong>@Model.TC_Contacto</strong></div>
+                        }
+                        <div><i class="bi bi-clock-history me-2"></i>Publicado el @Model.TF_FechaPublicacion.ToString("dd/MM/yyyy")</div>
+                        <div><i class="bi bi-info-circle me-2"></i>Estado: <strong>@Model.TN_Estado</strong></div>
+                    </div>
+
+
+                    @if (Model.TN_Estado == EstadoPublicacionEnum.Activa)
+                    {
+                        <div class="mt-4">
+                            <form asp-area="Admin" asp-controller="Marketplace" asp-action="Eliminar"
+                                  method="post" data-confirmar="¿Seguro que deseas eliminar esta publicación del residente?">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.TN_Id" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash me-1"></i> Eliminar publicación
+                                </button>
+                            </form>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <script src="~/js/marketplace/marketplace.js" asp-append-version="true"></script>
+}
