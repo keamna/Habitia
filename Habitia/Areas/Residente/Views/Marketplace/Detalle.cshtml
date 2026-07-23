@@ -1,0 +1,447 @@
+﻿@using Habitia.Enums
+@model Habitia.ViewModels.Marketplace.DetallePublicacionVM
+
+@{
+    var pub = Model.Publicacion;
+
+    ViewData["Title"] = pub.TC_Titulo;
+
+    var esServicio = pub.TN_Tipo == TipoPublicacionEnum.Servicio;
+    var noDisponible = pub.TN_Estado == EstadoPublicacionEnum.Finalizada;
+
+    var imagenes = pub.Imagenes?.ToList() ?? new List<Habitia.Models.ImagenPublicacion>();
+
+    var estrellasPub = (int)Math.Round(Model.PromedioPublicacion);
+    var vendedor = Model.Vendedor;
+}
+
+
+<div class="marketplace-container">
+
+    <a asp-area="Residente" asp-controller="Marketplace" asp-action="Index"
+       class="btn btn-mk-outline btn-sm mb-3">
+        <i class="bi bi-arrow-left me-1"></i> Volver al Marketplace
+    </a>
+
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-1"></i> @TempData["Exito"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-1"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+
+    @if (noDisponible)
+    {
+        <div class="mk-estado-banner">
+            <i class="bi bi-slash-circle"></i>
+            <div>
+                <strong>Esta publicación está marcada como no disponible.</strong><br />
+                Los demás residentes no pueden ver su contenido. Puedes reactivarla cuando quieras.
+            </div>
+        </div>
+    }
+
+
+    <div class="row g-4">
+
+        <!-- GALERIA -->
+        <div class="col-lg-6">
+            <div class="card mk-card @(noDisponible ? "mk-card-nodisp" : "")">
+                <div class="card-body p-3">
+                    @if (imagenes.Any())
+                    {
+                        <img id="imagenPrincipal" src="@imagenes.First().TC_Url" alt="@pub.TC_Titulo"
+                             class="mk-detalle-img" />
+
+                        @if (imagenes.Count > 1)
+                        {
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+                                @for (int i = 0; i < imagenes.Count; i++)
+                                {
+                                    <img src="@imagenes[i].TC_Url" alt="Imagen @(i + 1)"
+                                         class="mk-mini @(i == 0 ? "activa" : "")" />
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="mk-detalle-img-ph">
+                            <i class="bi @(esServicio ? "bi-tools" : "bi-box-seam")"></i>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+
+        <!-- INFO -->
+        <div class="col-lg-6">
+            <div class="card mk-card">
+                <div class="card-body p-4">
+
+                    <div class="d-flex gap-2 mb-2 flex-wrap">
+                        <span class="badge mk-badge-static @(esServicio ? "mk-badge-servicio" : "mk-badge-producto")">
+                            @(esServicio ? "Servicio" : "Producto")
+                        </span>
+
+                        @if (noDisponible)
+                        {
+                            <span class="badge mk-badge-static mk-badge-nodisp">
+                                <i class="bi bi-slash-circle me-1"></i> No disponible
+                            </span>
+                        }
+                    </div>
+
+                    <h2 class="mk-detalle-titulo mb-1">@pub.TC_Titulo</h2>
+                    <span class="mk-categoria">@pub.Categoria?.TC_Nombre</span>
+
+
+                    <div class="mk-card-estrellas mt-2">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <i class="bi @(i <= estrellasPub ? "bi-star-fill" : "bi-star")"></i>
+                        }
+                        @if (Model.Resenas.Any())
+                        {
+                            <span class="mk-card-estrellas-num">
+                                @Model.PromedioPublicacion.ToString("0.0") · @Model.Resenas.Count @(Model.Resenas.Count == 1 ? "reseña" : "reseñas")
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="mk-card-estrellas-num">Sin reseñas todavía</span>
+                        }
+                    </div>
+
+
+                    @if (pub.TN_Precio > 0)
+                    {
+                        <div class="mk-detalle-precio my-3">₡@pub.TN_Precio.ToString("N0")</div>
+                    }
+                    else
+                    {
+                        <div class="my-3 fw-semibold text-muted fs-5">Precio a convenir</div>
+                    }
+
+                    <p class="mk-detalle-desc">@pub.TC_Descripcion</p>
+
+
+                    @if (!esServicio && !string.IsNullOrWhiteSpace(pub.TC_Especificaciones))
+                    {
+                        <div class="mk-bloque mt-3">
+                            <h6><i class="bi bi-list-check me-1"></i> Especificaciones</h6>
+                            <p class="mb-0">@pub.TC_Especificaciones</p>
+                        </div>
+                    }
+
+                    @if (esServicio && pub.TF_FechaServicio.HasValue)
+                    {
+                        <div class="mk-bloque mt-3">
+                            <h6><i class="bi bi-calendar-event me-1"></i> Disponibilidad para agendar</h6>
+                            <p class="mb-0">
+                                <strong>@pub.TF_FechaServicio.Value.ToString("dddd dd 'de' MMMM, yyyy", new System.Globalization.CultureInfo("es-ES"))</strong>
+                                @if (pub.TT_HoraInicioServicio.HasValue && pub.TT_HoraFinServicio.HasValue)
+                                {
+                                    <br />
+                                    @:De @DateTime.Today.Add(pub.TT_HoraInicioServicio.Value).ToString("h:mm tt") a @DateTime.Today.Add(pub.TT_HoraFinServicio.Value).ToString("h:mm tt")
+                                }
+                            </p>
+                        </div>
+                    }
+
+
+                    <!-- VENDEDOR -->
+                    <div class="mk-vendedor mt-4">
+
+                        @if (!string.IsNullOrWhiteSpace(vendedor.FotoPerfil))
+                        {
+                            <img src="@vendedor.FotoPerfil" class="mk-vendedor-foto" alt="" />
+                        }
+                        else
+                        {
+                            <div class="mk-vendedor-foto-ph"><i class="bi bi-person-fill"></i></div>
+                        }
+
+                        <div>
+                            <div class="mk-vendedor-nombre">
+                                @vendedor.NombreCompleto
+                                @if (Model.EsPropia)
+                                {
+                                    <span class="mk-tu">(Tú)</span>
+                                }
+                            </div>
+
+                            <div class="mk-card-estrellas">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <i class="bi @(i <= vendedor.EstrellasLlenas ? "bi-star-fill" : "bi-star")"></i>
+                                }
+                                <span class="mk-card-estrellas-num">
+                                    @if (vendedor.TotalResenas > 0)
+                                    {
+                                        <text>@vendedor.PromedioEstrellas.ToString("0.0") como vendedor</text>
+                                    }
+                                    else
+                                    {
+                                        <text>Vendedor sin reseñas</text>
+                                    }
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="mk-meta mt-3 pt-3">
+                        @if (!string.IsNullOrWhiteSpace(pub.TC_Contacto))
+                        {
+                            <div><i class="bi bi-telephone me-2"></i>Contacto: <strong>@pub.TC_Contacto</strong></div>
+                        }
+                        <div><i class="bi bi-clock-history me-2"></i>Publicado el @pub.TF_FechaPublicacion.ToString("dd/MM/yyyy")</div>
+                    </div>
+
+
+                    @if (Model.EsPropia)
+                    {
+                        <div class="d-flex gap-2 flex-wrap mt-4">
+
+                            <a asp-action="Editar" asp-route-id="@pub.TN_Id" class="btn btn-mk-primary btn-sm">
+                                <i class="bi bi-pencil me-1"></i> Editar
+                            </a>
+
+
+                            @if (noDisponible)
+                            {
+                                <form asp-action="Reactivar" method="post"
+                                      data-confirmar="¿Volver a publicar y hacerla visible para todos?">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@pub.TN_Id" />
+                                    <button type="submit" class="btn btn-mk-outline btn-sm">
+                                        <i class="bi bi-arrow-clockwise me-1"></i> Reactivar
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="Finalizar" method="post"
+                                      data-confirmar="¿Marcar como no disponible? Los demás residentes no podrán ver su contenido.">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@pub.TN_Id" />
+                                    <button type="submit" class="btn btn-mk-outline btn-sm">
+                                        <i class="bi bi-check2-circle me-1"></i> Finalizar
+                                    </button>
+                                </form>
+                            }
+
+
+                            <form asp-action="Eliminar" method="post"
+                                  data-confirmar="¿Seguro que deseas eliminar esta publicación?">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@pub.TN_Id" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash me-1"></i> Eliminar
+                                </button>
+                            </form>
+
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ===== RESEÑAS ===== -->
+    <div class="row g-4 mt-1">
+
+
+        <!-- Columna izquierda -->
+        <div class="col-lg-5">
+            <div class="card mk-card h-100">
+                <div class="card-body p-4">
+
+                    @if (!Model.EsPropia && !noDisponible)
+                    {
+                        <h5 class="mk-seccion-lista mb-1">
+                            <i class="bi bi-star me-1"></i>
+                            @(Model.MiResena != null ? "Edita tu reseña" : "Deja tu reseña")
+                        </h5>
+                        <p class="marketplace-subtitulo mb-3">
+                            Cuéntale a los demás residentes qué te pareció.
+                        </p>
+
+                        <form asp-action="Resenar" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="IdPublicacion" value="@pub.TN_Id" />
+
+                            <label class="form-label mk-label mb-1">Tu calificación</label>
+
+                            <div class="mk-rating mb-3" id="mkRating">
+                                @for (int i = 5; i >= 1; i--)
+                                {
+                                    var chk = Model.MiResena != null && Model.MiResena.TN_Calificacion == i;
+
+                                    <input type="radio" name="Calificacion" value="@i"
+                                           id="star@(i)" checked="@chk" hidden />
+                                    <label for="star@(i)" class="mk-rating-star" data-valor="@i">
+                                        <i class="bi bi-star-fill"></i>
+                                    </label>
+                                }
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label mk-label">
+                                    Comentario <span class="text-muted fw-normal">(opcional)</span>
+                                </label>
+                                <textarea name="Comentario" class="form-control mk-input" rows="4"
+                                      maxlength="500"
+                                      placeholder="Escribe tu opinión...">@Model.MiResena?.TC_Comentario</textarea>
+                            </div>
+
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="submit" class="btn btn-mk-primary btn-sm px-4">
+                                    @(Model.MiResena != null ? "Actualizar" : "Enviar reseña")
+                                </button>
+
+                                @if (Model.MiResena != null)
+                                {
+                                    <button type="button" class="btn btn-outline-danger btn-sm"
+                                            onclick="document.getElementById('formDelResena').submit();">
+                                        <i class="bi bi-trash me-1"></i> Eliminar
+                                    </button>
+                                }
+                            </div>
+                        </form>
+
+
+                        @if (Model.MiResena != null)
+                        {
+                            <form id="formDelResena" asp-action="EliminarResena" method="post" class="d-none">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.MiResena.TN_Id" />
+                                <input type="hidden" name="publicacionId" value="@pub.TN_Id" />
+                            </form>
+                        }
+                    }
+                    else
+                    {
+                        <h5 class="mk-seccion-lista mb-1">
+                            <i class="bi bi-bar-chart-line me-1"></i> Calificación
+                        </h5>
+                        <p class="marketplace-subtitulo mb-3">
+                            @(Model.EsPropia
+                                                    ? "Así te califican los demás residentes."
+                                                    : "Esta publicación ya no admite reseñas.")
+                    </p>
+
+                        <div class="mk-resumen-propio">
+                            <div class="mk-resumen-num">@Model.PromedioPublicacion.ToString("0.0")</div>
+                            <div class="mk-card-estrellas mb-1" style="font-size:16px;">
+                            @for (int i = 1; i <= 5; i++)
+                                {
+                                    <i class="bi @(i <= estrellasPub ? "bi-star-fill" : "bi-star")"></i>
+                                }
+                            </div>
+                            <p class="marketplace-subtitulo mb-0">
+                                @Model.Resenas.Count @(Model.Resenas.Count == 1 ? "reseña recibida" : "reseñas recibidas")
+                            </p>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Columna derecha -->
+        <div class="col-lg-7">
+            <div class="card mk-card h-100">
+                <div class="card-body p-4">
+
+                    <h5 class="mk-seccion-lista mb-3">
+                        <i class="bi bi-chat-square-text me-1"></i> Comentarios
+                        @if (Model.Resenas.Any())
+                        {
+                            <span class="mk-card-estrellas-num">(@Model.Resenas.Count)</span>
+                        }
+                    </h5>
+
+                    @if (!Model.Resenas.Any())
+                    {
+                        <div class="mk-vacio text-center py-4">
+                            <i class="bi bi-chat-square-text"></i>
+                            <p class="mb-0">Todavía no hay reseñas para esta publicación.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mk-resenas-lista">
+                            @foreach (var r in Model.Resenas)
+                            {
+                                <div class="mk-resena">
+
+                                    @if (!string.IsNullOrWhiteSpace(r.Usuario?.TC_FotoPerfil))
+                                    {
+                                        <img src="@r.Usuario.TC_FotoPerfil" class="mk-resena-foto" alt="" />
+                                    }
+                                    else
+                                    {
+                                        <div class="mk-resena-foto-ph"><i class="bi bi-person-fill"></i></div>
+                                    }
+
+                                    <div class="flex-fill">
+                                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                            <div>
+                                                <strong class="mk-resena-nombre">
+                                                    @r.Usuario?.TC_Nombre @r.Usuario?.TC_Apellido
+                                                </strong>
+
+                                                <div class="mk-card-estrellas">
+                                                    @for (int i = 1; i <= 5; i++)
+                                                    {
+                                                        <i class="bi @(i <= r.TN_Calificacion ? "bi-star-fill" : "bi-star")"></i>
+                                                    }
+                                                </div>
+                                            </div>
+
+                                            <span class="mk-resena-fecha">
+                                                @r.TF_FechaResena.ToString("dd/MM/yyyy")
+                                            </span>
+                                        </div>
+
+                                        @if (!string.IsNullOrWhiteSpace(r.TC_Comentario))
+                                        {
+                                            <p class="mk-resena-texto mb-0">@r.TC_Comentario</p>
+                                        }
+                                    </div>
+
+                                </div>
+                            }
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <script src="~/js/marketplace/marketplace.js" asp-append-version="true"></script>
+}

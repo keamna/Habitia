@@ -1,0 +1,523 @@
+﻿@using Habitia.Enums
+@model Habitia.ViewModels.Marketplace.MarketplaceFiltroVM
+
+@{
+    ViewData["Title"] = "Marketplace";
+
+    var categorias = ViewBag.Categorias
+        as List<Habitia.Models.Catalogos.THBT_CAT_CategoriaPublicacion>;
+
+    var miId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+    var perfil = Model.MiPerfil;
+}
+
+
+<div class="marketplace-container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h1 class="page-titulo mb-1">Marketplace</h1>
+            <p class="marketplace-subtitulo mb-0">
+                Productos y servicios ofrecidos por los residentes del condominio.
+            </p>
+        </div>
+
+        <a asp-area="Residente" asp-controller="Marketplace" asp-action="Crear"
+           class="btn btn-mk-primary d-inline-flex align-items-center gap-2">
+            <i class="bi bi-plus-lg"></i> Nueva publicación
+        </a>
+    </div>
+
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-1"></i> @TempData["Exito"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-1"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+
+    <!-- ===== PANEL DE PERFIL ===== -->
+    <div class="mk-perfil-banner mb-4">
+
+        <div class="mk-perfil-info">
+
+            <div class="mk-perfil-foto">
+                @if (!string.IsNullOrWhiteSpace(perfil.FotoPerfil))
+                {
+                    <img src="@perfil.FotoPerfil" alt="Foto de perfil" />
+                }
+                else
+                {
+                    <div class="mk-perfil-foto-ph">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                }
+
+                <label class="mk-perfil-foto-btn" title="Cambiar foto">
+                    <i class="bi bi-camera-fill"></i>
+                    <input type="file" id="inputFotoPerfil" accept=".jpg,.jpeg,.png,.webp" hidden />
+                </label>
+            </div>
+
+
+            <div>
+                <h2 class="mk-perfil-nombre">@perfil.NombreCompleto</h2>
+
+                <div class="mk-perfil-estrellas">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <i class="bi @(i <= perfil.EstrellasLlenas ? "bi-star-fill" : "bi-star")"></i>
+                    }
+
+                    @if (perfil.TotalResenas > 0)
+                    {
+                        <span class="mk-perfil-promedio">@perfil.PromedioEstrellas.ToString("0.0")</span>
+                        <span class="mk-perfil-conteo">
+                            (@perfil.TotalResenas @(perfil.TotalResenas == 1 ? "reseña" : "reseñas"))
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="mk-perfil-conteo">Aún sin reseñas</span>
+                    }
+                </div>
+
+                <p class="mk-perfil-sub mb-0">
+                    <i class="bi bi-shop me-1"></i>
+                    @perfil.TotalPublicaciones @(perfil.TotalPublicaciones == 1 ? "publicación activa" : "publicaciones activas")
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="mk-perfil-acciones">
+
+            <a asp-action="Index" asp-route-mias="true" class="btn btn-mk-perfil">
+                <i class="bi bi-collection me-1"></i> Mis publicaciones
+            </a>
+
+            @if (!string.IsNullOrWhiteSpace(perfil.FotoPerfil))
+            {
+                <form asp-action="QuitarFoto" method="post"
+                      data-confirmar="¿Quitar tu foto de perfil?">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-mk-perfil-out">
+                        <i class="bi bi-trash me-1"></i> Quitar foto
+                    </button>
+                </form>
+            }
+
+        </div>
+
+    </div>
+
+
+    <form id="formFotoPerfil" asp-action="SubirFoto" method="post"
+          enctype="multipart/form-data" class="d-none">
+        @Html.AntiForgeryToken()
+        <input type="file" name="foto" id="fotoPerfilReal" />
+    </form>
+
+
+    <!-- ===== BUSCADOR CON SUGERENCIAS ===== -->
+    <form method="get" asp-action="Index" class="mk-buscador mb-4" autocomplete="off">
+
+        <div class="mk-buscador-campo">
+            <i class="bi bi-search"></i>
+
+            <input type="text" name="busqueda" value="@Model.Busqueda"
+                   id="inputBuscar"
+                   class="form-control mk-input"
+                   placeholder="Busca productos, servicios o residentes... (ej: sillas de playa, jardinería, María)" />
+
+            <div class="mk-sugerencias" id="mkSugerencias"></div>
+        </div>
+
+        <button type="submit" class="btn btn-mk-primary px-4">Buscar</button>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Busqueda) ||
+                !string.IsNullOrWhiteSpace(Model.IdVendedor) ||
+                Model.SoloMias || Model.Tipo != null || Model.IdCategoria != null)
+        {
+            <a asp-action="Index" class="btn btn-mk-outline px-3">Limpiar</a>
+        }
+
+    </form>
+
+
+    <!-- ===== FILTRO ACTIVO POR VENDEDOR ===== -->
+    @if (Model.VendedorFiltrado != null)
+    {
+        <div class="mk-vendedor-activo mb-4">
+
+            @if (!string.IsNullOrWhiteSpace(Model.VendedorFiltrado.FotoPerfil))
+            {
+                <img src="@Model.VendedorFiltrado.FotoPerfil" class="mk-vendedor-foto" alt="" />
+            }
+            else
+            {
+                <div class="mk-vendedor-foto-ph"><i class="bi bi-person-fill"></i></div>
+            }
+
+            <div class="flex-fill">
+                <div class="mk-vendedor-nombre">
+                    Publicaciones de @Model.VendedorFiltrado.NombreCompleto
+                </div>
+                <div class="mk-card-estrellas">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <i class="bi @(i <= Model.VendedorFiltrado.EstrellasLlenas ? "bi-star-fill" : "bi-star")"></i>
+                    }
+                    <span class="mk-card-estrellas-num">
+                        @Model.VendedorFiltrado.TotalPublicaciones publicaciones ·
+                        @Model.VendedorFiltrado.TotalResenas reseñas
+                    </span>
+                </div>
+            </div>
+
+            <a asp-action="Index" class="btn btn-mk-outline btn-sm">
+                <i class="bi bi-x-lg me-1"></i> Quitar filtro
+            </a>
+
+        </div>
+    }
+
+
+    <!-- ===== RESIDENTES ENCONTRADOS ===== -->
+    @if (Model.Vendedores.Any())
+    {
+        <div class="mk-vendedores-panel mb-4">
+
+            <h6 class="mk-seccion-lista mb-3">
+                <i class="bi bi-people me-1"></i> Residentes encontrados
+            </h6>
+
+            <div class="mk-vendedores-lista">
+                @foreach (var v in Model.Vendedores)
+                {
+                    <a asp-action="Index" asp-route-vendedor="@v.Id" class="mk-vendedor-chip">
+
+                        @if (!string.IsNullOrWhiteSpace(v.FotoPerfil))
+                        {
+                            <img src="@v.FotoPerfil" alt="" />
+                        }
+                        else
+                        {
+                            <div class="mk-vendedor-chip-ph"><i class="bi bi-person-fill"></i></div>
+                        }
+
+                        <div>
+                            <div class="mk-vendedor-chip-nombre">
+                                @v.NombreCompleto
+                                @if (v.Id == miId)
+                                {
+                                    <span class="mk-tu">(Tú)</span>
+                                }
+                            </div>
+                            <div class="mk-card-estrellas">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <i class="bi @(i <= v.EstrellasLlenas ? "bi-star-fill" : "bi-star")"></i>
+                                }
+                                <span class="mk-card-estrellas-num">@v.TotalPublicaciones pub.</span>
+                            </div>
+                        </div>
+
+                    </a>
+                }
+            </div>
+
+        </div>
+    }
+
+
+    <div class="row g-4">
+
+        <!-- FILTROS -->
+        <div class="col-lg-3">
+            <div class="card mk-card-filtros sticky-lg-top" style="top:20px;">
+                <div class="card-body">
+                    <h5 class="mk-filtros-titulo mb-3">Filtros</h5>
+
+                    <form method="get" asp-area="Residente" asp-controller="Marketplace" asp-action="Index">
+
+                        <input type="hidden" name="busqueda" value="@Model.Busqueda" />
+                        <input type="hidden" name="vendedor" value="@Model.IdVendedor" />
+
+                        <div class="mb-3">
+                            <label class="form-label mk-label-sm">Tipo</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a class="btn btn-sm mk-pill @(Model.Tipo == null ? "active" : "")"
+                                   asp-action="Index" asp-route-busqueda="@Model.Busqueda"
+                                   asp-route-vendedor="@Model.IdVendedor"
+                                   asp-route-categoria="@Model.IdCategoria" asp-route-mias="@Model.SoloMias">Todos</a>
+
+                                <a class="btn btn-sm mk-pill @(Model.Tipo == TipoPublicacionEnum.Producto ? "active" : "")"
+                                   asp-action="Index" asp-route-tipo="@((int)TipoPublicacionEnum.Producto)"
+                                   asp-route-busqueda="@Model.Busqueda" asp-route-vendedor="@Model.IdVendedor"
+                                   asp-route-categoria="@Model.IdCategoria"
+                                   asp-route-mias="@Model.SoloMias">Productos</a>
+
+                                <a class="btn btn-sm mk-pill @(Model.Tipo == TipoPublicacionEnum.Servicio ? "active" : "")"
+                                   asp-action="Index" asp-route-tipo="@((int)TipoPublicacionEnum.Servicio)"
+                                   asp-route-busqueda="@Model.Busqueda" asp-route-vendedor="@Model.IdVendedor"
+                                   asp-route-categoria="@Model.IdCategoria"
+                                   asp-route-mias="@Model.SoloMias">Servicios</a>
+                            </div>
+                            @if (Model.Tipo != null)
+                            {
+                                <input type="hidden" name="tipo" value="@((int)Model.Tipo)" />
+                            }
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label mk-label-sm">Categoría</label>
+                            <select name="categoria" class="form-select form-select-sm mk-input">
+                                <option value="">Todas</option>
+                                @if (categorias != null)
+                                {
+                                    foreach (var cat in categorias)
+                                    {
+                                        <option value="@cat.TN_Id" selected="@(Model.IdCategoria == cat.TN_Id)">@cat.TC_Nombre</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input mk-check" type="checkbox" name="mias" value="true"
+                                   id="chkMias" checked="@Model.SoloMias" />
+                            <label class="form-check-label mk-label-check" for="chkMias">
+                                Solo mis publicaciones
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-mk-primary w-100 btn-sm mb-2">Aplicar filtros</button>
+                        <a asp-action="Index" class="d-block text-center mk-link-limpiar">Limpiar filtros</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- GRID -->
+        <div class="col-lg-9">
+
+            @if (Model.SoloMias)
+            {
+                <h5 class="mk-seccion-lista mb-3">
+                    <i class="bi bi-collection me-1"></i> Mis publicaciones
+                </h5>
+            }
+            else if (!string.IsNullOrWhiteSpace(Model.Busqueda))
+            {
+                <h5 class="mk-seccion-lista mb-3">
+                    <i class="bi bi-search me-1"></i>
+                    Resultados para "@Model.Busqueda"
+                    <span class="mk-card-estrellas-num">(@Model.Publicaciones.Count)</span>
+                </h5>
+            }
+
+            <div class="row g-4">
+
+                @if (!Model.Publicaciones.Any())
+                {
+                    <div class="col-12">
+                        <div class="mk-vacio text-center">
+
+                            @if (!string.IsNullOrWhiteSpace(Model.Busqueda))
+                            {
+                                <i class="bi bi-search-heart"></i>
+                                <p class="mb-1">
+                                    <strong>No hay artículos disponibles con este nombre.</strong>
+                                </p>
+                                <p class="mb-3">
+                                    No encontramos nada que coincida con "<strong>@Model.Busqueda</strong>".<br />
+                                    Prueba con otra palabra o revisa las categorías.
+                                </p>
+                                <a asp-action="Index" class="btn btn-mk-primary btn-sm px-4">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i> Ver todo el Marketplace
+                                </a>
+                            }
+                            else if (Model.SoloMias)
+                            {
+                                <i class="bi bi-collection"></i>
+                                <p class="mb-3">Todavía no has publicado nada.</p>
+                                <a asp-action="Crear" class="btn btn-mk-primary btn-sm px-4">
+                                    <i class="bi bi-plus-lg me-1"></i> Crear mi primera publicación
+                                </a>
+                            }
+                            else
+                            {
+                                <i class="bi bi-shop"></i>
+                                <p class="mb-0">
+                                    No hay publicaciones que coincidan con los filtros.<br />
+                                    ¡Sé el primero en publicar algo!
+                                </p>
+                            }
+
+                        </div>
+                    </div>
+                }
+
+                @foreach (var pub in Model.Publicaciones)
+                {
+                    var imagen = pub.Imagenes?.FirstOrDefault();
+                    var esServicio = pub.TN_Tipo == TipoPublicacionEnum.Servicio;
+                    var esMia = pub.TC_IdUsuario == miId;
+                    var noDisponible = pub.TN_Estado == EstadoPublicacionEnum.Finalizada;
+
+                    var resenas = pub.Resenas ?? new List<Habitia.Models.ResenaPublicacion>();
+                    var promedio = resenas.Any() ? resenas.Average(r => r.TN_Calificacion) : 0;
+                    var estrellas = (int)Math.Round(promedio);
+
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card mk-card h-100 @(noDisponible ? "mk-card-nodisp" : "")">
+
+
+                            <div class="mk-card-img">
+                                @if (imagen != null)
+                                {
+                                    <img src="@imagen.TC_Url" alt="@pub.TC_Titulo" />
+                                }
+                                else
+                                {
+                                    <div class="mk-card-img-ph">
+                                        <i class="bi @(esServicio ? "bi-tools" : "bi-box-seam")"></i>
+                                    </div>
+                                }
+
+                                @if (noDisponible)
+                                {
+                                    <div class="mk-card-overlay">
+                                        <i class="bi bi-slash-circle"></i>
+                                        <span>No disponible</span>
+                                    </div>
+                                }
+
+                                <span class="badge mk-badge @(esServicio ? "mk-badge-servicio" : "mk-badge-producto")">
+                                    @(esServicio ? "Servicio" : "Producto")
+                                </span>
+                            </div>
+
+
+                            <div class="card-body d-flex flex-column">
+
+                                <span class="mk-categoria mb-1">@pub.Categoria?.TC_Nombre</span>
+
+                                <h5 class="mk-card-titulo">@pub.TC_Titulo</h5>
+
+
+                                @if (noDisponible)
+                                {
+                                    <div class="mk-nodisp-msg">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Esta publicación ya no está disponible.
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="mk-card-estrellas mb-1">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="bi @(i <= estrellas ? "bi-star-fill" : "bi-star")"></i>
+                                        }
+                                        @if (resenas.Any())
+                                        {
+                                            <span class="mk-card-estrellas-num">@promedio.ToString("0.0") (@resenas.Count)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="mk-card-estrellas-num">Sin reseñas</span>
+                                        }
+                                    </div>
+
+                                    @if (pub.TN_Precio > 0)
+                                    {
+                                        <span class="mk-precio mb-2">₡@pub.TN_Precio.ToString("N0")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="mk-precio-convenir mb-2">Precio a convenir</span>
+                                    }
+
+                                    @if (esServicio && pub.TF_FechaServicio.HasValue)
+                                    {
+                                        <span class="mk-fecha-chip mb-2">
+                                            <i class="bi bi-calendar-event"></i>
+                                            @pub.TF_FechaServicio.Value.ToString("dd/MM/yyyy")
+                                            @if (pub.TT_HoraInicioServicio.HasValue && pub.TT_HoraFinServicio.HasValue)
+                                            {
+                                                <text>
+                                                    · @DateTime.Today.Add(pub.TT_HoraInicioServicio.Value).ToString("h:mm tt")
+                                                    - @DateTime.Today.Add(pub.TT_HoraFinServicio.Value).ToString("h:mm tt")
+                                                </text>
+                                            }
+                                        </span>
+                                    }
+                                }
+
+
+                                <a asp-action="Index" asp-route-vendedor="@pub.TC_IdUsuario"
+                                   class="mk-autor mk-autor-link mt-auto pt-2"
+                                   title="Ver todas las publicaciones de este residente">
+
+                                    @if (!string.IsNullOrWhiteSpace(pub.Usuario?.TC_FotoPerfil))
+                                    {
+                                        <img src="@pub.Usuario.TC_FotoPerfil" class="mk-autor-foto" alt="" />
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-person-circle"></i>
+                                    }
+
+                                    @pub.Usuario?.TC_Nombre @pub.Usuario?.TC_Apellido
+                                    @if (esMia)
+                                    {
+                                        <span class="mk-tu">(Tú)</span>
+                                    }
+                                </a>
+
+
+                                @if (noDisponible && !esMia)
+                                {
+                                    <button class="btn btn-mk-outline btn-sm w-100 mt-3" disabled>
+                                        <i class="bi bi-lock me-1"></i> No disponible
+                                    </button>
+                                }
+                                else
+                                {
+                                    <a asp-area="Residente" asp-controller="Marketplace" asp-action="Detalle"
+                                       asp-route-id="@pub.TN_Id" class="btn btn-mk-primary btn-sm w-100 mt-3">
+                                        @(noDisponible ? "Gestionar" : "Ver detalle")
+                                    </a>
+                                }
+
+                            </div>
+
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <script src="~/js/marketplace/marketplace.js" asp-append-version="true"></script>
+}

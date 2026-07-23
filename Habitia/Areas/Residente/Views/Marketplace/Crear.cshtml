@@ -1,0 +1,240 @@
+﻿@using Habitia.Enums
+@model Habitia.ViewModels.Marketplace.PublicacionFormVM
+
+@{
+    ViewData["Title"] = "Nueva publicación";
+
+    var categorias = ViewBag.Categorias
+        as List<Habitia.Models.Catalogos.THBT_CAT_CategoriaPublicacion>;
+}
+
+
+<div class="marketplace-container">
+
+    <h1 class="page-titulo mb-1">Nueva publicación</h1>
+    <p class="marketplace-subtitulo mb-4">
+        Publica un producto o servicio para los demás residentes. La publicación es solo informativa.
+    </p>
+
+
+    <div class="card mk-form-card" style="max-width:840px;">
+        <div class="card-body p-4">
+
+            <form asp-area="Residente" asp-controller="Marketplace" asp-action="Crear"
+                  method="post" enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+
+
+                <h6 class="mk-seccion mb-3">¿Qué deseas publicar?</h6>
+
+                <div class="row g-3 mb-4">
+
+                    <div class="col-md-6">
+                        <input type="radio" class="btn-check" name="Tipo" id="tipoProducto"
+                               value="@((int)TipoPublicacionEnum.Producto)"
+                               checked="@(Model.Tipo == TipoPublicacionEnum.Producto)" autocomplete="off">
+                        <label class="mk-tipo-card w-100" for="tipoProducto">
+                            <i class="bi bi-box-seam"></i>
+                            <strong>Producto</strong>
+                            <small>Algo físico que vendes: comida, artículos, etc.</small>
+                        </label>
+                    </div>
+
+                    <div class="col-md-6">
+                        <input type="radio" class="btn-check" name="Tipo" id="tipoServicio"
+                               value="@((int)TipoPublicacionEnum.Servicio)"
+                               checked="@(Model.Tipo == TipoPublicacionEnum.Servicio)" autocomplete="off">
+                        <label class="mk-tipo-card w-100" for="tipoServicio">
+                            <i class="bi bi-tools"></i>
+                            <strong>Servicio</strong>
+                            <small>Algo que ofreces: clases, reparaciones, etc.</small>
+                        </label>
+                    </div>
+
+                </div>
+
+
+                <h6 class="mk-seccion mb-3">Información general</h6>
+
+                <div class="mb-3">
+                    <label class="form-label mk-label" asp-for="Titulo">Título</label>
+                    <input asp-for="Titulo" class="form-control mk-input"
+                           placeholder="Ej: Repostería casera, Clases de guitarra..." />
+                    <span asp-validation-for="Titulo" class="text-danger small"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label mk-label" asp-for="IdCategoria">Categoría</label>
+                        <select asp-for="IdCategoria" class="form-select mk-input">
+                            <option value="">Seleccione...</option>
+                            @if (categorias != null)
+                            {
+                                foreach (var cat in categorias)
+                                {
+                                    <option value="@cat.TN_Id">@cat.TC_Nombre</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="IdCategoria" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label mk-label" asp-for="Contacto">
+                            Contacto <span class="text-muted fw-normal">(opcional)</span>
+                        </label>
+                        <input asp-for="Contacto" class="form-control mk-input"
+                               placeholder="Teléfono, WhatsApp o correo" />
+                        <span asp-validation-for="Contacto" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label mk-label" asp-for="Descripcion">Descripción</label>
+                    <textarea asp-for="Descripcion" class="form-control mk-input" rows="4"
+                              placeholder="Describe lo que ofreces..."></textarea>
+                    <span asp-validation-for="Descripcion" class="text-danger small"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label mk-label" asp-for="Precio">
+                            Precio (₡)
+                            <span class="text-muted fw-normal">(obligatorio en productos)</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text mk-input">₡</span>
+                            <input asp-for="Precio" type="number" step="0.01" min="0"
+                                   class="form-control mk-input" placeholder="5000" />
+                        </div>
+                        <span asp-validation-for="Precio" class="text-danger small"></span>
+                    </div>
+                </div>
+
+
+                <!-- CAMPOS PRODUCTO -->
+                <div class="campos-producto card mk-subcard mb-3">
+                    <div class="card-body">
+                        <h6 class="mk-seccion mb-3"><i class="bi bi-box-seam me-1"></i> Detalles del producto</h6>
+                        <label class="form-label mk-label" asp-for="Especificaciones">
+                            Especificaciones <span class="text-muted fw-normal">(opcional)</span>
+                        </label>
+                        <textarea asp-for="Especificaciones" class="form-control mk-input" rows="3"
+                                  placeholder="Tamaño, color, ingredientes, material, estado..."></textarea>
+                        <span asp-validation-for="Especificaciones" class="text-danger small"></span>
+                    </div>
+                </div>
+
+
+                <!-- CAMPOS SERVICIO -->
+                <div class="campos-servicio card mk-subcard mb-3">
+                    <div class="card-body">
+                        <h6 class="mk-seccion mb-2"><i class="bi bi-calendar-check me-1"></i> Disponibilidad del servicio</h6>
+                        <p class="marketplace-subtitulo mb-3">
+                            Indica cuándo estás disponible para que los residentes puedan agendarte.
+                        </p>
+
+                        <div class="row g-3">
+
+                            <div class="col-md-4">
+                                <label class="form-label mk-label" asp-for="FechaServicio">Fecha disponible</label>
+                                <input asp-for="FechaServicio" type="date" class="form-control mk-input" />
+                                <span asp-validation-for="FechaServicio" class="text-danger small"></span>
+                            </div>
+
+
+                            <div class="col-md-4">
+                                <label class="form-label mk-label">Hora inicio</label>
+                                <div class="mk-hora-grupo">
+                                    <select asp-for="HoraInicioH" class="form-select mk-input">
+                                        <option value="">--</option>
+                                        @for (int h = 1; h <= 12; h++)
+                                        {
+                                            <option value="@h">@h</option>
+                                        }
+                                    </select>
+
+                                    <span class="mk-hora-sep">:</span>
+
+                                    <select asp-for="HoraInicioM" class="form-select mk-input">
+                                        @for (int m = 0; m < 60; m += 5)
+                                        {
+                                            <option value="@m">@m.ToString("00")</option>
+                                        }
+                                    </select>
+
+                                    <select asp-for="HoraInicioAmPm" class="form-select mk-input">
+                                        <option value="AM">AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="HoraInicioH" class="text-danger small"></span>
+                            </div>
+
+
+                            <div class="col-md-4">
+                                <label class="form-label mk-label">Hora fin</label>
+                                <div class="mk-hora-grupo">
+                                    <select asp-for="HoraFinH" class="form-select mk-input">
+                                        <option value="">--</option>
+                                        @for (int h = 1; h <= 12; h++)
+                                        {
+                                            <option value="@h">@h</option>
+                                        }
+                                    </select>
+
+                                    <span class="mk-hora-sep">:</span>
+
+                                    <select asp-for="HoraFinM" class="form-select mk-input">
+                                        @for (int m = 0; m < 60; m += 5)
+                                        {
+                                            <option value="@m">@m.ToString("00")</option>
+                                        }
+                                    </select>
+
+                                    <select asp-for="HoraFinAmPm" class="form-select mk-input">
+                                        <option value="AM">AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="HoraFinH" class="text-danger small"></span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <h6 class="mk-seccion mb-3">Imágenes</h6>
+
+                <div class="mb-4">
+                    <div class="mk-drop" id="imagenDrop">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        Haz clic para subir imágenes<br />
+                        <small>JPG, PNG o WEBP · Puedes seleccionar varias</small>
+                        <input type="file" id="inputImagenes" name="Imagenes" multiple
+                               accept=".jpg,.jpeg,.png,.webp" hidden />
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 mt-3" id="imagenPreviews"></div>
+                </div>
+
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-mk-primary px-4">Publicar</button>
+                    <a asp-area="Residente" asp-controller="Marketplace" asp-action="Index"
+                       class="btn btn-mk-outline px-4">Cancelar</a>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/marketplace/marketplace.js" asp-append-version="true"></script>
+}
