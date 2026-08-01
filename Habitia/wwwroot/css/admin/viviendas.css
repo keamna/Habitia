@@ -1,7 +1,6 @@
 ﻿/* ==============================
    LISTADO DE VIVIENDAS (Admin)
 ============================== */
-
 .viviendas-toolbar {
     display: flex;
     justify-content: flex-end;
@@ -129,3 +128,69 @@
         display: block;
         margin-bottom: 10px;
     }
+
+
+/* ==============================
+   MENU DE ACCIONES (tres puntos)
+============================== */
+
+.fila-acciones {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-menu-fila {
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #9AA0A6;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+    .btn-menu-fila:hover {
+        color: #101010;
+        background: #F3F4F6;
+    }
+
+.dropdown-menu-fila {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 34px;
+    width: 170px;
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.08);
+    overflow: hidden;
+    z-index: 100;
+}
+
+    .dropdown-menu-fila.visible {
+        display: block;
+    }
+
+    .dropdown-menu-fila .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: #101010;
+        text-decoration: none;
+    }
+
+        .dropdown-menu-fila .dropdown-item:hover {
+            background: #F9FAFB;
+        }
+
+        .dropdown-menu-fila .dropdown-item.eliminar {
+            color: #DC2626;
+        }

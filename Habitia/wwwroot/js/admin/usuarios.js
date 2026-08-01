@@ -61,6 +61,71 @@
     });
 
 
+
+    // ==========================
+    // FILTROS: BUSCAR / ESTADO / ROL
+    // ==========================
+
+    const inputBuscar = document.getElementById('inputBuscarUsuario');
+    const filtroEstado = document.getElementById('filtroEstadoUsuario');
+    const filtroRol = document.getElementById('filtroRolUsuario');
+    const filas = document.querySelectorAll('#usuariosTbody tr');
+    const emptyState = document.getElementById('tablaEmptyState');
+
+    function filtrarUsuarios() {
+
+        const texto = (inputBuscar?.value || "").trim().toLowerCase();
+        const estado = filtroEstado?.value || "";
+        const rol = (filtroRol?.value || "").toLowerCase();
+
+        let visibles = 0;
+
+        filas.forEach(fila => {
+
+            const nombre = fila.dataset.nombre || "";
+            const identificacion = fila.dataset.identificacion || "";
+            const estadoFila = fila.dataset.estado || "";
+            const rolesFila = fila.dataset.roles || "";
+
+            const coincideTexto =
+                texto === "" ||
+                nombre.includes(texto) ||
+                identificacion.includes(texto);
+
+            const coincideEstado =
+                estado === "" ||
+                estadoFila === estado;
+
+            const coincideRol =
+                rol === "" ||
+                rolesFila.split(",").includes(rol);
+
+            const mostrar = coincideTexto && coincideEstado && coincideRol;
+
+            fila.style.display = mostrar ? "" : "none";
+
+            if (mostrar) visibles++;
+
+        });
+
+        if (emptyState) {
+            emptyState.style.display = visibles === 0 ? "block" : "none";
+        }
+    }
+
+    if (inputBuscar) {
+        inputBuscar.addEventListener('input', filtrarUsuarios);
+    }
+
+    if (filtroEstado) {
+        filtroEstado.addEventListener('change', filtrarUsuarios);
+    }
+
+    if (filtroRol) {
+        filtroRol.addEventListener('change', filtrarUsuarios);
+    }
+
+
 });
 
 
