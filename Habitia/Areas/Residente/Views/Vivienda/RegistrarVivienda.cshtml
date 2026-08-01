@@ -1,0 +1,48 @@
+﻿@model Habitia.ViewModels.Vivienda.RegistrarViviendaViewModel
+@{
+    ViewData["Title"] = "Registrar otra vivienda";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Registrar otra vivienda</h2>
+</div>
+
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i>
+    Solo puedes registrarte como <strong>propietario</strong> de una vivienda adicional.
+    La solicitud quedará pendiente hasta que un administrador la apruebe.
+</div>
+
+<div class="card" style="max-width: 560px;">
+    <div class="card-body p-4">
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
+
+        @if (!Model.ViviendasDisponibles.Any())
+        {
+            <p class="text-muted">No hay viviendas disponibles para registrar en este momento.</p>
+        }
+        else
+        {
+            <form asp-action="RegistrarVivienda" method="post">
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <label class="form-label">Vivienda</label>
+                    <select asp-for="IdVivienda" asp-items="Model.ViviendasDisponibles" class="form-select">
+                        <option value="">Seleccione</option>
+                    </select>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Enviar solicitud</button>
+                </div>
+            </form>
+        }
+    </div>
+</div>

@@ -302,9 +302,14 @@ async function guardarRoles() {
 // =================================
 // APROBAR USUARIO
 // =================================
+//
+// idVivienda es obligatorio: identifica CUÁL solicitud pendiente se está
+// aprobando, ya que un mismo usuario puede tener relaciones en más de una
+// vivienda (por ejemplo, ya es propietario activo en una y tiene una
+// solicitud pendiente en otra).
 
 
-async function aprobarUsuario(id) {
+async function aprobarUsuario(id, idVivienda) {
 
 
     const confirmar =
@@ -341,7 +346,8 @@ async function aprobarUsuario(id) {
                 body:
                     JSON.stringify(
                         {
-                            id: id
+                            id: id,
+                            idVivienda: idVivienda
                         })
 
 
@@ -396,9 +402,12 @@ async function aprobarUsuario(id) {
 // =================================
 // RECHAZAR USUARIO
 // =================================
+//
+// idVivienda: mismo motivo que en aprobarUsuario, identifica la solicitud
+// pendiente exacta que se está rechazando.
 
 
-async function rechazarUsuario(id) {
+async function rechazarUsuario(id, idVivienda) {
 
 
     const confirmar =
@@ -436,7 +445,8 @@ async function rechazarUsuario(id) {
                 body:
                     JSON.stringify(
                         {
-                            id: id
+                            id: id,
+                            idVivienda: idVivienda
                         })
 
 

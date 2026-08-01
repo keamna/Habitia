@@ -105,18 +105,12 @@ body {
 /* =========================
    MENU
 ========================= */
-
-
 .habitia-nav {
     padding: 18px 12px;
     display: flex;
     flex-direction: column;
     gap: 5px;
 }
-
-
-
-
 
 .habitia-nav-item {
     display: flex;
@@ -131,20 +125,11 @@ body {
     transition: .2s ease;
 }
 
-
-
-
-
     .habitia-nav-item i {
         font-size: 1rem;
         width: 20px;
         text-align: center;
     }
-
-
-
-
-
 
     .habitia-nav-item:hover {
         background-color: rgba(51,99,50,0.08);
@@ -152,82 +137,21 @@ body {
         text-decoration: none;
     }
 
-
-
-
-
-
     .habitia-nav-item.active {
         background-color: var(--habitia-green-active);
         color: #FFFFFF;
     }
 
-
-
-
         .habitia-nav-item.active i {
             color: #FFFFFF;
         }
-
-
-
-
-
-
-
-/* =========================
-   SECCIONES DEL MENÚ
-   (agrupan los ítems por rol; el título
-   solo se muestra cuando el usuario tiene 2+ roles)
-========================= */
-
 
 .habitia-nav-seccion {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    margin-top: 10px;
 }
-
-
-
-
-
-    .habitia-nav-seccion:not(:first-child) {
-        margin-top: 14px;
-        padding-top: 14px;
-        border-top: 1px solid var(--habitia-border);
-    }
-
-
-
-
-
-
-.habitia-nav-seccion-titulo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 14px 6px;
-    color: var(--habitia-text-gray);
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-
-
-
-
-    .habitia-nav-seccion-titulo i {
-        font-size: 0.82rem;
-        width: 20px;
-        text-align: center;
-    }
-
-
-
-
 
 
 

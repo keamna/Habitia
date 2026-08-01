@@ -84,12 +84,31 @@
                             {
                                 foreach (var vivienda in item.Viviendas)
                                 {
-                                    <div>
-                                        @vivienda.Codigo
-                                        <small class="text-muted">(@vivienda.TipoRelacion)</small>
+                                    <div class="mb-2">
+                                        <div>
+                                            @vivienda.Codigo
+                                            <small class="text-muted">(@vivienda.TipoRelacion)</small>
+                                            @if (vivienda.Estado == "Pendiente")
+                                            {
+                                                <span class="badge bg-warning text-dark ms-1">Pendiente</span>
+                                            }
+                                        </div>
+
+                                        @* Aprobar/Rechazar se hacen por vivienda, ya que un usuario
+                                           puede tener solicitudes pendientes en más de una (solo
+                                           si es propietario en cada una). *@
                                         @if (vivienda.Estado == "Pendiente")
                                         {
-                                            <span class="badge bg-warning text-dark ms-1">Pendiente</span>
+                                            <div class="mt-1">
+                                                <button class="btn btn-sm btn-aprobar"
+                                                        onclick="aprobarUsuario('@item.Id', @vivienda.ViviendaId)">
+                                                    <i class="bi bi-check-lg"></i> Aprobar
+                                                </button>
+                                                <button class="btn btn-sm btn-rechazar"
+                                                        onclick="rechazarUsuario('@item.Id', @vivienda.ViviendaId)">
+                                                    <i class="bi bi-x-lg"></i> Rechazar
+                                                </button>
+                                            </div>
                                         }
                                     </div>
                                 }
@@ -101,16 +120,6 @@
                         </td>
                         <td>
                             <div class="fila-acciones">
-                                @if (item.Estado == "Pendiente")
-                                {
-                                    <button class="btn btn-sm btn-aprobar" onclick="aprobarUsuario('@item.Id')">
-                                        <i class="bi bi-check-lg"></i> Aprobar
-                                    </button>
-                                    <button class="btn btn-sm btn-rechazar" onclick="rechazarUsuario('@item.Id')">
-                                        <i class="bi bi-x-lg"></i> Rechazar
-                                    </button>
-                                }
-
                                 @if (!item.Roles.Contains("Admin"))
                                 {
                                     <button class="btn-menu-fila">

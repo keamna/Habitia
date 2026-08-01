@@ -1,308 +1,131 @@
 ﻿/* ==============================
-   CREAR VIVIENDA
+   LISTADO DE VIVIENDAS (Admin)
 ============================== */
 
-.vivienda-form-card {
-    background-color: #FFFFFF;
-    border-radius: 16px;
-    padding: 32px;
-    max-width: 520px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+.viviendas-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
 }
 
+.viviendas-tabla th {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #848484;
+    border-bottom: 2px solid #E5E7EB;
+    padding: 12px 14px;
+    white-space: nowrap;
+}
 
-.vivienda-form-titulo {
-    font-size: 18px;
+.viviendas-tabla td {
+    padding: 14px;
+    vertical-align: middle;
+    font-size: 13.5px;
+}
+
+.vivienda-codigo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-weight: 700;
     color: #101010;
-    margin-bottom: 8px;
 }
 
-
-.vivienda-form-descripcion {
-    font-size: 13px;
-    color: #848484;
-    margin-bottom: 28px;
-}
-
-
-
-/* ==============================
-   CAMPOS
-============================== */
-
-
-.vivienda-form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 20px;
-}
-
-
-    .vivienda-form-group label {
-        font-size: 13px;
-        font-weight: 600;
-        color: #101010;
+    .vivienda-codigo i {
+        color: #336332;
+        font-size: 15px;
     }
 
-
-    .vivienda-form-group input,
-    .vivienda-form-group select {
-        height: 46px;
-        width: 100%;
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        color: #101010;
-        background-color: #FFFFFF;
-        border: 1.5px solid #E5E7EB;
-        border-radius: 10px;
-        padding: 0 14px;
-        outline: none;
-        transition: .2s ease;
-    }
-
-
-        .vivienda-form-group input::placeholder {
-            color: #C4C9D1;
-        }
-
-
-        .vivienda-form-group input:focus,
-        .vivienda-form-group select:focus {
-            border-color: #336332;
-            box-shadow: 0 0 0 3px rgba(51,99,50,0.08);
-            outline: none;
-        }
-
-    .vivienda-form-group input,
-    .vivienda-form-group select {
-        outline: none;
-    }
-
-
-
-
-/* ==============================
-   SELECT TIPO VIVIENDA
-============================== */
-
-
-.vivienda-tipos {
-    display: grid;
-    grid-template-columns: repeat(2,1fr);
-    gap: 12px;
-}
-
-
-
-.tipo-vivienda-card {
-    border: 1.5px solid #E5E7EB;
-    border-radius: 12px;
-    padding: 18px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: .2s ease;
-}
-
-
-    .tipo-vivienda-card:hover {
-        background-color: #F9FAFB;
-    }
-
-
-
-    .tipo-vivienda-card svg {
-        width: 28px;
-        height: 28px;
-        color: #848484;
-    }
-
-
-
-    .tipo-vivienda-card span {
-        font-size: 13px;
-        font-weight: 600;
-        color: #101010;
-    }
-
-
-
-    .tipo-vivienda-card.activo {
-        border-color: #336332;
-        background-color: #E8F5E8;
-    }
-
-
-        .tipo-vivienda-card.activo svg {
-            color: #336332;
-        }
-
-
-
-/* ==============================
-   ESTADO
-============================== */
-
-
-.vivienda-estado {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #F9FAFB;
-    border-radius: 10px;
-    padding: 14px 16px;
-    margin-bottom: 24px;
-}
-
-
-    .vivienda-estado span {
-        font-size: 13px;
-        font-weight: 600;
-        color: #101010;
-    }
-
-
-.estado-badge {
-    display: flex;
+.vivienda-badge-estado {
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 12px;
-    font-weight: 500;
-    color: #336332;
-    background: #E8F5E8;
+    font-size: 11.5px;
+    font-weight: 600;
     padding: 5px 12px;
     border-radius: 20px;
 }
 
-
-    .estado-badge::before {
+    .vivienda-badge-estado::before {
         content: "";
         width: 6px;
         height: 6px;
         border-radius: 50%;
+    }
+
+.badge-estado-disponible {
+    background: #E8F5E8;
+    color: #275126;
+}
+
+    .badge-estado-disponible::before {
         background: #336332;
     }
 
-
-
-/* ==============================
-   BOTONES
-============================== */
-
-
-.vivienda-form-footer {
-    display: flex;
-    gap: 12px;
-    margin-top: 28px;
+.badge-estado-ocupada {
+    background: #E0F2FE;
+    color: #075985;
 }
 
+    .badge-estado-ocupada::before {
+        background: #0284C7;
+    }
 
+.badge-estado-inactiva {
+    background: #F3F4F6;
+    color: #6B7280;
+}
 
-.btn-vivienda-cancelar {
-    flex: 1;
-    height: 44px;
-    border: none;
-    border-radius: 10px;
-    background: #F5F5F5;
-    color: #101010;
-    font-family: 'Inter',sans-serif;
-    font-size: 14px;
+    .badge-estado-inactiva::before {
+        background: #9CA3AF;
+    }
+
+.vivienda-propietario-vacio {
+    color: #C4C9D1;
+    font-style: italic;
+    font-size: 13px;
+}
+
+.vivienda-ocupantes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+    .vivienda-ocupantes .cifra {
+        font-weight: 700;
+        color: #101010;
+    }
+
+    .vivienda-ocupantes .etiqueta {
+        font-size: 11.5px;
+        color: #848484;
+    }
+
+.badge-cupo-pendiente {
+    display: inline-block;
+    font-size: 10.5px;
     font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 2px 9px;
+    border-radius: 20px;
+    background: #FEF3C7;
+    color: #92400E;
+    width: fit-content;
 }
 
-
-
-    .btn-vivienda-cancelar:hover {
-        background: #EBEBEB;
-    }
-
-
-
-.btn-vivienda-guardar {
-    flex: 1;
-    height: 44px;
-    border: none;
-    border-radius: 10px;
-    background: #336332;
-    color: #FFFFFF;
-    font-family: 'Inter',sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
+.viviendas-vacio {
+    text-align: center;
+    padding: 50px 20px;
+    color: #848484;
 }
 
-
-
-    .btn-vivienda-guardar:hover {
-        background: #275126;
+    .viviendas-vacio i {
+        font-size: 34px;
+        color: #C4C9D1;
+        display: block;
+        margin-bottom: 10px;
     }
-
-
-
-/* ==============================
-   VALIDACIONES
-============================== */
-
-
-.field-validation-error {
-    color: #EF4444;
-    font-size: 12px;
-}
-
-
-
-/* ==============================
-   RESPONSIVE
-============================== */
-
-
-@media(max-width:600px) {
-
-    .vivienda-form-card {
-        padding: 22px;
-    }
-
-
-    .vivienda-tipos {
-        grid-template-columns: 1fr;
-    }
-
-
-    .vivienda-form-footer {
-        flex-direction: column;
-    }
-}
-
-.modal-icon-danger {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: #FEE2E2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-    .modal-icon-danger i {
-        font-size: 26px;
-        color: #DC2626;
-    }
-
-
-/* =========================
-   DROPDOWN ACCIONES POR FILA
-========================= */
-
-.dropdown-menu-fila.visible {
-    display: block;
-}

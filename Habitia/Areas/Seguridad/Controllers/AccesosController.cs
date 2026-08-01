@@ -1,6 +1,7 @@
 ﻿using Habitia.Data;
 using Habitia.Enums;
 using Habitia.Helpers;
+using Habitia.Models;
 using Habitia.Models.Acceso;
 using Habitia.ViewModels.Acceso;
 using Microsoft.AspNetCore.Authorization;
@@ -35,6 +36,7 @@ namespace Habitia.Areas.Seguridad.Controllers
 
             var vm = accesos.Select(AccesoHelper.MapAccesoToVM).ToList();
 
+            ViewBag.EsAdmin = false;
             return View(vm);
         }
 
@@ -95,6 +97,8 @@ namespace Habitia.Areas.Seguridad.Controllers
                     return View(vm);
                 }
 
+                // Se guarda como visitante permanente: queda disponible para reutilizar
+                // en futuros registros manuales o autorizaciones (US-04/US-05, reutilización de datos).
                 var visitante = new Visitante
                 {
                     TC_Nombre = vm.NombreVisitante,
@@ -166,15 +170,15 @@ namespace Habitia.Areas.Seguridad.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ================= Validar autorización por QR =================
-        public IActionResult ValidarQR()
+        // ================= Validar código de autorización (generado por el residente) =================
+        public IActionResult ValidarCodigo()
         {
-            return View(new ValidarQRVM());
+            return View(new ValidarCodigoVM());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ValidarQR(ValidarQRVM vm)
+        public async Task<IActionResult> ValidarCodigo(ValidarCodigoVM vm)
         {
             if (!ModelState.IsValid)
             {
@@ -196,15 +200,17 @@ namespace Habitia.Areas.Seguridad.Controllers
                 return View(vm);
             }
 
+            // Los datos del visitante (nombre, identificación, teléfono) ya vienen
+            // de la Autorizacion.Visitante — no hay que volver a pedirlos aquí.
             var detalle = AccesoHelper.MapAutorizacionToVM(autorizacion, mostrarDatosResidente: true, puedeInvalidar: false);
 
-            return View("ConfirmarIngresoQR", detalle);
+            return View("ConfirmarIngreso", detalle);
         }
 
-        // ================= Confirmar el ingreso validado por QR =================
+        // ================= Confirmar el ingreso tras validar el código =================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ConfirmarIngresoQR(ConfirmarIngresoQRVM vm)
+        public async Task<IActionResult> ConfirmarIngreso(ConfirmarIngresoVM vm)
         {
             var autorizacion = await _context.Autorizaciones
                 .Include(a => a.Visitante)
@@ -213,7 +219,7 @@ namespace Habitia.Areas.Seguridad.Controllers
             if (autorizacion == null || autorizacion.TN_Estado != EstadoAutorizacionEnum.Pendiente)
             {
                 TempData["Error"] = "La autorización de ingreso no es válida";
-                return RedirectToAction(nameof(ValidarQR));
+                return RedirectToAction(nameof(ValidarCodigo));
             }
 
             if (autorizacion.TF_FechaVencimiento <= DateTime.Now)
@@ -222,7 +228,7 @@ namespace Habitia.Areas.Seguridad.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["Error"] = "La autorización de ingreso no es válida";
-                return RedirectToAction(nameof(ValidarQR));
+                return RedirectToAction(nameof(ValidarCodigo));
             }
 
             int? idVehiculo = null;
@@ -233,7 +239,7 @@ namespace Habitia.Areas.Seguridad.Controllers
                 {
                     TempData["Error"] = "Debe ingresar el número de placa del vehículo";
                     var detalle = AccesoHelper.MapAutorizacionToVM(autorizacion, mostrarDatosResidente: true, puedeInvalidar: false);
-                    return View("ConfirmarIngresoQR", detalle);
+                    return View("ConfirmarIngreso", detalle);
                 }
 
                 var vehiculo = new Vehiculo

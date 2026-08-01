@@ -2,7 +2,7 @@
 
 namespace Habitia.ViewModels.Acceso
 {
-    public class ConfirmarIngresoQRVM
+    public class ConfirmarIngresoVM
     {
         [Required]
         public int IdAutorizacion { get; set; }

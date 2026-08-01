@@ -21,8 +21,8 @@
                 <a asp-action="RegistroManual" class="btn btn-outline-primary">
                     <i class="bi bi-pencil-square me-1"></i> Registro manual
                 </a>
-                <a asp-action="ValidarQR" class="btn btn-primary">
-                    <i class="bi bi-qr-code-scan me-1"></i> Validar QR
+                <a asp-action="ValidarCodigo" class="btn btn-primary">
+                    <i class="bi bi-key-fill me-1"></i> Validar Código
                 </a>
             </div>
         }
@@ -85,7 +85,7 @@
                                 <td>@a.NumeroVivienda</td>
                                 <td class="reserva-motivo-col">@a.Motivo</td>
                                 <td>@a.FechaIngreso.ToString("dd/MM/yyyy hh:mm tt")</td>
-                                <td>@(a.FechaSalida.HasValue ? a.FechaSalida.Value.ToString("dd/MM/yyyy hh:mm tt") : "—")</td>
+                                <td>@(a.FechaSalida.HasValue? a.FechaSalida.Value.ToString("dd/MM/yyyy hh:mm tt") : "—")</td>
                                 <td>
                                     @if (a.TieneVehiculo)
                                     {
@@ -99,7 +99,7 @@
                                 <td>
                                     @if (a.OrigenAcceso == "QR")
                                     {
-                                        <span class="badge text-bg-info">QR</span>
+                                        <span class="badge text-bg-info">Con código</span>
                                     }
                                     else
                                     {
