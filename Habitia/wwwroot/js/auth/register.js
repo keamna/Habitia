@@ -7,12 +7,18 @@
     const btnPaso2 = document.getElementById("btnPaso2");
     const btnPaso3 = document.getElementById("btnPaso3");
 
+    const btnAtras2 = document.getElementById("btnAtras2");
+    const btnAtras3 = document.getElementById("btnAtras3");
+
+    const btnBackArrow = document.getElementById("btnBackArrow");
+
     const registerForm = document.getElementById("registerForm");
 
     const progressBar = document.getElementById("progressBar");
 
     let tipoRelacion = "";
     let tipoVivienda = "";
+    let pasoActual = 1;
 
 
     // ==========================
@@ -32,6 +38,43 @@
         if (progressBar) {
             progressBar.style.width = `${numero * 33.3}%`;
         }
+
+        pasoActual = numero;
+    }
+
+
+    // ==========================
+    // FLECHA SUPERIOR IZQUIERDA
+    // ==========================
+    // En el paso 1 vuelve al inicio del sitio; en los demás pasos,
+    // retrocede un paso del formulario (no saca de la pantalla de registro).
+    if (btnBackArrow) {
+
+        btnBackArrow.addEventListener("click", function () {
+
+            if (pasoActual === 1) {
+                window.location.href = "/";
+            } else {
+                mostrarPaso(pasoActual - 1);
+            }
+
+        });
+    }
+
+
+    // ==========================
+    // BOTONES "ANTERIOR" DE CADA PASO
+    // ==========================
+    if (btnAtras2) {
+        btnAtras2.addEventListener("click", function () {
+            mostrarPaso(1);
+        });
+    }
+
+    if (btnAtras3) {
+        btnAtras3.addEventListener("click", function () {
+            mostrarPaso(2);
+        });
     }
 
 
@@ -40,7 +83,7 @@
     // ==========================
     if (btnPaso1) {
 
-        btnPaso1.addEventListener("click", function () {
+        btnPaso1.addEventListener("click", async function () {
 
             let valido = true;
 
@@ -100,13 +143,37 @@
                 valido = false;
             }
 
-            // Contraseña
+            // Contraseña — mismas reglas configuradas en Program.cs:
+            // RequiredLength = 8, RequireDigit, RequireUppercase,
+            // RequireNonAlphanumeric, y RequireLowercase (por defecto en Identity).
             if (password === "") {
                 document.getElementById("errPassword").innerHTML = "Ingrese una contraseña";
                 valido = false;
-            } else if (password.length < 6) {
-                document.getElementById("errPassword").innerHTML = "La contraseña debe tener al menos 6 caracteres";
-                valido = false;
+            } else {
+
+                const erroresPassword = [];
+
+                if (password.length < 8) {
+                    erroresPassword.push("al menos 8 caracteres");
+                }
+                if (!/[a-z]/.test(password)) {
+                    erroresPassword.push("una letra minúscula");
+                }
+                if (!/[A-Z]/.test(password)) {
+                    erroresPassword.push("una letra mayúscula");
+                }
+                if (!/[0-9]/.test(password)) {
+                    erroresPassword.push("un número");
+                }
+                if (!/[^a-zA-Z0-9]/.test(password)) {
+                    erroresPassword.push("un carácter especial (ej. !@#$%)");
+                }
+
+                if (erroresPassword.length > 0) {
+                    document.getElementById("errPassword").innerHTML =
+                        "La contraseña debe tener " + erroresPassword.join(", ");
+                    valido = false;
+                }
             }
 
             // Confirmar contraseña
@@ -118,6 +185,49 @@
                 valido = false;
             }
 
+            // Si algo del formato básico ya está mal, ni siquiera consultamos al servidor
+            if (!valido) return;
+
+            // ==========================================
+            // VERIFICACIÓN CONTRA EL SERVIDOR:
+            // correo e identificación ya registrados.
+            // Se hacen en paralelo con Promise.all para no duplicar
+            // el tiempo de espera de una consulta tras otra.
+            // ==========================================
+            const textoOriginal = btnPaso1.textContent;
+            btnPaso1.disabled = true;
+            btnPaso1.textContent = "Verificando...";
+
+            try {
+
+                const [respuestaEmail, respuestaId] = await Promise.all([
+                    fetch(`/Account/VerificarEmailDisponible?email=${encodeURIComponent(correo)}`),
+                    fetch(`/Account/VerificarIdentificacionDisponible?identificacion=${encodeURIComponent(numeroId)}`)
+                ]);
+
+                const dataEmail = await respuestaEmail.json();
+                const dataId = await respuestaId.json();
+
+                if (!dataEmail.disponible) {
+                    document.getElementById("errEmail").innerHTML = "Ya existe una cuenta registrada con este correo";
+                    valido = false;
+                }
+
+                if (!dataId.disponible) {
+                    document.getElementById("errNumeroId").innerHTML = "Ya existe una cuenta registrada con este número de identificación";
+                    valido = false;
+                }
+
+            } catch (error) {
+                console.log(error);
+                document.getElementById("errEmail").innerHTML = "No se pudo verificar la información. Intente de nuevo.";
+                valido = false;
+            } finally {
+                btnPaso1.disabled = false;
+                btnPaso1.textContent = textoOriginal;
+            }
+
+            // Solo avanza al paso 2 si TODO (formato + servidor) fue válido
             if (valido) {
                 mostrarPaso(2);
             }
@@ -264,7 +374,14 @@
             viviendas.forEach(v => {
                 const option = document.createElement("option");
                 option.value = v.id;
-                option.textContent = v.numero;
+
+                // Para "Ocupante" (Inquilino) el backend indica si la persona
+                // va a quedar como Familiar o Inquilino en esa vivienda
+                // específica, según si el propietario vive ahí o no.
+                option.textContent = v.etiqueta
+                    ? `${v.numero} (${v.etiqueta})`
+                    : v.numero;
+
                 select.appendChild(option);
             });
 
