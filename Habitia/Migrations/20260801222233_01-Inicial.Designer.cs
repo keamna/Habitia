@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Habitia.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260729154806_05-Accesos2")]
-    partial class _05Accesos2
+    [Migration("20260801222233_01-Inicial")]
+    partial class _01Inicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace Habitia.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Habitia.Models.Acceso", b =>
+            modelBuilder.Entity("Habitia.Models.Acceso.Acceso", b =>
                 {
                     b.Property<int>("TN_Id")
                         .ValueGeneratedOnAdd()
@@ -82,6 +82,131 @@ namespace Habitia.Migrations
                     b.HasIndex("TN_IdVivienda");
 
                     b.ToTable("THBT_A_Acceso");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Acceso.Autorizacion", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<string>("TC_Codigo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TC_IdUsuario")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("TC_Motivo")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("TF_FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("TF_FechaVencimiento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("TF_FechaVisita")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TN_Estado")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TN_IdVisitante")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TN_IdVivienda")
+                        .HasColumnType("int");
+
+                    b.HasKey("TN_Id");
+
+                    b.HasIndex("TC_Codigo")
+                        .IsUnique();
+
+                    b.HasIndex("TC_IdUsuario");
+
+                    b.HasIndex("TF_FechaVencimiento");
+
+                    b.HasIndex("TN_Estado");
+
+                    b.HasIndex("TN_IdVisitante");
+
+                    b.HasIndex("TN_IdVivienda");
+
+                    b.ToTable("THBT_A_Autorizacion");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Acceso.Vehiculo", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<bool>("TB_Estado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TC_Observaciones")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("TC_Placa")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("TC_Tipo")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("TN_IdVisitante")
+                        .HasColumnType("int");
+
+                    b.HasKey("TN_Id");
+
+                    b.HasIndex("TN_IdVisitante");
+
+                    b.ToTable("THBT_A_Vehiculo");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Acceso.Visitante", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<bool>("TB_Estado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TC_Identificacion")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TC_Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("TC_Telefono")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("TN_TipoIdentificacion")
+                        .HasColumnType("int");
+
+                    b.HasKey("TN_Id");
+
+                    b.ToTable("THBT_A_Visitante");
                 });
 
             modelBuilder.Entity("Habitia.Models.ApplicationUser", b =>
@@ -251,64 +376,6 @@ namespace Habitia.Migrations
                     b.ToTable("THBT_A_AreaComunFoto");
                 });
 
-            modelBuilder.Entity("Habitia.Models.Autorizacion", b =>
-                {
-                    b.Property<int>("TN_Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
-
-                    b.Property<string>("TC_Codigo")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("TC_IdUsuario")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("TC_Motivo")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime>("TF_FechaRegistro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("TF_FechaVencimiento")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("TF_FechaVisita")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("TN_Estado")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TN_IdVisitante")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TN_IdVivienda")
-                        .HasColumnType("int");
-
-                    b.HasKey("TN_Id");
-
-                    b.HasIndex("TC_Codigo")
-                        .IsUnique();
-
-                    b.HasIndex("TC_IdUsuario");
-
-                    b.HasIndex("TF_FechaVencimiento");
-
-                    b.HasIndex("TN_Estado");
-
-                    b.HasIndex("TN_IdVisitante");
-
-                    b.HasIndex("TN_IdVivienda");
-
-                    b.ToTable("THBT_A_Autorizacion");
-                });
-
             modelBuilder.Entity("Habitia.Models.Catalogos.THBT_CAT_CategoriaPublicacion", b =>
                 {
                     b.Property<int>("TN_Id")
@@ -431,6 +498,433 @@ namespace Habitia.Migrations
                     b.HasKey("TN_Id");
 
                     b.ToTable("THBT_A_ExpiracionReserva");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_Cargo", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<bool>("TB_Estado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TC_Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("TC_IdResidente")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("TF_FechaEmision")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("TF_FechaVencimiento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TN_IdEstadoCargo")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TN_IdTipoCargo")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TN_MontoBase")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TN_MontoIva")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TN_MontoTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("TN_Id");
+
+                    b.HasIndex("TC_IdResidente");
+
+                    b.HasIndex("TF_FechaVencimiento");
+
+                    b.HasIndex("TN_IdEstadoCargo");
+
+                    b.HasIndex("TN_IdTipoCargo");
+
+                    b.ToTable("THBT_A_Cargo");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_ConfiguracionPago", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<bool>("TB_EfectivoHabilitado")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("TB_Estado")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("TB_SinpeHabilitado")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("TB_TarjetaHabilitado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TC_IbanTarjeta")
+                        .IsRequired()
+                        .HasMaxLength(34)
+                        .HasColumnType("nvarchar(34)");
+
+                    b.Property<string>("TC_NumeroSinpe")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<string>("TC_TitularSinpe")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("TC_TitularTarjeta")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("TF_FechaActualizacion")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("TN_Id");
+
+                    b.ToTable("THBT_A_ConfiguracionPago");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_Pago", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<bool>("TB_Estado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TC_MotivoRechazo")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("TC_RutaComprobante")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("TF_FechaPago")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TN_IdCargo")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TN_IdMetodoPago")
+                        .HasColumnType("int");
+
+                    b.HasKey("TN_Id");
+
+                    b.HasIndex("TN_IdCargo");
+
+                    b.HasIndex("TN_IdMetodoPago");
+
+                    b.ToTable("THBT_A_Pago");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_Recargo", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<bool>("TB_Estado")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("TF_FechaAplicacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TN_IdCargo")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TN_IdTipoRecargo")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TN_MontoAplicado")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TN_Valor")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("TN_Id");
+
+                    b.HasIndex("TN_IdCargo");
+
+                    b.HasIndex("TN_IdTipoRecargo");
+
+                    b.ToTable("THBT_A_Recargo");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_CAT_EstadoCargo", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<string>("TC_Nombre")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("TN_Id");
+
+                    b.ToTable("THBT_CAT_EstadoCargo");
+
+                    b.HasData(
+                        new
+                        {
+                            TN_Id = 1,
+                            TC_Nombre = "Pendiente"
+                        },
+                        new
+                        {
+                            TN_Id = 2,
+                            TC_Nombre = "En revisión"
+                        },
+                        new
+                        {
+                            TN_Id = 3,
+                            TC_Nombre = "Pagado"
+                        });
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_CAT_MetodoPago", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<string>("TC_Nombre")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("TN_Id");
+
+                    b.ToTable("THBT_CAT_MetodoPago");
+
+                    b.HasData(
+                        new
+                        {
+                            TN_Id = 1,
+                            TC_Nombre = "Efectivo"
+                        },
+                        new
+                        {
+                            TN_Id = 2,
+                            TC_Nombre = "Tarjeta"
+                        },
+                        new
+                        {
+                            TN_Id = 3,
+                            TC_Nombre = "SINPE"
+                        });
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_CAT_TipoCargo", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<string>("TC_Nombre")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("TN_Id");
+
+                    b.HasIndex("TC_Nombre")
+                        .IsUnique();
+
+                    b.ToTable("THBT_CAT_TipoCargo");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_CAT_TipoRecargo", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<string>("TC_Nombre")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("TN_Id");
+
+                    b.ToTable("THBT_CAT_TipoRecargo");
+
+                    b.HasData(
+                        new
+                        {
+                            TN_Id = 1,
+                            TC_Nombre = "Fijo"
+                        },
+                        new
+                        {
+                            TN_Id = 2,
+                            TC_Nombre = "Porcentaje"
+                        });
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_CAT_TipoTarjeta", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<string>("TC_Nombre")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("TN_Id");
+
+                    b.ToTable("THBT_CAT_TipoTarjeta");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_H_Cargo", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<string>("TC_IdUsuarioCambio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("TF_FechaCambio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TN_IdCargo")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TN_IdEstadoCargoAnterior")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TN_IdEstadoCargoNuevo")
+                        .HasColumnType("int");
+
+                    b.HasKey("TN_Id");
+
+                    b.ToTable("THBT_H_Cargo");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_H_ConfiguracionPago", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<bool>("TB_EfectivoHabilitado")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("TB_SinpeHabilitado")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("TB_TarjetaHabilitado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TC_IbanTarjeta")
+                        .IsRequired()
+                        .HasMaxLength(34)
+                        .HasColumnType("nvarchar(34)");
+
+                    b.Property<string>("TC_IdUsuarioCambio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TC_NumeroSinpe")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<string>("TC_TitularSinpe")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("TC_TitularTarjeta")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("TF_FechaCambio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TN_IdConfiguracionPago")
+                        .HasColumnType("int");
+
+                    b.HasKey("TN_Id");
+
+                    b.ToTable("THBT_H_ConfiguracionPago");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_H_Pago", b =>
+                {
+                    b.Property<int>("TN_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
+
+                    b.Property<bool>("TB_Aprobado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TC_IdUsuarioCambio")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TC_MotivoRechazo")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("TF_FechaCambio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TN_IdPago")
+                        .HasColumnType("int");
+
+                    b.HasKey("TN_Id");
+
+                    b.ToTable("THBT_H_Pago");
                 });
 
             modelBuilder.Entity("Habitia.Models.ImagenPublicacion", b =>
@@ -733,73 +1227,6 @@ namespace Habitia.Migrations
                     b.ToTable("THBT_A_Reserva");
                 });
 
-            modelBuilder.Entity("Habitia.Models.Vehiculo", b =>
-                {
-                    b.Property<int>("TN_Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
-
-                    b.Property<bool>("TB_Estado")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("TC_Observaciones")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("TC_Placa")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("TC_Tipo")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("TN_IdVisitante")
-                        .HasColumnType("int");
-
-                    b.HasKey("TN_Id");
-
-                    b.HasIndex("TN_IdVisitante");
-
-                    b.ToTable("THBT_A_Vehiculo");
-                });
-
-            modelBuilder.Entity("Habitia.Models.Visitante", b =>
-                {
-                    b.Property<int>("TN_Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
-
-                    b.Property<bool>("TB_Estado")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("TC_Identificacion")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("TC_Nombre")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("TC_Telefono")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<int>("TN_TipoIdentificacion")
-                        .HasColumnType("int");
-
-                    b.HasKey("TN_Id");
-
-                    b.ToTable("THBT_A_Visitante");
-                });
-
             modelBuilder.Entity("Habitia.Models.Vivienda", b =>
                 {
                     b.Property<int>("TN_Id")
@@ -1002,7 +1429,7 @@ namespace Habitia.Migrations
                     b.ToTable("THBT_A_UsuarioToken", (string)null);
                 });
 
-            modelBuilder.Entity("Habitia.Models.Acceso", b =>
+            modelBuilder.Entity("Habitia.Models.Acceso.Acceso", b =>
                 {
                     b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
                         .WithMany()
@@ -1010,17 +1437,17 @@ namespace Habitia.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Habitia.Models.Autorizacion", "Autorizacion")
+                    b.HasOne("Habitia.Models.Acceso.Autorizacion", "Autorizacion")
                         .WithMany("Accesos")
                         .HasForeignKey("TN_IdAutorizacion")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Habitia.Models.Vehiculo", "Vehiculo")
+                    b.HasOne("Habitia.Models.Acceso.Vehiculo", "Vehiculo")
                         .WithMany()
                         .HasForeignKey("TN_IdVehiculo")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Habitia.Models.Visitante", "Visitante")
+                    b.HasOne("Habitia.Models.Acceso.Visitante", "Visitante")
                         .WithMany()
                         .HasForeignKey("TN_IdVisitante")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1041,6 +1468,44 @@ namespace Habitia.Migrations
                     b.Navigation("Visitante");
 
                     b.Navigation("Vivienda");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Acceso.Autorizacion", b =>
+                {
+                    b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("TC_IdUsuario")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Habitia.Models.Acceso.Visitante", "Visitante")
+                        .WithMany("Autorizaciones")
+                        .HasForeignKey("TN_IdVisitante")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Habitia.Models.Vivienda", "Vivienda")
+                        .WithMany()
+                        .HasForeignKey("TN_IdVivienda")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+
+                    b.Navigation("Visitante");
+
+                    b.Navigation("Vivienda");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Acceso.Vehiculo", b =>
+                {
+                    b.HasOne("Habitia.Models.Acceso.Visitante", "Visitante")
+                        .WithMany("Vehiculos")
+                        .HasForeignKey("TN_IdVisitante")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Visitante");
                 });
 
             modelBuilder.Entity("Habitia.Models.AreaComun", b =>
@@ -1065,33 +1530,6 @@ namespace Habitia.Migrations
                     b.Navigation("AreaComun");
                 });
 
-            modelBuilder.Entity("Habitia.Models.Autorizacion", b =>
-                {
-                    b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("TC_IdUsuario")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Habitia.Models.Visitante", "Visitante")
-                        .WithMany("Autorizaciones")
-                        .HasForeignKey("TN_IdVisitante")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Habitia.Models.Vivienda", "Vivienda")
-                        .WithMany()
-                        .HasForeignKey("TN_IdVivienda")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Usuario");
-
-                    b.Navigation("Visitante");
-
-                    b.Navigation("Vivienda");
-                });
-
             modelBuilder.Entity("Habitia.Models.DisponibilidadArea", b =>
                 {
                     b.HasOne("Habitia.Models.AreaComun", "AreaComun")
@@ -1101,6 +1539,71 @@ namespace Habitia.Migrations
                         .IsRequired();
 
                     b.Navigation("AreaComun");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_Cargo", b =>
+                {
+                    b.HasOne("Habitia.Models.ApplicationUser", "Residente")
+                        .WithMany()
+                        .HasForeignKey("TC_IdResidente")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Habitia.Models.Financiero.THBT_CAT_EstadoCargo", "EstadoCargo")
+                        .WithMany()
+                        .HasForeignKey("TN_IdEstadoCargo")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Habitia.Models.Financiero.THBT_CAT_TipoCargo", "TipoCargo")
+                        .WithMany()
+                        .HasForeignKey("TN_IdTipoCargo")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("EstadoCargo");
+
+                    b.Navigation("Residente");
+
+                    b.Navigation("TipoCargo");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_Pago", b =>
+                {
+                    b.HasOne("Habitia.Models.Financiero.THBT_A_Cargo", "Cargo")
+                        .WithMany()
+                        .HasForeignKey("TN_IdCargo")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Habitia.Models.Financiero.THBT_CAT_MetodoPago", "MetodoPago")
+                        .WithMany()
+                        .HasForeignKey("TN_IdMetodoPago")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cargo");
+
+                    b.Navigation("MetodoPago");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_Recargo", b =>
+                {
+                    b.HasOne("Habitia.Models.Financiero.THBT_A_Cargo", "Cargo")
+                        .WithMany()
+                        .HasForeignKey("TN_IdCargo")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Habitia.Models.Financiero.THBT_CAT_TipoRecargo", "TipoRecargo")
+                        .WithMany()
+                        .HasForeignKey("TN_IdTipoRecargo")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cargo");
+
+                    b.Navigation("TipoRecargo");
                 });
 
             modelBuilder.Entity("Habitia.Models.ImagenPublicacion", b =>
@@ -1205,13 +1708,13 @@ namespace Habitia.Migrations
                     b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
                         .WithMany()
                         .HasForeignKey("TC_IdUsuario")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Habitia.Models.Publicacion", "Publicacion")
                         .WithMany("Resenas")
                         .HasForeignKey("TN_IdPublicacion")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Publicacion");
@@ -1244,17 +1747,6 @@ namespace Habitia.Migrations
                     b.Navigation("Usuario");
 
                     b.Navigation("Vivienda");
-                });
-
-            modelBuilder.Entity("Habitia.Models.Vehiculo", b =>
-                {
-                    b.HasOne("Habitia.Models.Visitante", "Visitante")
-                        .WithMany("Vehiculos")
-                        .HasForeignKey("TN_IdVisitante")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Visitante");
                 });
 
             modelBuilder.Entity("Habitia.Models.ViviendaUsuario", b =>
@@ -1327,6 +1819,18 @@ namespace Habitia.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Habitia.Models.Acceso.Autorizacion", b =>
+                {
+                    b.Navigation("Accesos");
+                });
+
+            modelBuilder.Entity("Habitia.Models.Acceso.Visitante", b =>
+                {
+                    b.Navigation("Autorizaciones");
+
+                    b.Navigation("Vehiculos");
+                });
+
             modelBuilder.Entity("Habitia.Models.ApplicationUser", b =>
                 {
                     b.Navigation("Incidencias");
@@ -1341,11 +1845,6 @@ namespace Habitia.Migrations
                     b.Navigation("Disponibilidades");
 
                     b.Navigation("Fotos");
-                });
-
-            modelBuilder.Entity("Habitia.Models.Autorizacion", b =>
-                {
-                    b.Navigation("Accesos");
                 });
 
             modelBuilder.Entity("Habitia.Models.Catalogos.THBT_CAT_CategoriaPublicacion", b =>
@@ -1373,13 +1872,6 @@ namespace Habitia.Migrations
                     b.Navigation("Imagenes");
 
                     b.Navigation("Resenas");
-                });
-
-            modelBuilder.Entity("Habitia.Models.Visitante", b =>
-                {
-                    b.Navigation("Autorizaciones");
-
-                    b.Navigation("Vehiculos");
                 });
 
             modelBuilder.Entity("Habitia.Models.Vivienda", b =>

@@ -6,7 +6,6 @@ using Habitia.ViewModels.Vivienda;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace Habitia.Areas.Residente.Controllers
@@ -179,39 +178,36 @@ namespace Habitia.Areas.Residente.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // ============================
+        // NUEVA LÓGICA REGISTRO
+        // ============================
+
         // GET: /Residente/Vivienda/RegistrarVivienda
         [HttpGet]
-        public async Task<IActionResult> RegistrarVivienda()
+        public IActionResult RegistrarVivienda()
         {
-            var userId = _userManager.GetUserId(User);
+            return View(new RegistrarViviendaViewModel());
+        }
 
-            // Viviendas donde el usuario ya tiene relación (activa o pendiente),
-            // para no ofrecerlas de nuevo en la lista.
-            var viviendasYaRelacionadas = await _context.ViviendaUsuarios
-                .Where(x =>
-                    x.TC_IdUsuario == userId &&
-                    x.TN_Estado != EstadoUsuarioEnum.Rechazado)
-                .Select(x => x.TN_IdVivienda)
-                .ToListAsync();
-
+        // AJAX: /Residente/Vivienda/ObtenerViviendasSinPropietario
+        [HttpGet]
+        public async Task<IActionResult> ObtenerViviendasSinPropietario(TipoViviendaEnum tipo)
+        {
             var viviendas = await _context.Viviendas
+                .Include(v => v.Usuarios)
                 .Where(v =>
-                    v.TN_Estado != EstadoViviendaEnum.Inactiva &&
-                    !viviendasYaRelacionadas.Contains(v.TN_Id))
-                .OrderBy(v => v.TC_Numero)
-                .Select(v => new SelectListItem
-                {
-                    Value = v.TN_Id.ToString(),
-                    Text = v.TC_Numero
-                })
+                    v.TN_Tipo == tipo &&
+                    v.TN_Estado != EstadoViviendaEnum.Inactiva)
                 .ToListAsync();
 
-            var model = new RegistrarViviendaViewModel
-            {
-                ViviendasDisponibles = viviendas
-            };
+            var resultado = viviendas
+                .Where(v => !v.Usuarios.Any(x =>
+                    x.TN_TipoRelacion == TipoRelacionEnum.Propietario &&
+                    (x.TN_Estado == EstadoUsuarioEnum.Activo || x.TN_Estado == EstadoUsuarioEnum.Pendiente)))
+                .Select(v => new { id = v.TN_Id, numero = v.TC_Numero })
+                .ToList();
 
-            return View(model);
+            return Json(resultado);
         }
 
         // POST: /Residente/Vivienda/RegistrarVivienda
@@ -223,30 +219,27 @@ namespace Habitia.Areas.Residente.Controllers
 
             if (!ModelState.IsValid)
             {
-                model.ViviendasDisponibles = await ObtenerViviendasSelectList(userId);
                 return View(model);
             }
 
             var vivienda = await _context.Viviendas
+                .Include(v => v.Usuarios)
                 .FirstOrDefaultAsync(v => v.TN_Id == model.IdVivienda);
 
             if (vivienda == null || vivienda.TN_Estado == EstadoViviendaEnum.Inactiva)
             {
                 ModelState.AddModelError(nameof(model.IdVivienda), "La vivienda seleccionada no está disponible.");
-                model.ViviendasDisponibles = await ObtenerViviendasSelectList(userId);
                 return View(model);
             }
 
-            var yaTieneRelacion = await _context.ViviendaUsuarios
-                .AnyAsync(x =>
-                    x.TC_IdUsuario == userId &&
-                    x.TN_IdVivienda == model.IdVivienda &&
-                    x.TN_Estado != EstadoUsuarioEnum.Rechazado);
+            // 🔒 Protección contra doble asignación
+            var yaTienePropietario = vivienda.Usuarios.Any(x =>
+                x.TN_TipoRelacion == TipoRelacionEnum.Propietario &&
+                (x.TN_Estado == EstadoUsuarioEnum.Activo || x.TN_Estado == EstadoUsuarioEnum.Pendiente));
 
-            if (yaTieneRelacion)
+            if (yaTienePropietario)
             {
-                ModelState.AddModelError(nameof(model.IdVivienda), "Ya tiene una solicitud o relación con esa vivienda.");
-                model.ViviendasDisponibles = await ObtenerViviendasSelectList(userId);
+                ModelState.AddModelError(nameof(model.IdVivienda), "Esta vivienda ya tiene un propietario asignado.");
                 return View(model);
             }
 
@@ -256,7 +249,7 @@ namespace Habitia.Areas.Residente.Controllers
                 TC_IdUsuario = userId,
                 TN_TipoRelacion = TipoRelacionEnum.Propietario,
                 TN_Estado = EstadoUsuarioEnum.Pendiente,
-                TB_ViveAhi = false, // el residente lo ajusta después si corresponde
+                TB_ViveAhi = false,
                 TF_FechaRegistro = DateTime.Now
             });
 
@@ -265,29 +258,6 @@ namespace Habitia.Areas.Residente.Controllers
             TempData["MensajeExito"] = "Solicitud enviada. Un administrador debe aprobarla.";
 
             return RedirectToAction(nameof(Index));
-        }
-
-        // Helper privado para no repetir la consulta del select en los 2 branches de arriba.
-        private async Task<List<SelectListItem>> ObtenerViviendasSelectList(string userId)
-        {
-            var viviendasYaRelacionadas = await _context.ViviendaUsuarios
-                .Where(x =>
-                    x.TC_IdUsuario == userId &&
-                    x.TN_Estado != EstadoUsuarioEnum.Rechazado)
-                .Select(x => x.TN_IdVivienda)
-                .ToListAsync();
-
-            return await _context.Viviendas
-                .Where(v =>
-                    v.TN_Estado != EstadoViviendaEnum.Inactiva &&
-                    !viviendasYaRelacionadas.Contains(v.TN_Id))
-                .OrderBy(v => v.TC_Numero)
-                .Select(v => new SelectListItem
-                {
-                    Value = v.TN_Id.ToString(),
-                    Text = v.TC_Numero
-                })
-                .ToListAsync();
         }
     }
 }

@@ -2,6 +2,8 @@
 @{
     ViewData["Title"] = "Registrar otra vivienda";
 }
+<link rel="stylesheet" href="~/css/admin/viviendas.css" asp-append-version="true" />
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Registrar otra vivienda</h2>
 </div>
@@ -9,7 +11,8 @@
 <div class="alert alert-info">
     <i class="bi bi-info-circle"></i>
     Solo puedes registrarte como <strong>propietario</strong> de una vivienda adicional.
-    La solicitud quedará pendiente hasta que un administrador la apruebe.
+    Únicamente se muestran viviendas que aún no tienen propietario. La solicitud
+    quedará pendiente hasta que un administrador la apruebe.
 </div>
 
 <div class="card" style="max-width: 560px;">
@@ -24,25 +27,98 @@
             </div>
         }
 
-        @if (!Model.ViviendasDisponibles.Any())
-        {
-            <p class="text-muted">No hay viviendas disponibles para registrar en este momento.</p>
-        }
-        else
-        {
-            <form asp-action="RegistrarVivienda" method="post">
-                @Html.AntiForgeryToken()
-                <div class="mb-3">
-                    <label class="form-label">Vivienda</label>
-                    <select asp-for="IdVivienda" asp-items="Model.ViviendasDisponibles" class="form-select">
-                        <option value="">Seleccione</option>
-                    </select>
+        <form asp-action="RegistrarVivienda" method="post" id="formRegistrarVivienda">
+            @Html.AntiForgeryToken()
+
+            <label class="form-label">Tipo de vivienda</label>
+            <div class="row g-3 mb-3">
+                <div class="col-6">
+                    <div class="card selection-card card-tipo-vivienda h-100" data-valor="1">
+                        <div class="card-body text-center">
+                            <i class="bi bi-house fs-2"></i>
+                            <div class="selection-card-titulo mt-2">Casa</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="d-flex justify-content-end gap-2">
-                    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-                    <button type="submit" class="btn btn-primary">Enviar solicitud</button>
+                <div class="col-6">
+                    <div class="card selection-card card-tipo-vivienda h-100" data-valor="2">
+                        <div class="card-body text-center">
+                            <i class="bi bi-buildings fs-2"></i>
+                            <div class="selection-card-titulo mt-2">Departamento</div>
+                        </div>
+                    </div>
                 </div>
-            </form>
-        }
+            </div>
+            <input type="hidden" asp-for="TipoVivienda" id="TipoVivienda" />
+            <span asp-validation-for="TipoVivienda" class="text-danger small d-block mb-3"></span>
+
+            <div id="viviendaSelectWrapper" style="display:none;">
+                <label class="form-label" for="IdVivienda">Vivienda</label>
+                <select asp-for="IdVivienda" class="form-select" id="IdVivienda">
+                    <option value="">Seleccione una vivienda</option>
+                </select>
+                <span asp-validation-for="IdVivienda" class="text-danger small"></span>
+                <div class="text-danger small" id="errSinViviendas" style="display:none;">
+                    No hay viviendas disponibles sin propietario para este tipo.
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Enviar solicitud</button>
+            </div>
+        </form>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelectorAll(".card-tipo-vivienda").forEach(card => {
+            card.addEventListener("click", async function () {
+
+                document.querySelectorAll(".card-tipo-vivienda").forEach(c => c.classList.remove("border-success", "bg-light"));
+                this.classList.add("border-success", "bg-light");
+
+                const tipo = this.dataset.valor;
+                document.getElementById("TipoVivienda").value = tipo;
+
+                await cargarViviendasSinPropietario(tipo);
+            });
+        });
+
+        async function cargarViviendasSinPropietario(tipo) {
+
+            const select = document.getElementById("IdVivienda");
+            const wrapper = document.getElementById("viviendaSelectWrapper");
+            const errSinViviendas = document.getElementById("errSinViviendas");
+
+            select.innerHTML = `<option value="">Seleccione una vivienda</option>`;
+            errSinViviendas.style.display = "none";
+
+            try {
+                const respuesta = await fetch(`/Residente/Vivienda/ObtenerViviendasSinPropietario?tipo=${tipo}`);
+                const viviendas = await respuesta.json();
+
+                if (!viviendas || viviendas.length === 0) {
+                    errSinViviendas.style.display = "block";
+                } else {
+                    viviendas.forEach(v => {
+                        const option = document.createElement("option");
+                        option.value = v.id;
+                        option.textContent = v.numero;
+                        select.appendChild(option);
+                    });
+                }
+
+                wrapper.style.display = "block";
+
+            } catch (error) {
+                console.log(error);
+                errSinViviendas.textContent = "No se pudieron cargar las viviendas. Intente de nuevo.";
+                errSinViviendas.style.display = "block";
+                wrapper.style.display = "block";
+            }
+        }
+    </script>
+}

@@ -1705,13 +1705,13 @@ namespace Habitia.Migrations
                     b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
                         .WithMany()
                         .HasForeignKey("TC_IdUsuario")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Habitia.Models.Publicacion", "Publicacion")
                         .WithMany("Resenas")
                         .HasForeignKey("TN_IdPublicacion")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Publicacion");

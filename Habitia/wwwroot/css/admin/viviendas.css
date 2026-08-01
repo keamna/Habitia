@@ -1,6 +1,7 @@
 ﻿/* ==============================
    LISTADO DE VIVIENDAS (Admin)
 ============================== */
+
 .viviendas-toolbar {
     display: flex;
     justify-content: flex-end;
@@ -194,3 +195,206 @@
         .dropdown-menu-fila .dropdown-item.eliminar {
             color: #DC2626;
         }
+
+
+/* ==============================
+   MI VIVIENDA (Residente)
+============================== */
+
+.mi-vivienda-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+    .mi-vivienda-header h1 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #101010;
+        margin-bottom: 4px;
+    }
+
+    .mi-vivienda-header p {
+        font-size: 13px;
+        color: #848484;
+        margin: 0;
+    }
+
+.btn-registrar-vivienda {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 40px;
+    padding: 0 16px;
+    border: 1.5px solid #336332;
+    border-radius: 10px;
+    background: #FFFFFF;
+    color: #336332;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+    .btn-registrar-vivienda:hover {
+        background: #F2FDF2;
+        color: #275126;
+    }
+
+.mi-vivienda-card {
+    border: 1.5px solid #E5E7EB;
+    border-radius: 14px;
+    overflow: hidden;
+    transition: box-shadow .2s ease, border-color .2s ease;
+}
+
+    .mi-vivienda-card:hover {
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+        border-color: #D1D5DB;
+    }
+
+.mi-vivienda-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 18px;
+    background: #F9FAFB;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+    .mi-vivienda-card-header .numero {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 17px;
+        font-weight: 700;
+        color: #101010;
+    }
+
+        .mi-vivienda-card-header .numero i {
+            color: #336332;
+            font-size: 18px;
+        }
+
+.mi-vivienda-badge-estado {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.badge-estado-disponible {
+    background: #E8F5E8;
+    color: #275126;
+}
+
+.badge-estado-ocupada {
+    background: #E0F2FE;
+    color: #075985;
+}
+
+.badge-estado-inactiva {
+    background: #F3F4F6;
+    color: #6B7280;
+}
+
+.mi-vivienda-body {
+    padding: 18px;
+}
+
+.mi-vivienda-fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 13px;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+    .mi-vivienda-fila:last-of-type {
+        border-bottom: none;
+    }
+
+    .mi-vivienda-fila span:first-child {
+        color: #848484;
+    }
+
+    .mi-vivienda-fila span:last-child {
+        color: #101010;
+        font-weight: 600;
+        text-align: right;
+    }
+
+.mi-vivienda-badge-rol {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #F2FDF2;
+    color: #336332;
+}
+
+.mi-vivienda-cupo-alerta {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #FFF7ED;
+    border: 1px solid #FED7AA;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    color: #9A3412;
+    margin-top: 12px;
+}
+
+    .mi-vivienda-cupo-alerta i {
+        font-size: 14px;
+        margin-top: 1px;
+    }
+
+.mi-vivienda-footer {
+    padding: 0 18px 18px;
+}
+
+.btn-editar-cupo {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 38px;
+    border: 1.5px solid #E5E7EB;
+    border-radius: 10px;
+    background: #FFFFFF;
+    color: #101010;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: .2s ease;
+}
+
+    .btn-editar-cupo:hover {
+        background: #F9FAFB;
+        border-color: #336332;
+        color: #336332;
+    }
+
+.mi-vivienda-vacio {
+    background: #F9FAFB;
+    border: 1.5px dashed #D1D5DB;
+    border-radius: 14px;
+    padding: 40px 20px;
+    text-align: center;
+    color: #848484;
+}
+
+    .mi-vivienda-vacio i {
+        font-size: 32px;
+        color: #C4C9D1;
+        margin-bottom: 10px;
+        display: block;
+    }
