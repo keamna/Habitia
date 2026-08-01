@@ -9,11 +9,6 @@
                    : User.IsInRole("Mantenimiento") ? "Mantenimiento"
                    : "Residente";
 
-    var cantidadRoles = new[] { "Admin", "Residente", "Seguridad", "Mantenimiento" }
-        .Count(r => User.IsInRole(r));
-
-    var mostrarTituloSeccion = cantidadRoles >= 2;
-
     var nombreUsuario = User.Identity?.Name ?? "Usuario";
     var areaActual = ViewContext.RouteData.Values["area"]?.ToString();
     var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
@@ -114,11 +109,6 @@
                     @if (User.IsInRole("Admin"))
                     {
                         <div class="habitia-nav-seccion">
-                            <div class="habitia-nav-seccion-titulo @(mostrarTituloSeccion ? "" : "d-none")">
-                                <i class="bi bi-shield-lock-fill"></i>
-                                <span>Administración</span>
-                            </div>
-
                             <a class="habitia-nav-item @(esUsuarios ? "active" : "")"
                                asp-area="Admin" asp-controller="Usuarios" asp-action="Index">
                                 <i class="bi bi-people-fill"></i>
@@ -179,11 +169,6 @@
                     @if (User.IsInRole("Residente"))
                     {
                         <div class="habitia-nav-seccion">
-                            <div class="habitia-nav-seccion-titulo @(mostrarTituloSeccion ? "" : "d-none")">
-                                <i class="bi bi-house-door-fill"></i>
-                                <span>Residente</span>
-                            </div>
-
                             <a class="habitia-nav-item @(EsActivo("Residente", "Vivienda") ? "active" : "")"
                                asp-area="Residente" asp-controller="Vivienda" asp-action="Index">
                                 <i class="bi bi-house-door-fill"></i>
@@ -232,11 +217,6 @@
                     @if (User.IsInRole("Seguridad"))
                     {
                         <div class="habitia-nav-seccion">
-                            <div class="habitia-nav-seccion-titulo @(mostrarTituloSeccion ? "" : "d-none")">
-                                <i class="bi bi-shield-check"></i>
-                                <span>Seguridad</span>
-                            </div>
-
                             <a class="habitia-nav-item @(EsActivo("Seguridad", "Accesos") ? "active" : "")"
                                asp-area="Seguridad" asp-controller="Accesos" asp-action="Index">
                                 <i class="bi bi-shield-check"></i>
@@ -261,11 +241,6 @@
                     @if (User.IsInRole("Mantenimiento"))
                     {
                         <div class="habitia-nav-seccion">
-                            <div class="habitia-nav-seccion-titulo @(mostrarTituloSeccion ? "" : "d-none")">
-                                <i class="bi bi-tools"></i>
-                                <span>Mantenimiento</span>
-                            </div>
-
                             <a class="habitia-nav-item @(EsActivo("Mantenimiento", "Tareas") ? "active" : "")"
                                asp-area="Mantenimiento" asp-controller="Tareas" asp-action="Index">
                                 <i class="bi bi-tools"></i>

@@ -3,14 +3,29 @@
 @{
     ViewData["Title"] = "Mi Vivienda";
 }
+<link rel="stylesheet" href="~/css/admin/viviendas.css" asp-append-version="true" />
+
 <div class="mi-vivienda-header">
-    <h1>Mi Vivienda</h1>
-    <p class="text-muted">Información de la(s) vivienda(s) asociadas a tu cuenta</p>
+    <div>
+        <h1>Mi Vivienda</h1>
+        <p>Información de la(s) vivienda(s) asociadas a tu cuenta</p>
+    </div>
+    <a asp-action="RegistrarVivienda" class="btn-registrar-vivienda">
+        <i class="bi bi-plus-lg"></i> Registrar otra vivienda
+    </a>
 </div>
+
+@if (TempData["MensajeExito"] != null)
+{
+    <div class="alert alert-success">@TempData["MensajeExito"]</div>
+}
+
 @if (!Model.Any())
 {
-    <div class="alert alert-warning">
-        No tenés ninguna vivienda asociada todavía.
+    <div class="mi-vivienda-vacio">
+        <i class="bi bi-house-slash"></i>
+        <div class="fw-semibold text-dark mb-1">No tenés ninguna vivienda asociada todavía</div>
+        <div>Registrá una vivienda como propietario para comenzar.</div>
     </div>
 }
 else
@@ -18,47 +33,73 @@ else
     <div class="row g-4">
         @foreach (var vivienda in Model)
         {
-            <div class="col-md-6 col-lg-4">
-                <div class="card mi-vivienda-card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h5 class="card-title mb-0">
-                                <i class="bi bi-house-door-fill me-2"></i>@vivienda.Numero
-                            </h5>
-                            <span class="badge @(vivienda.Estado == EstadoViviendaEnum.Disponible ? "bg-success" : "bg-secondary")">
-                                @vivienda.Estado
-                            </span>
-                        </div>
-                        <p class="mb-1"><strong>Tipo:</strong> @(vivienda.Tipo == Habitia.Enums.TipoViviendaEnum.Apartamento ? "Departamento" : vivienda.Tipo.ToString())</p>
-                        <p class="mb-1">
-                            <strong>Tu relación:</strong>
-                            @(vivienda.ViveAhi ? "Vivís ahí" : "No vivís ahí")
-                        </p>
-                        @if (!string.IsNullOrEmpty(vivienda.PropietarioNombre))
-                        {
-                            <p class="mb-1"><strong>Propietario:</strong> @vivienda.PropietarioNombre</p>
-                        }
-                        <hr />
-                        <p class="mb-0">
-                            <strong>Cupo de @vivienda.EtiquetaInquilinos.ToLower():</strong>
-                            @vivienda.InquilinosActuales / @vivienda.CantidadInquilinos
-                        </p>
+            var estadoClase = vivienda.Estado switch
+            {
+                EstadoViviendaEnum.Disponible => "badge-estado-disponible",
+                EstadoViviendaEnum.Ocupada => "badge-estado-ocupada",
+                _ => "badge-estado-inactiva"
+            };
 
-                        @if (vivienda.EsPropietario && vivienda.CantidadInquilinos == 0)
-                        {
-                            <div class="alert alert-warning mt-2 mb-0 py-2 px-3 small">
-                                <i class="bi bi-exclamation-triangle"></i>
-                                Aún no configuraste cuántos @vivienda.EtiquetaInquilinos.ToLower() pueden vivir en tu vivienda.
-                            </div>
-                        }
+            var tipoTexto = vivienda.Tipo == TipoViviendaEnum.Apartamento ? "Departamento" : vivienda.Tipo.ToString();
+
+            <div class="col-md-6 col-lg-4">
+                <div class="mi-vivienda-card h-100 d-flex flex-column">
+
+                    <div class="mi-vivienda-card-header">
+                        <div class="numero">
+                            <i class="bi bi-house-door-fill"></i>
+                            @vivienda.Numero
+                        </div>
+                        <span class="mi-vivienda-badge-estado @estadoClase">@vivienda.Estado</span>
+                    </div>
+
+                    <div class="mi-vivienda-body flex-grow-1">
 
                         @if (vivienda.EsPropietario)
                         {
-                            <a asp-action="EditarCupo" asp-route-id="@vivienda.Id" class="btn btn-sm btn-outline-primary mt-2">
-                                <i class="bi bi-pencil"></i> Editar cupo
-                            </a>
+                            <span class="mi-vivienda-badge-rol mb-2 d-inline-block">Propietario</span>
+                        }
+
+                        <div class="mi-vivienda-fila">
+                            <span>Tipo</span>
+                            <span>@tipoTexto</span>
+                        </div>
+
+                        <div class="mi-vivienda-fila">
+                            <span>Tu relación</span>
+                            <span>@(vivienda.ViveAhi ? "Vivís ahí" : "No vivís ahí")</span>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(vivienda.PropietarioNombre))
+                        {
+                            <div class="mi-vivienda-fila">
+                                <span>Propietario</span>
+                                <span>@vivienda.PropietarioNombre</span>
+                            </div>
+                        }
+
+                        <div class="mi-vivienda-fila">
+                            <span>Cupo de @vivienda.EtiquetaInquilinos.ToLower()</span>
+                            <span>@vivienda.InquilinosActuales / @vivienda.CantidadInquilinos</span>
+                        </div>
+
+                        @if (vivienda.EsPropietario && vivienda.CantidadInquilinos == 0)
+                        {
+                            <div class="mi-vivienda-cupo-alerta">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <span>Aún no configuraste cuántos @vivienda.EtiquetaInquilinos.ToLower() pueden vivir en tu vivienda.</span>
+                            </div>
                         }
                     </div>
+
+                    @if (vivienda.EsPropietario)
+                    {
+                        <div class="mi-vivienda-footer">
+                            <a asp-action="EditarCupo" asp-route-id="@vivienda.Id" class="btn-editar-cupo">
+                                <i class="bi bi-pencil"></i> Editar cupo
+                            </a>
+                        </div>
+                    }
                 </div>
             </div>
         }

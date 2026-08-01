@@ -1,12 +1,12 @@
-﻿@model Habitia.ViewModels.Acceso.ValidarQRVM
+﻿@model Habitia.ViewModels.Acceso.ValidarCodigoVM
 
 @{
-    ViewData["Title"] = "Validar Autorización QR";
+    ViewData["Title"] = "Validar Código de Autorización";
 }
 
 <div class="container py-4" style="max-width: 500px;">
 
-    <h1 class="h3 mb-4">Validar Autorización</h1>
+    <h1 class="h3 mb-4">Validar Código de Autorización</h1>
 
     @if (TempData["Error"] != null)
     {
@@ -16,15 +16,15 @@
     <div class="card shadow-sm">
         <div class="card-body">
 
-            <form asp-action="ValidarQR" method="post">
+            <form asp-action="ValidarCodigo" method="post">
                 @Html.AntiForgeryToken()
 
                 <div class="mb-3">
                     <label class="form-label">Código de autorización</label>
-                    <input asp-for="Codigo" class="form-control form-control-lg text-center" placeholder="Escanee o escriba el código" autofocus />
+                    <input asp-for="Codigo" class="form-control form-control-lg text-center" placeholder="Ingrese el código que le dio el residente" autofocus />
                     <span asp-validation-for="Codigo" class="text-danger small"></span>
                     <div class="form-text">
-                        Puede escanear el QR con un lector externo (se escribe solo aquí) o ingresar el código manualmente.
+                        El residente le comparte este código al momento de autorizar la visita.
                     </div>
                 </div>
 

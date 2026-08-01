@@ -10,7 +10,7 @@
 
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-white">
-            <strong>Autorización válida</strong>
+            <strong>Código válido — datos del visitante</strong>
         </div>
         <div class="card-body">
             <dl class="row mb-0">
@@ -38,7 +38,7 @@
     <div class="card shadow-sm">
         <div class="card-body">
 
-            <form asp-action="ConfirmarIngresoQR" method="post">
+            <form asp-action="ConfirmarIngreso" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="IdAutorizacion" value="@Model.Id" />
 
@@ -63,7 +63,7 @@
                 </div>
 
                 <div class="d-flex justify-content-end gap-2">
-                    <a asp-action="ValidarQR" class="btn btn-outline-secondary">Cancelar</a>
+                    <a asp-action="ValidarCodigo" class="btn btn-outline-secondary">Cancelar</a>
                     <button type="submit" class="btn btn-primary">Confirmar ingreso</button>
                 </div>
 

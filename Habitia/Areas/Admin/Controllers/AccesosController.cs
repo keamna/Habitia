@@ -32,6 +32,7 @@ namespace Habitia.Areas.Admin.Controllers
 
             var vm = accesos.Select(AccesoHelper.MapAccesoToVM).ToList();
 
+            ViewBag.EsAdmin = true;
             return View("~/Areas/Seguridad/Views/Accesos/Index.cshtml", vm);
         }
     }

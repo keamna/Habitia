@@ -1,10 +1,12 @@
 ﻿@model List<Habitia.ViewModels.Vivienda.ViviendaListaViewModel>
+@using Habitia.Enums
 
 @{
     ViewData["Title"] = "Viviendas";
 }
 
 @Html.AntiForgeryToken()
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Viviendas registradas</h2>
     <a asp-area="Admin" asp-controller="Viviendas" asp-action="Crear" class="btn btn-primary">
@@ -25,20 +27,27 @@
 <div class="card">
     <div class="card-body">
 
-        <div class="d-flex justify-content-end gap-2 mb-3">
+        <div class="viviendas-toolbar">
             <div class="input-group" style="max-width: 260px;">
                 <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
                 <input type="text" class="form-control" id="inputBuscarVivienda" placeholder="Buscar por código..." />
             </div>
 
-            <select class="form-select" id="filtroTipoVivienda" style="max-width: 180px;">
-                <option value="">Todas</option>
+            <select class="form-select" id="filtroTipoVivienda" style="max-width: 170px;">
+                <option value="">Todos los tipos</option>
                 <option value="Casa">Casa</option>
                 <option value="Apartamento">Departamento</option>
             </select>
+
+            <select class="form-select" id="filtroEstadoVivienda" style="max-width: 170px;">
+                <option value="">Todos los estados</option>
+                <option value="Disponible">Disponible</option>
+                <option value="Ocupada">Ocupada</option>
+                <option value="Inactiva">Inactiva</option>
+            </select>
         </div>
 
-        <table class="table table-hover align-middle">
+        <table class="table table-hover align-middle viviendas-tabla">
             <thead>
                 <tr>
                     <th>Código</th>
@@ -54,18 +63,25 @@
                 {
                     foreach (var vivienda in Model)
                     {
-                        <tr data-codigo="@vivienda.Numero.ToLower()" data-tipo="@vivienda.Tipo">
-                            <td><strong>@vivienda.Numero</strong></td>
-                            <td>@(vivienda.Tipo == Habitia.Enums.TipoViviendaEnum.Apartamento ? "Departamento" : vivienda.Tipo.ToString())</td>
+                        var tipoTexto = vivienda.Tipo == TipoViviendaEnum.Apartamento ? "Departamento" : vivienda.Tipo.ToString();
+
+                        var estadoClase = vivienda.Estado switch
+                        {
+                            EstadoViviendaEnum.Disponible => "badge-estado-disponible",
+                            EstadoViviendaEnum.Ocupada => "badge-estado-ocupada",
+                            _ => "badge-estado-inactiva"
+                        };
+
+                        <tr data-codigo="@vivienda.Numero.ToLower()" data-tipo="@vivienda.Tipo" data-estado="@vivienda.Estado">
                             <td>
-                                @if (vivienda.Estado == Habitia.Enums.EstadoViviendaEnum.Disponible)
-                                {
-                                    <span class="badge bg-success">Disponible</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">Inactiva</span>
-                                }
+                                <div class="vivienda-codigo">
+                                    <i class="bi bi-house-door-fill"></i>
+                                    @vivienda.Numero
+                                </div>
+                            </td>
+                            <td>@tipoTexto</td>
+                            <td>
+                                <span class="vivienda-badge-estado @estadoClase">@vivienda.Estado</span>
                             </td>
                             <td>
                                 @if (!string.IsNullOrEmpty(vivienda.PropietarioNombre) && vivienda.PropietarioNombre != "Sin propietario")
@@ -74,18 +90,18 @@
                                 }
                                 else
                                 {
-                                    <span class="text-muted">Sin propietario</span>
+                                    <span class="vivienda-propietario-vacio">Sin propietario</span>
                                 }
                             </td>
                             <td>
-                                @vivienda.InquilinosActuales / @vivienda.CantidadInquilinos
-                                <br />
-                                <small class="text-muted">@vivienda.EtiquetaInquilinos</small>
-                                @if (vivienda.CantidadInquilinos == 0)
-                                {
-                                    <br />
-                                    <span class="badge bg-warning text-dark mt-1">Cupo sin configurar</span>
-                                }
+                                <div class="vivienda-ocupantes">
+                                    <span class="cifra">@vivienda.InquilinosActuales / @vivienda.CantidadInquilinos</span>
+                                    <span class="etiqueta">@vivienda.EtiquetaInquilinos</span>
+                                    @if (vivienda.CantidadInquilinos == 0)
+                                    {
+                                        <span class="badge-cupo-pendiente">Cupo sin configurar</span>
+                                    }
+                                </div>
                             </td>
                             <td>
                                 <div class="fila-acciones">
@@ -114,7 +130,8 @@
                 {
                     <tr>
                         <td colspan="6">
-                            <div class="text-center text-muted py-4">
+                            <div class="viviendas-vacio">
+                                <i class="bi bi-house-slash"></i>
                                 No hay viviendas registradas.
                             </div>
                         </td>
@@ -122,7 +139,8 @@
                 }
                 <tr id="filaSinResultadosVivienda" style="display:none;">
                     <td colspan="6">
-                        <div class="text-center text-muted py-4">
+                        <div class="viviendas-vacio">
+                            <i class="bi bi-search"></i>
                             No se encontraron viviendas con los datos ingresados.
                         </div>
                     </td>
@@ -194,9 +212,10 @@
                 });
             });
 
-            // Buscador y filtro
+            // Buscador y filtros
             const inputBuscar = document.getElementById("inputBuscarVivienda");
             const filtroTipo = document.getElementById("filtroTipoVivienda");
+            const filtroEstado = document.getElementById("filtroEstadoVivienda");
             const tbody = document.getElementById("viviendasTbody");
             const filaSinResultados = document.getElementById("filaSinResultadosVivienda");
             const filas = Array.from(tbody.querySelectorAll("tr[data-codigo]"));
@@ -204,16 +223,19 @@
             function aplicarFiltrosVivienda() {
                 const texto = (inputBuscar.value || "").trim().toLowerCase();
                 const tipo = filtroTipo.value;
+                const estado = filtroEstado.value;
                 let visibles = 0;
 
                 filas.forEach(fila => {
                     const codigo = fila.getAttribute("data-codigo") || "";
                     const tipoFila = fila.getAttribute("data-tipo") || "";
+                    const estadoFila = fila.getAttribute("data-estado") || "";
 
                     const coincideTexto = !texto || codigo.indexOf(texto) !== -1;
                     const coincideTipo = !tipo || tipoFila === tipo;
+                    const coincideEstado = !estado || estadoFila === estado;
 
-                    const mostrar = coincideTexto && coincideTipo;
+                    const mostrar = coincideTexto && coincideTipo && coincideEstado;
                     fila.style.display = mostrar ? "" : "none";
                     if (mostrar) visibles++;
                 });
@@ -223,6 +245,7 @@
 
             inputBuscar?.addEventListener("input", aplicarFiltrosVivienda);
             filtroTipo?.addEventListener("change", aplicarFiltrosVivienda);
+            filtroEstado?.addEventListener("change", aplicarFiltrosVivienda);
         });
     </script>
 

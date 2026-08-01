@@ -52,7 +52,13 @@ namespace Habitia.Areas.Residente.Controllers
         // ================= Formulario de nueva autorización =================
         public IActionResult Create()
         {
-            return View(new AutorizacionFormVM());
+            var vm = new AutorizacionFormVM
+            {
+                FechaVisita = DateTime.Today,
+                FechaVencimiento = DateTime.Today.AddDays(1)
+            };
+
+            return View(vm);
         }
 
         // ================= Búsqueda de visitantes para reutilizar (AJAX) =================
@@ -155,7 +161,7 @@ namespace Habitia.Areas.Residente.Controllers
             return RedirectToAction(nameof(Detalle), new { id = autorizacion.TN_Id });
         }
 
-        // ================= Detalle: muestra el código QR generado =================
+        // ================= Detalle: muestra el código generado =================
         public async Task<IActionResult> Detalle(int id)
         {
             var userId = _userManager.GetUserId(User);

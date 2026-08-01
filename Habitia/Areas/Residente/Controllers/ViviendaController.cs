@@ -6,6 +6,7 @@ using Habitia.ViewModels.Vivienda;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace Habitia.Areas.Residente.Controllers
@@ -176,6 +177,117 @@ namespace Habitia.Areas.Residente.Controllers
             TempData["MensajeExito"] = "Cupo actualizado correctamente.";
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: /Residente/Vivienda/RegistrarVivienda
+        [HttpGet]
+        public async Task<IActionResult> RegistrarVivienda()
+        {
+            var userId = _userManager.GetUserId(User);
+
+            // Viviendas donde el usuario ya tiene relación (activa o pendiente),
+            // para no ofrecerlas de nuevo en la lista.
+            var viviendasYaRelacionadas = await _context.ViviendaUsuarios
+                .Where(x =>
+                    x.TC_IdUsuario == userId &&
+                    x.TN_Estado != EstadoUsuarioEnum.Rechazado)
+                .Select(x => x.TN_IdVivienda)
+                .ToListAsync();
+
+            var viviendas = await _context.Viviendas
+                .Where(v =>
+                    v.TN_Estado != EstadoViviendaEnum.Inactiva &&
+                    !viviendasYaRelacionadas.Contains(v.TN_Id))
+                .OrderBy(v => v.TC_Numero)
+                .Select(v => new SelectListItem
+                {
+                    Value = v.TN_Id.ToString(),
+                    Text = v.TC_Numero
+                })
+                .ToListAsync();
+
+            var model = new RegistrarViviendaViewModel
+            {
+                ViviendasDisponibles = viviendas
+            };
+
+            return View(model);
+        }
+
+        // POST: /Residente/Vivienda/RegistrarVivienda
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegistrarVivienda(RegistrarViviendaViewModel model)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            if (!ModelState.IsValid)
+            {
+                model.ViviendasDisponibles = await ObtenerViviendasSelectList(userId);
+                return View(model);
+            }
+
+            var vivienda = await _context.Viviendas
+                .FirstOrDefaultAsync(v => v.TN_Id == model.IdVivienda);
+
+            if (vivienda == null || vivienda.TN_Estado == EstadoViviendaEnum.Inactiva)
+            {
+                ModelState.AddModelError(nameof(model.IdVivienda), "La vivienda seleccionada no está disponible.");
+                model.ViviendasDisponibles = await ObtenerViviendasSelectList(userId);
+                return View(model);
+            }
+
+            var yaTieneRelacion = await _context.ViviendaUsuarios
+                .AnyAsync(x =>
+                    x.TC_IdUsuario == userId &&
+                    x.TN_IdVivienda == model.IdVivienda &&
+                    x.TN_Estado != EstadoUsuarioEnum.Rechazado);
+
+            if (yaTieneRelacion)
+            {
+                ModelState.AddModelError(nameof(model.IdVivienda), "Ya tiene una solicitud o relación con esa vivienda.");
+                model.ViviendasDisponibles = await ObtenerViviendasSelectList(userId);
+                return View(model);
+            }
+
+            _context.ViviendaUsuarios.Add(new ViviendaUsuario
+            {
+                TN_IdVivienda = model.IdVivienda,
+                TC_IdUsuario = userId,
+                TN_TipoRelacion = TipoRelacionEnum.Propietario,
+                TN_Estado = EstadoUsuarioEnum.Pendiente,
+                TB_ViveAhi = false, // el residente lo ajusta después si corresponde
+                TF_FechaRegistro = DateTime.Now
+            });
+
+            await _context.SaveChangesAsync();
+
+            TempData["MensajeExito"] = "Solicitud enviada. Un administrador debe aprobarla.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Helper privado para no repetir la consulta del select en los 2 branches de arriba.
+        private async Task<List<SelectListItem>> ObtenerViviendasSelectList(string userId)
+        {
+            var viviendasYaRelacionadas = await _context.ViviendaUsuarios
+                .Where(x =>
+                    x.TC_IdUsuario == userId &&
+                    x.TN_Estado != EstadoUsuarioEnum.Rechazado)
+                .Select(x => x.TN_IdVivienda)
+                .ToListAsync();
+
+            return await _context.Viviendas
+                .Where(v =>
+                    v.TN_Estado != EstadoViviendaEnum.Inactiva &&
+                    !viviendasYaRelacionadas.Contains(v.TN_Id))
+                .OrderBy(v => v.TC_Numero)
+                .Select(v => new SelectListItem
+                {
+                    Value = v.TN_Id.ToString(),
+                    Text = v.TC_Numero
+                })
+                .ToListAsync();
         }
     }
 }
