@@ -27,32 +27,31 @@ namespace Habitia.ViewModels.Incidencias
         [Display(Name = "Área común")]
         public int? IdAreaComun { get; set; }
 
+        // Ahora se elige al reportar, no lo clasifica el Admin después
+        [Required(ErrorMessage = "Debe indicar el tipo de responsabilidad.")]
+        [Display(Name = "Tipo de responsabilidad")]
+        public ResponsabilidadEnum Responsabilidad { get; set; }
+
         [Display(Name = "Evidencia (imagen)")]
         public IFormFile? Evidencia { get; set; }
-
-        [StringLength(500, ErrorMessage = "El comentario no puede superar los {1} caracteres.")]
-        [Display(Name = "Comentario adicional")]
-        public string? ComentarioAdicional { get; set; }
 
         // Solo para poblar los <select> en la vista; no se validan
         public List<SelectListItem>? Viviendas { get; set; }
         public List<SelectListItem>? AreasComunes { get; set; }
 
-        // Validaciones cruzadas: dependen de más de una propiedad,
-        // por eso no se pueden resolver con DataAnnotations simples.
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (Tipo == TipoIncidenciaEnum.Vivienda && IdVivienda == null)
             {
                 yield return new ValidationResult(
-                    "Debe seleccionar la vivienda asociada a la incidencia.",
+                    "Debe completar todos los campos obligatorios.",
                     new[] { nameof(IdVivienda) });
             }
 
             if (Tipo == TipoIncidenciaEnum.AreaComun && IdAreaComun == null)
             {
                 yield return new ValidationResult(
-                    "Debe seleccionar el área común asociada a la incidencia.",
+                    "Debe completar todos los campos obligatorios.",
                     new[] { nameof(IdAreaComun) });
             }
 
@@ -68,7 +67,7 @@ namespace Habitia.ViewModels.Incidencias
                         new[] { nameof(Evidencia) });
                 }
 
-                const int maxSizeBytes = 5 * 1024 * 1024; // 5 MB
+                const int maxSizeBytes = 5 * 1024 * 1024;
                 if (Evidencia.Length > maxSizeBytes)
                 {
                     yield return new ValidationResult(

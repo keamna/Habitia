@@ -1,0 +1,50 @@
+﻿@model List<Habitia.ViewModels.Financiero.Admin.CargoListItemViewModel>
+@{
+    ViewData["Title"] = "Recargos";
+}
+<link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
+<partial name="_FinancieroTabs" />
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Cargos vencidos</h4>
+    <a asp-action="Create" class="btn" style="background-color:#336332;color:#fff;">
+        <i class="bi bi-plus-lg"></i> Aplicar recargo
+    </a>
+</div>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+
+<div class="fin-card">
+    <div class="fin-card-body p-0">
+        <div class="table-responsive">
+            <table class="table fin-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Residente</th>
+                        <th>Monto actual</th>
+                        <th>Vencimiento</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="4" class="text-center text-muted py-4">No hay cargos vencidos</td></tr>
+                    }
+                    @foreach (var c in Model)
+                    {
+                        <tr>
+                            <td>@c.NombreResidente</td>
+                            <td>@c.TN_MontoTotal.ToString("C")</td>
+                            <td>@c.TF_FechaVencimiento.ToString("dd/MM/yyyy")</td>
+                            <td><span class="badge badge-pendiente">@c.EstadoCargo</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

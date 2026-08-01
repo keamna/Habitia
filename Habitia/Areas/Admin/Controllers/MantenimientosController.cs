@@ -38,8 +38,6 @@ namespace Habitia.Areas.Admin.Controllers
             return View(mantenimientos);
         }
 
-        // GET: /Admin/Mantenimientos/Create
-        // GET: /Admin/Mantenimientos/Create?idIncidencia=5   (viniendo desde Clasificar)
         public async Task<IActionResult> Create(int? idIncidencia)
         {
             var model = new MantenimientoCreateViewModel();
@@ -53,7 +51,7 @@ namespace Habitia.Areas.Admin.Controllers
 
                 if (incidencia.TN_Responsabilidad == ResponsabilidadEnum.Privado)
                 {
-                    TempData["Error"] = "No se puede generar mantenimiento para una incidencia Privada.";
+                    TempData["Error"] = "Las incidencias privadas no requieren tarea de mantenimiento.";
                     return RedirectToAction("Details", "Incidencias", new { id = idIncidencia.Value });
                 }
 

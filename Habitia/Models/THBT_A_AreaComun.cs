@@ -33,6 +33,7 @@ namespace Habitia.Models
         [Required]
         public bool TB_Estado { get; set; }
 
+        public int TN_AnticipacionMinima { get; set; } // minutos mínimos de anticipación para cancelar
 
         // Relaciones
 

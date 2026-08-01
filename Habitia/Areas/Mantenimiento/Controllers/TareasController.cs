@@ -23,39 +23,46 @@ namespace Habitia.Areas.Mantenimiento.Controllers
         }
 
         // GET: /Mantenimiento/Tareas
+        // Bandeja de trabajo: solo las tareas asignadas a este usuario
         public async Task<IActionResult> Index()
         {
-            var idPersonal = _userManager.GetUserId(User);
-            var tareas = await _mantenimientoService.ObtenerPorPersonalAsignadoAsync(idPersonal!);
+            var idUsuario = _userManager.GetUserId(User);
+            var tareas = await _mantenimientoService.ObtenerPorPersonalAsignadoAsync(idUsuario!);
             return View(tareas);
         }
 
         // GET: /Mantenimiento/Tareas/Details/5
         public async Task<IActionResult> Details(int id)
         {
+            var idUsuario = _userManager.GetUserId(User);
             var tarea = await _mantenimientoService.ObtenerPorIdAsync(id);
 
             if (tarea == null)
                 return NotFound();
 
-            var idPersonal = _userManager.GetUserId(User);
-            if (tarea.TC_IdPersonalAsignado != idPersonal)
+            if (tarea.TC_IdPersonalAsignado != idUsuario)
                 return Forbid();
 
             return View(tarea);
         }
 
-        // GET: /Mantenimiento/Tareas/ActualizarEstado/5
-        public async Task<IActionResult> ActualizarEstado(int id)
+        // GET: /Mantenimiento/Tareas/Actualizar/5
+        public async Task<IActionResult> Actualizar(int id)
         {
+            var idUsuario = _userManager.GetUserId(User);
             var tarea = await _mantenimientoService.ObtenerPorIdAsync(id);
 
             if (tarea == null)
                 return NotFound();
 
-            var idPersonal = _userManager.GetUserId(User);
-            if (tarea.TC_IdPersonalAsignado != idPersonal)
+            if (tarea.TC_IdPersonalAsignado != idUsuario)
                 return Forbid();
+
+            if (tarea.TN_Estado == Habitia.Enums.EstadoMantenimientoEnum.Completado)
+            {
+                TempData["Error"] = "No es posible modificar una tarea que ya fue completada.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
 
             var model = new MantenimientoEstadoUpdateViewModel
             {
@@ -65,33 +72,40 @@ namespace Habitia.Areas.Mantenimiento.Controllers
             };
 
             ViewBag.Descripcion = tarea.TC_Descripcion;
+            ViewBag.Titulo = tarea.Incidencia?.TC_Titulo;
+
             return View(model);
         }
 
-        // POST: /Mantenimiento/Tareas/ActualizarEstado
+        // POST: /Mantenimiento/Tareas/Actualizar
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ActualizarEstado(MantenimientoEstadoUpdateViewModel model)
+        public async Task<IActionResult> Actualizar(MantenimientoEstadoUpdateViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
+            var idUsuario = _userManager.GetUserId(User);
 
-            var idPersonal = _userManager.GetUserId(User);
+            if (!ModelState.IsValid)
+            {
+                var tarea = await _mantenimientoService.ObtenerPorIdAsync(model.Id);
+                ViewBag.Descripcion = tarea?.TC_Descripcion;
+                ViewBag.Titulo = tarea?.Incidencia?.TC_Titulo;
+                return View(model);
+            }
 
             try
             {
-                await _mantenimientoService.ActualizarEstadoAsync(model, idPersonal!);
-                TempData["Success"] = "Estado de la tarea actualizado correctamente.";
+                await _mantenimientoService.ActualizarEstadoAsync(model, idUsuario!);
+                TempData["Success"] = "Información guardada correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["Error"] = ex.Message;
                 return RedirectToAction(nameof(Index));
             }
             catch (UnauthorizedAccessException)
             {
                 return Forbid();
-            }
-            catch (InvalidOperationException ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-                return View(model);
             }
         }
     }

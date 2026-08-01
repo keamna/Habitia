@@ -17,16 +17,21 @@
     <div class="alert alert-success">@TempData["MensajeExito"]</div>
 }
 
+@if (TempData["MensajeError"] != null)
+{
+    <div class="alert alert-danger">@TempData["MensajeError"]</div>
+}
+
 <div class="card">
     <div class="card-body">
 
         <div class="d-flex justify-content-end gap-2 mb-3">
             <div class="input-group" style="max-width: 260px;">
                 <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control" placeholder="Buscar vivienda..." />
+                <input type="text" class="form-control" id="inputBuscarVivienda" placeholder="Buscar por código..." />
             </div>
 
-            <select class="form-select" style="max-width: 180px;">
+            <select class="form-select" id="filtroTipoVivienda" style="max-width: 180px;">
                 <option value="">Todas</option>
                 <option value="Casa">Casa</option>
                 <option value="Apartamento">Departamento</option>
@@ -40,18 +45,18 @@
                     <th>Tipo</th>
                     <th>Estado</th>
                     <th>Propietario</th>
-                    <th>Inquilinos</th>
+                    <th>Ocupantes</th>
                     <th></th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="viviendasTbody">
                 @if (Model.Any())
                 {
                     foreach (var vivienda in Model)
                     {
-                        <tr>
+                        <tr data-codigo="@vivienda.Numero.ToLower()" data-tipo="@vivienda.Tipo">
                             <td><strong>@vivienda.Numero</strong></td>
-                            <td>@vivienda.Tipo</td>
+                            <td>@(vivienda.Tipo == Habitia.Enums.TipoViviendaEnum.Apartamento ? "Departamento" : vivienda.Tipo.ToString())</td>
                             <td>
                                 @if (vivienda.Estado == Habitia.Enums.EstadoViviendaEnum.Disponible)
                                 {
@@ -63,7 +68,7 @@
                                 }
                             </td>
                             <td>
-                                @if (!string.IsNullOrEmpty(vivienda.PropietarioNombre))
+                                @if (!string.IsNullOrEmpty(vivienda.PropietarioNombre) && vivienda.PropietarioNombre != "Sin propietario")
                                 {
                                     @vivienda.PropietarioNombre
                                 }
@@ -72,7 +77,16 @@
                                     <span class="text-muted">Sin propietario</span>
                                 }
                             </td>
-                            <td>@vivienda.InquilinosActuales / @vivienda.CantidadInquilinos</td>
+                            <td>
+                                @vivienda.InquilinosActuales / @vivienda.CantidadInquilinos
+                                <br />
+                                <small class="text-muted">@vivienda.EtiquetaInquilinos</small>
+                                @if (vivienda.CantidadInquilinos == 0)
+                                {
+                                    <br />
+                                    <span class="badge bg-warning text-dark mt-1">Cupo sin configurar</span>
+                                }
+                            </td>
                             <td>
                                 <div class="fila-acciones">
                                     <button class="btn-menu-fila">
@@ -80,10 +94,10 @@
                                     </button>
 
                                     <div class="dropdown-menu-fila">
-                                        <a href="#" class="dropdown-item">
+                                        <a asp-action="Detalle" asp-route-id="@vivienda.Id" class="dropdown-item">
                                             <i class="bi bi-eye"></i> Ver detalle
                                         </a>
-                                        <a href="#" class="dropdown-item">
+                                        <a asp-action="Editar" asp-route-id="@vivienda.Id" class="dropdown-item">
                                             <i class="bi bi-pencil"></i> Editar
                                         </a>
                                         <a href="#" class="dropdown-item eliminar"
@@ -106,6 +120,13 @@
                         </td>
                     </tr>
                 }
+                <tr id="filaSinResultadosVivienda" style="display:none;">
+                    <td colspan="6">
+                        <div class="text-center text-muted py-4">
+                            No se encontraron viviendas con los datos ingresados.
+                        </div>
+                    </td>
+                </tr>
             </tbody>
         </table>
 
@@ -123,7 +144,7 @@
 
                 <h5 class="mb-2">Eliminar vivienda</h5>
                 <p class="text-muted mb-3">
-                    ¿Estás seguro de que querés eliminar la vivienda
+                    ¿Está seguro de eliminar esta vivienda
                     <strong id="eliminarViviendaNumero"></strong>?
                     <br />
                     Esta acción no se puede deshacer.
@@ -133,11 +154,15 @@
 
                 <input type="hidden" id="eliminarViviendaId" />
 
-                <div class="d-flex justify-content-center gap-2 mt-3">
+                <div class="d-flex justify-content-center gap-2 mt-3" id="eliminarViviendaBotonesConfirmar">
                     <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button class="btn btn-danger" id="btnConfirmarEliminarVivienda" onclick="confirmarEliminarVivienda()">
                         Eliminar
                     </button>
+                </div>
+
+                <div class="d-flex justify-content-center mt-3" id="eliminarViviendaBotonEntendido" style="display:none;">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Entendido</button>
                 </div>
             </div>
         </div>
@@ -169,6 +194,35 @@
                 });
             });
 
+            // Buscador y filtro
+            const inputBuscar = document.getElementById("inputBuscarVivienda");
+            const filtroTipo = document.getElementById("filtroTipoVivienda");
+            const tbody = document.getElementById("viviendasTbody");
+            const filaSinResultados = document.getElementById("filaSinResultadosVivienda");
+            const filas = Array.from(tbody.querySelectorAll("tr[data-codigo]"));
+
+            function aplicarFiltrosVivienda() {
+                const texto = (inputBuscar.value || "").trim().toLowerCase();
+                const tipo = filtroTipo.value;
+                let visibles = 0;
+
+                filas.forEach(fila => {
+                    const codigo = fila.getAttribute("data-codigo") || "";
+                    const tipoFila = fila.getAttribute("data-tipo") || "";
+
+                    const coincideTexto = !texto || codigo.indexOf(texto) !== -1;
+                    const coincideTipo = !tipo || tipoFila === tipo;
+
+                    const mostrar = coincideTexto && coincideTipo;
+                    fila.style.display = mostrar ? "" : "none";
+                    if (mostrar) visibles++;
+                });
+
+                filaSinResultados.style.display = (visibles === 0 && filas.length > 0) ? "" : "none";
+            }
+
+            inputBuscar?.addEventListener("input", aplicarFiltrosVivienda);
+            filtroTipo?.addEventListener("change", aplicarFiltrosVivienda);
         });
     </script>
 

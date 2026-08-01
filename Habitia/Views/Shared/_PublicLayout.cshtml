@@ -17,23 +17,23 @@
                 <img src="~/img/logo.png" alt="Habitia" />
             </a>
         </div>
-
         <nav class="public-header__nav">
             <a class="@(esInicio ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
+            <a asp-area="" asp-controller="Home" asp-action="Index" asp-fragment="que-es">Qué es Habitia</a>
+            <a asp-area="" asp-controller="Home" asp-action="Index" asp-fragment="roles">Roles</a>
+            <a asp-area="" asp-controller="Home" asp-action="Index" asp-fragment="funcionalidades">Funcionalidades</a>
+            <a asp-area="" asp-controller="Home" asp-action="Index" asp-fragment="contacto">Contacto</a>
         </nav>
-
         <div class="public-header__auth">
-            <a class="public-header__login" asp-area="" asp-controller="Account" asp-action="Login">Iniciar Sesión</a>
-            <a class="btn-registrarse" asp-area="" asp-controller="Account" asp-action="Register">Registrarse</a>
+            <partial name="_LoginPartial" />
         </div>
     </header>
-
     <main>
         @RenderBody()
     </main>
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/interactions.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,7 +1,6 @@
 ﻿let modalEliminarViviendaInstance = null;
 
-function abrirEliminarVivienda(id, numero) {
-
+async function abrirEliminarVivienda(id, numero) {
     document.getElementById("eliminarViviendaId").value = id;
     document.getElementById("eliminarViviendaNumero").textContent = numero;
 
@@ -9,9 +8,28 @@ function abrirEliminarVivienda(id, numero) {
     errorBox.style.display = "none";
     errorBox.textContent = "";
 
+    // Reset visual antes de verificar
+    document.getElementById("eliminarViviendaBotonesConfirmar").style.display = "none";
+    document.getElementById("eliminarViviendaBotonEntendido").style.display = "none";
+
     const modalEl = document.getElementById("modalEliminarVivienda");
     modalEliminarViviendaInstance = new bootstrap.Modal(modalEl);
     modalEliminarViviendaInstance.show();
+
+    // Verificar antes de mostrar los botones correctos
+    try {
+        const response = await fetch(`/Admin/Viviendas/VerificarEliminacion?id=${id}`);
+        const result = await response.json();
+
+        if (result.puedeEliminar) {
+            document.getElementById("eliminarViviendaBotonesConfirmar").style.display = "flex";
+            document.getElementById("btnConfirmarEliminarVivienda").disabled = false;
+        } else {
+            mostrarErrorEliminarVivienda(result.message);
+        }
+    } catch (error) {
+        mostrarErrorEliminarVivienda("No fue posible completar la operación. Intente nuevamente.");
+    }
 }
 
 function obtenerAntiForgeryToken() {
@@ -20,9 +38,7 @@ function obtenerAntiForgeryToken() {
 }
 
 async function confirmarEliminarVivienda() {
-
     const id = document.getElementById("eliminarViviendaId").value;
-
     if (!id) return;
 
     const boton = document.getElementById("btnConfirmarEliminarVivienda");
@@ -44,9 +60,7 @@ async function confirmarEliminarVivienda() {
         });
 
         if (!response.ok) {
-            errorBox.textContent = `Error del servidor (${response.status}). No se pudo eliminar la vivienda.`;
-            errorBox.style.display = "block";
-            boton.disabled = false;
+            mostrarErrorEliminarVivienda("No fue posible completar la operación. Intente nuevamente.");
             return;
         }
 
@@ -55,14 +69,19 @@ async function confirmarEliminarVivienda() {
         if (result.success) {
             location.reload();
         } else {
-            errorBox.textContent = result.message ?? "No se pudo eliminar la vivienda.";
-            errorBox.style.display = "block";
-            boton.disabled = false;
+            mostrarErrorEliminarVivienda(result.message ?? "No se pudo eliminar la vivienda.");
         }
-
     } catch (error) {
-        errorBox.textContent = "Ocurrió un error al eliminar la vivienda.";
-        errorBox.style.display = "block";
-        boton.disabled = false;
+        mostrarErrorEliminarVivienda("No fue posible completar la operación. Intente nuevamente.");
     }
+}
+
+function mostrarErrorEliminarVivienda(mensaje) {
+    const errorBox = document.getElementById("eliminarViviendaError");
+    errorBox.textContent = mensaje;
+    errorBox.style.display = "block";
+
+    // Ocultar Cancelar/Eliminar, mostrar solo "Entendido"
+    document.getElementById("eliminarViviendaBotonesConfirmar").style.display = "none";
+    document.getElementById("eliminarViviendaBotonEntendido").style.display = "flex";
 }

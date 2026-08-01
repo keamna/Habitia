@@ -1,0 +1,83 @@
+﻿@model Habitia.ViewModels.Autorizacion.AutorizacionViewModel
+
+@{
+    ViewData["Title"] = "Confirmar Ingreso";
+}
+
+<div class="container py-4" style="max-width: 600px;">
+
+    <h1 class="h3 mb-4">Confirmar Ingreso</h1>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <strong>Autorización válida</strong>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-5">Visitante</dt>
+                <dd class="col-7">@Model.NombreVisitante</dd>
+
+                <dt class="col-5">Identificación</dt>
+                <dd class="col-7">@Model.IdentificacionVisitante</dd>
+
+                <dt class="col-5">Residente que autoriza</dt>
+                <dd class="col-7">@Model.NombreResidente</dd>
+
+                <dt class="col-5">Vivienda</dt>
+                <dd class="col-7">@Model.NumeroVivienda</dd>
+
+                <dt class="col-5">Motivo</dt>
+                <dd class="col-7">@Model.Motivo</dd>
+
+                <dt class="col-5">Vigente hasta</dt>
+                <dd class="col-7">@Model.FechaVencimiento.ToString("dd/MM/yyyy hh:mm tt")</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <form asp-action="ConfirmarIngresoQR" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="IdAutorizacion" value="@Model.Id" />
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" name="IngresaEnVehiculo" id="IngresaEnVehiculo" value="true" />
+                    <label class="form-check-label" for="IngresaEnVehiculo">Ingresa en vehículo</label>
+                </div>
+
+                <div id="camposVehiculo" class="row g-3 mb-3 d-none">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Placa</label>
+                        <input type="text" name="Placa" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Tipo de vehículo</label>
+                        <input type="text" name="TipoVehiculo" class="form-control" placeholder="Opcional" />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Observaciones</label>
+                        <input type="text" name="ObservacionesVehiculo" class="form-control" placeholder="Opcional" />
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="ValidarQR" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Confirmar ingreso</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('IngresaEnVehiculo').addEventListener('change', function () {
+            document.getElementById('camposVehiculo').classList.toggle('d-none', !this.checked);
+        });
+    </script>
+}

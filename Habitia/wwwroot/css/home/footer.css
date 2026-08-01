@@ -1,0 +1,49 @@
+﻿/* ===================================================================
+   Habitia · Footer — estilo tech
+   =================================================================== */
+
+.site-footer {
+    padding: 36px 48px;
+    background: var(--habitia-dark);
+    border-top: 1px solid var(--habitia-glass-border);
+}
+
+.site-footer__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    max-width: 1120px;
+    margin: 0 auto;
+}
+
+.site-footer__brand {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--habitia-dark-text);
+}
+
+.site-footer__meta {
+    font-size: 0.82rem;
+    color: var(--habitia-dark-text-muted);
+    text-align: right;
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 560px) {
+    .site-footer {
+        padding: 26px 20px;
+    }
+
+    .site-footer__inner {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .site-footer__meta {
+        text-align: center;
+    }
+}

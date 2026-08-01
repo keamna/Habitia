@@ -1,0 +1,130 @@
+﻿/* ===================================================================
+   Habitia · Funcionalidades — estilo tech (grid de categorías)
+   =================================================================== */
+
+.features-section {
+    padding: 96px 48px;
+    background: var(--habitia-bg);
+}
+
+.features-marquee {
+    overflow: hidden;
+    width: 100%;
+    margin-top: 48px;
+    padding: 4px 0;
+}
+
+.features-track {
+    display: flex;
+    gap: 20px;
+    width: max-content;
+    will-change: transform;
+}
+
+.feature-card {
+    position: relative;
+    flex-shrink: 0;
+    width: 300px;
+    border: 1px solid var(--habitia-line);
+    border-radius: 18px;
+    padding: 28px 24px;
+    background: var(--habitia-bg);
+    overflow: hidden;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+
+    .feature-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--habitia-green) 0%, var(--habitia-accent) 100%);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-4px);
+        border-color: transparent;
+        box-shadow: 0 20px 38px -22px rgba(16, 36, 26, .38);
+    }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+.feature-card__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--habitia-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+    .feature-card__icon svg {
+        width: 22px;
+        height: 22px;
+        stroke: var(--habitia-accent);
+    }
+
+.feature-card__title {
+    margin: 0 0 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--habitia-text);
+}
+
+.feature-card__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+    .feature-card__list li {
+        position: relative;
+        padding-left: 20px;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        color: var(--habitia-text-muted);
+    }
+
+        .feature-card__list li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 7px;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            background: var(--habitia-green);
+        }
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 900px) {
+    .features-section {
+        padding: 64px 24px;
+    }
+
+    .feature-card {
+        width: 270px;
+    }
+}
+
+@media (max-width: 560px) {
+    .features-section {
+        padding: 52px 20px;
+    }
+
+    .feature-card {
+        width: 240px;
+        padding: 22px 20px;
+    }
+}

@@ -1,0 +1,90 @@
+﻿@model Habitia.ViewModels.Financiero.Admin.ValidarPagoViewModel
+@{
+    ViewData["Title"] = "Validar pago";
+    var esImagen = Model.TC_RutaComprobante != null &&
+        (Model.TC_RutaComprobante.EndsWith(".jpg") || Model.TC_RutaComprobante.EndsWith(".jpeg") || Model.TC_RutaComprobante.EndsWith(".png"));
+}
+<link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
+<partial name="_FinancieroTabs" />
+
+<h4 class="mb-3">Validar pago</h4>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="fin-card h-100">
+            <div class="fin-card-header"><i class="bi bi-info-circle"></i> Detalle del pago</div>
+            <div class="fin-card-body">
+                <p><strong>Residente:</strong> @Model.NombreResidente</p>
+                <p><strong>Monto:</strong> <span class="fin-monto-total">@Model.TN_MontoTotal.ToString("C")</span></p>
+                <p><strong>Método de pago:</strong> @Model.MetodoPago</p>
+                <p><strong>Fecha de pago:</strong> @Model.TF_FechaPago.ToString("dd/MM/yyyy HH:mm")</p>
+
+                <label class="form-label mt-2">Comprobante</label>
+                <div class="fin-comprobante-preview">
+                    @if (esImagen)
+                    {
+                        <img src="@Model.TC_RutaComprobante" alt="Comprobante" />
+                    }
+                    else
+                    {
+                        <a href="@Model.TC_RutaComprobante" target="_blank" class="btn btn-outline-secondary">
+                            <i class="bi bi-file-earmark-pdf"></i> Ver comprobante (PDF)
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="fin-card h-100">
+            <div class="fin-card-header"><i class="bi bi-check2-square"></i> Decisión</div>
+            <div class="fin-card-body">
+                <form asp-action="Validar" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="TN_IdPago" />
+                    <input type="hidden" asp-for="TN_IdCargo" />
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            @foreach (var e in ViewData.ModelState.SelectMany(m => m.Value.Errors))
+                            {
+                                <div>@e.ErrorMessage</div>
+                            }
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label d-block">Resultado</label>
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="Aprobar" id="radioAprobar" value="true" checked onclick="mostrarMotivo(false)">
+                            <label class="btn btn-outline-success" for="radioAprobar"><i class="bi bi-check-lg"></i> Aprobar</label>
+
+                            <input type="radio" class="btn-check" name="Aprobar" id="radioRechazar" value="false" onclick="mostrarMotivo(true)">
+                            <label class="btn btn-outline-danger" for="radioRechazar"><i class="bi bi-x-lg"></i> Rechazar</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 d-none" id="grupoMotivo">
+                        <label class="form-label">Motivo del rechazo</label>
+                        <textarea asp-for="TC_MotivoRechazo" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn" style="background-color:#336332;color:#fff;">
+                        <i class="bi bi-save"></i> Procesar pago
+                    </button>
+                    <a asp-action="Revision" class="btn btn-outline-secondary">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function mostrarMotivo(mostrar) {
+            document.getElementById('grupoMotivo').classList.toggle('d-none', !mostrar);
+        }
+    </script>
+}

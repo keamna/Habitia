@@ -1,0 +1,123 @@
+﻿@model Habitia.ViewModels.Financiero.Admin.ConfiguracionPagoViewModel
+@{
+    ViewData["Title"] = "Configuración de Pagos";
+}
+<link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
+<partial name="_FinancieroTabs" />
+
+<h4 class="mb-3">Configuración de Pagos</h4>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form asp-action="Guardar" method="post" id="formConfiguracion">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="TN_Id" />
+
+    <div class="row g-3">
+        <!-- Métodos habilitados -->
+        <div class="col-12">
+            <div class="fin-card">
+                <div class="fin-card-header"><i class="bi bi-toggles"></i> Métodos de pago habilitados</div>
+                <div class="fin-card-body">
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" asp-for="TB_EfectivoHabilitado" id="chkEfectivo">
+                        <label class="form-check-label" for="chkEfectivo">Efectivo</label>
+                    </div>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" asp-for="TB_TarjetaHabilitado" id="chkTarjeta">
+                        <label class="form-check-label" for="chkTarjeta">Tarjeta</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" asp-for="TB_SinpeHabilitado" id="chkSinpe">
+                        <label class="form-check-label" for="chkSinpe">SINPE Móvil</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Datos de Tarjeta -->
+        <div class="col-md-6">
+            <div class="fin-card h-100">
+                <div class="fin-card-header"><i class="bi bi-credit-card"></i> Datos para Tarjeta</div>
+                <div class="fin-card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Titular de la cuenta</label>
+                        <input asp-for="TC_TitularTarjeta" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Número IBAN</label>
+                        <input asp-for="TC_IbanTarjeta" class="form-control" />
+                    </div>
+
+                    <label class="form-label">Tipos de tarjeta aceptados</label>
+                    <div id="contenedorTiposTarjeta">
+                        @if (Model.TC_TiposTarjeta != null && Model.TC_TiposTarjeta.Any())
+                        {
+                            @for (int i = 0; i < Model.TC_TiposTarjeta.Count; i++)
+                            {
+                                <div class="fin-tarjeta-row">
+                                    <input type="text" name="TC_TiposTarjeta" class="form-control" value="@Model.TC_TiposTarjeta[i]" placeholder="Ej. Visa" />
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-success mt-1" id="btnAgregarTarjeta">
+                        <i class="bi bi-plus-lg"></i> Agregar tipo de tarjeta
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Datos de SINPE -->
+        <div class="col-md-6">
+            <div class="fin-card h-100">
+                <div class="fin-card-header"><i class="bi bi-phone"></i> Datos para SINPE Móvil</div>
+                <div class="fin-card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Titular</label>
+                        <input asp-for="TC_TitularSinpe" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Número SINPE Móvil</label>
+                        <input asp-for="TC_NumeroSinpe" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn" style="background-color:#336332;color:#fff;">
+            <i class="bi bi-save"></i> Guardar
+        </button>
+    </div>
+</form>
+
+<!-- Plantilla oculta para clonar filas de tipo de tarjeta -->
+<template id="plantillaTipoTarjeta">
+    <div class="fin-tarjeta-row">
+        <input type="text" name="TC_TiposTarjeta" class="form-control" placeholder="Ej. Visa" />
+        <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+</template>
+
+@section Scripts {
+    <script>
+        document.getElementById('btnAgregarTarjeta').addEventListener('click', function () {
+            const plantilla = document.getElementById('plantillaTipoTarjeta').content.cloneNode(true);
+            document.getElementById('contenedorTiposTarjeta').appendChild(plantilla);
+        });
+    </script>
+}

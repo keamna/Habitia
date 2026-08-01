@@ -26,8 +26,9 @@ namespace Habitia.Models
         [MaxLength(300)]
         public string TC_Descripcion { get; set; }
 
+        // Reemplaza TF_FechaProgramada — se asigna automáticamente al crear la tarea
         [Required]
-        public DateTime TF_FechaProgramada { get; set; }
+        public DateTime TF_FechaRegistro { get; set; }
 
         public DateTime? TF_FechaInicio { get; set; }
         public DateTime? TF_FechaFin { get; set; }
@@ -39,7 +40,6 @@ namespace Habitia.Models
         public string? TC_Observaciones { get; set; }
 
         // Relaciones
-
         [ForeignKey(nameof(TN_IdIncidencia))]
         public Incidencia Incidencia { get; set; }
 

@@ -1,0 +1,138 @@
+﻿/* ===================================================================
+   Habitia · Beneficios + CTA final — estilo tech
+   =================================================================== */
+
+.benefits-section {
+    padding: 96px 48px;
+    background: var(--habitia-bg);
+}
+
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    max-width: 1120px;
+    margin: 48px auto 0;
+}
+
+.benefit-card {
+    text-align: center;
+    padding: 10px;
+}
+
+.benefit-card__icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--habitia-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    transition: box-shadow .25s ease, transform .25s ease;
+}
+
+.benefit-card:hover .benefit-card__icon {
+    box-shadow: 0 0 0 8px var(--habitia-accent-soft);
+    transform: translateY(-3px);
+}
+
+.benefit-card__icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--habitia-accent);
+}
+
+.benefit-card__title {
+    margin: 0 0 8px;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--habitia-text);
+}
+
+.benefit-card__desc {
+    margin: 0;
+    font-size: 0.87rem;
+    line-height: 1.5;
+    color: var(--habitia-text-muted);
+}
+
+/* ---------- CTA final ---------- */
+
+.cta-section {
+    position: relative;
+    margin: 96px 48px;
+    padding: 64px 40px;
+    border-radius: 26px;
+    background: radial-gradient(circle at 20% 20%, var(--habitia-dark-alt) 0%, var(--habitia-dark) 60%);
+    text-align: center;
+    overflow: hidden;
+}
+
+    .cta-section::before {
+        content: "";
+        position: absolute;
+        top: -60%;
+        right: -10%;
+        width: 420px;
+        height: 420px;
+        border-radius: 50%;
+        background: radial-gradient(circle, var(--habitia-accent-soft) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+.cta-title {
+    position: relative;
+    margin: 0 0 26px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.3rem, 2.2vw, 1.9rem);
+    color: var(--habitia-dark-text);
+}
+
+.cta-section .btn-registrarse {
+    position: relative;
+    background: var(--habitia-accent);
+    color: var(--habitia-dark);
+    box-shadow: 0 0 0 0 var(--habitia-accent-soft);
+    transition: background .15s ease, transform .15s ease, box-shadow .25s ease;
+}
+
+    .cta-section .btn-registrarse:hover {
+        background: #fff;
+        color: var(--habitia-dark);
+        box-shadow: 0 0 0 10px var(--habitia-accent-soft);
+    }
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 900px) {
+    .benefits-section {
+        padding: 64px 24px;
+    }
+
+    .benefits-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cta-section {
+        margin: 64px 24px;
+        padding: 48px 24px;
+    }
+}
+
+@media (max-width: 560px) {
+    .benefits-section {
+        padding: 52px 20px;
+    }
+
+    .benefits-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .cta-section {
+        margin: 52px 20px;
+        padding: 40px 20px;
+    }
+}

@@ -29,6 +29,12 @@ namespace Habitia.Models
         [Required]
         public DateTime TF_FechaRegistro { get; set; }
 
+        [Required]
+        [StringLength(200)]
+        public string TC_Motivo { get; set; }
+
+        public DateTime? TF_FechaCancelacion { get; set; }
+
         // Relaciones
 
         [ForeignKey(nameof(TC_IdUsuario))]

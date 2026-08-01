@@ -1,0 +1,15 @@
+﻿@{
+    var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
+
+    bool EsTabActivo(string controlador) =>
+        string.Equals(controladorActual, controlador, StringComparison.OrdinalIgnoreCase);
+}
+<link rel="stylesheet" href="~/css/areas-comunes/areas-comunes-tabs.css" asp-append-version="true" />
+<div class="ac-tabs mb-4">
+    <a class="ac-tab @(EsTabActivo("AreaComun") ? "active" : "")" asp-controller="AreaComun" asp-action="Index">
+        <i class="bi bi-building"></i> <span>Áreas Comunes</span>
+    </a>
+    <a class="ac-tab @(EsTabActivo("Reservas") ? "active" : "")" asp-controller="Reservas" asp-action="Todas">
+        <i class="bi bi-calendar-check"></i> <span>Reservas</span>
+    </a>
+</div>

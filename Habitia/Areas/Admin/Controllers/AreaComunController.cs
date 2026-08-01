@@ -59,7 +59,7 @@ namespace Habitia.Areas.Admin.Controllers
         // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(AreaComunVM vm)
+        public async Task<IActionResult> Create(AreaComunViewModel vm)
         {
 
             if (!ModelState.IsValid)
@@ -118,7 +118,7 @@ namespace Habitia.Areas.Admin.Controllers
 
 
 
-            var vm = new AreaComunVM
+            var vm = new AreaComunViewModel
             {
                 Id = area.TN_Id,
                 Nombre = area.TC_Nombre,
@@ -145,7 +145,7 @@ namespace Habitia.Areas.Admin.Controllers
         // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(AreaComunVM vm)
+        public async Task<IActionResult> Edit(AreaComunViewModel vm)
         {
 
             var area = await _context.AreasComunes
@@ -306,14 +306,17 @@ namespace Habitia.Areas.Admin.Controllers
         public async Task<IActionResult> AgregarDisponibilidad(
             DisponibilidadFormVM vm)
         {
-
             if (!ModelState.IsValid)
             {
                 TempData["Error"] = "Complete todos los campos del horario.";
                 return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
             }
 
-
+            if (vm.Cantidad <= 0)
+            {
+                TempData["Error"] = "Debe indicar la cantidad de personas permitidas.";
+                return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
+            }
 
             TimeSpan horaInicio;
             TimeSpan horaFin;
@@ -336,30 +339,35 @@ namespace Habitia.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
             }
 
-
-
             if (horaInicio >= horaFin)
             {
                 TempData["Error"] = "La hora de inicio debe ser menor que la hora de finalización.";
                 return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
             }
 
+            // Validar que la fecha/hora no sea un momento ya pasado (5.1.5)
+            var fechaHoraInicio = vm.Fecha.Date.Add(horaInicio);
 
-
-            bool existeDuplicado = await _context.Disponibilidades
-                .AnyAsync(d =>
-                    d.TN_IdAreaComun == vm.IdAreaComun &&
-                    d.TF_Fecha == vm.Fecha.Date &&
-                    d.TF_HoraInicio == horaInicio &&
-                    d.TF_HoraFin == horaFin &&
-                    d.TB_Estado);
-            if (existeDuplicado)
+            if (fechaHoraInicio <= DateTime.Now)
             {
-                TempData["Error"] = "Ya existe ese horario registrado para esta área y fecha.";
+                TempData["Error"] = "No se puede registrar un horario en una fecha u hora ya pasada.";
                 return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
             }
 
+            // Validar que no exista conflicto (cruce) con otro horario ya registrado (5.1.6)
+            bool existeConflicto = await _context.Disponibilidades
+                .AnyAsync(d =>
+                    d.TN_IdAreaComun == vm.IdAreaComun &&
+                    d.TF_Fecha == vm.Fecha.Date &&
+                    d.TB_Estado &&
+                    horaInicio < d.TF_HoraFin &&
+                    horaFin > d.TF_HoraInicio);
 
+            if (existeConflicto)
+            {
+                TempData["Error"] = "El horario se cruza con otro horario ya registrado para esta área.";
+                return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
+            }
 
             var disponibilidad = new DisponibilidadArea
             {
@@ -367,26 +375,21 @@ namespace Habitia.Areas.Admin.Controllers
                 TF_Fecha = vm.Fecha.Date,
                 TF_HoraInicio = horaInicio,
                 TF_HoraFin = horaFin,
+                TN_Cantidad = vm.Cantidad,
                 TB_Estado = true
             };
-
 
             _context.Disponibilidades
                 .Add(disponibilidad);
 
-
-
             await _context.SaveChangesAsync();
-
 
             TempData["Exito"] = "Horario agregado correctamente.";
 
             return RedirectToAction(
                 nameof(Detalle),
                 new { id = vm.IdAreaComun });
-
         }
-
 
 
 

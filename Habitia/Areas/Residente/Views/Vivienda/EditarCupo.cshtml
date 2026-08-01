@@ -1,27 +1,34 @@
 ﻿@model Habitia.ViewModels.Vivienda.CupoViviendaViewModel
 @{
-    ViewData["Title"] = "Editar cupo de inquilinos";
+    ViewData["Title"] = "Editar cupo";
 }
-
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Cupo de inquilinos — @Model.Numero</h2>
+    <h2>Cupo de @Model.EtiquetaInquilinos.ToLower() — @Model.Numero</h2>
 </div>
-
 <div class="card" style="max-width: 560px;">
     <div class="card-body p-4">
+        @if (Model.CantidadInquilinos == 0)
+        {
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                Todavía no has configurado esta cantidad. Indica cuántos
+                <strong>@Model.EtiquetaInquilinos.ToLower()</strong> pueden vivir en tu vivienda
+                para habilitar su registro en el sistema.
+            </div>
+        }
+
         <p class="text-muted mb-1">
-            Actualmente hay <strong>@Model.InquilinosActuales</strong> inquilino(s) registrado(s) o pendiente(s).
+            Actualmente hay <strong>@Model.InquilinosActuales</strong> @Model.EtiquetaInquilinos.ToLower() registrado(s) o pendiente(s).
         </p>
         <p class="text-muted mb-4">
             No podés fijar un número menor a esa cantidad.
         </p>
-
         <form asp-action="EditarCupo" method="post">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="Id" />
             <input type="hidden" asp-for="Numero" />
             <input type="hidden" asp-for="InquilinosActuales" />
-
+            <input type="hidden" asp-for="EtiquetaInquilinos" />
             @if (!ViewData.ModelState.IsValid)
             {
                 <div class="alert alert-danger">
@@ -31,13 +38,11 @@
                     }
                 </div>
             }
-
             <div class="mb-3">
-                <label class="form-label">Cantidad máxima de inquilinos</label>
+                <label class="form-label">Cantidad máxima de @Model.EtiquetaInquilinos.ToLower()</label>
                 <input asp-for="CantidadInquilinos" type="number" min="0" max="10" class="form-control" />
                 <span asp-validation-for="CantidadInquilinos" class="text-danger"></span>
             </div>
-
             <div class="d-flex justify-content-end gap-2">
                 <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
                 <button type="submit" class="btn btn-primary">Guardar</button>
@@ -45,7 +50,6 @@
         </form>
     </div>
 </div>
-
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }

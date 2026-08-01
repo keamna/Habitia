@@ -37,11 +37,6 @@
             <dt class="col-sm-3">Responsabilidad</dt>
             <dd class="col-sm-9">@(Model.TN_Responsabilidad == 0 ? "Sin clasificar aún" : Model.TN_Responsabilidad.ToString())</dd>
 
-            @if (!string.IsNullOrEmpty(Model.TC_ComentarioAdicional))
-            {
-                <dt class="col-sm-3">Comentario adicional</dt>
-                <dd class="col-sm-9">@Model.TC_ComentarioAdicional</dd>
-            }
         </dl>
 
         @if (!string.IsNullOrEmpty(Model.TC_ImagenUrl))

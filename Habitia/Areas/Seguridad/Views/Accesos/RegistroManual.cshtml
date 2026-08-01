@@ -1,0 +1,254 @@
+﻿@model Habitia.ViewModels.Acceso.RegistroManualVM
+
+@{
+    ViewData["Title"] = "Registro Manual de Visitante";
+}
+
+<div class="container py-4">
+
+    <h1 class="h3 mb-4">Registro Manual de Visitante</h1>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <form asp-action="RegistroManual" method="post" id="formRegistroManual">
+                @Html.AntiForgeryToken()
+
+                <!-- ===================== VISITANTE ===================== -->
+                <h6 class="text-secondary mb-2">Visitante</h6>
+
+                <input type="hidden" name="IdVisitanteExistente" id="IdVisitanteExistente" />
+
+                <div class="mb-3 position-relative">
+                    <label class="form-label">Buscar visitante existente</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="buscarVisitante" class="form-control" placeholder="Nombre o identificación..." autocomplete="off" />
+                        <button type="button" class="btn btn-outline-secondary" id="btnVisitanteNuevo">Visitante nuevo</button>
+                    </div>
+                    <div id="resultadosVisitante" class="list-group position-absolute w-100 shadow-sm" style="z-index:1000; display:none;"></div>
+                </div>
+
+                <div id="camposVisitanteNuevo" class="row g-3 mb-3">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Nombre completo</label>
+                        <input type="text" name="NombreVisitante" id="NombreVisitante" class="form-control" />
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label">Tipo de identificación</label>
+                        <select name="TipoIdentificacionVisitante" id="TipoIdentificacionVisitante" class="form-select">
+                            <option value="">-- Seleccione --</option>
+                            @foreach (var valor in Enum.GetValues(typeof(Habitia.Enums.TipoIdentificacionEnum)))
+                            {
+                                <option value="@((int)valor)">@valor</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label">Identificación</label>
+                        <input type="text" name="IdentificacionVisitante" id="IdentificacionVisitante" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" name="TelefonoVisitante" id="TelefonoVisitante" class="form-control" />
+                    </div>
+                </div>
+
+                <div id="visitanteSeleccionado" class="alert alert-info d-none">
+                    Visitante seleccionado: <strong id="visitanteSeleccionadoNombre"></strong>
+                    <button type="button" class="btn-close float-end" onclick="limpiarVisitanteSeleccionado()"></button>
+                </div>
+
+                <hr />
+
+                <!-- ===================== RESIDENTE / VIVIENDA ===================== -->
+                <h6 class="text-secondary mb-2">Residente que autoriza o recibe la visita</h6>
+
+                <input type="hidden" name="IdUsuario" id="IdUsuario" />
+                <input type="hidden" name="IdVivienda" id="IdVivienda" />
+
+                <div class="mb-3 position-relative">
+                    <label class="form-label">Buscar residente o vivienda</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="buscarResidente" class="form-control" placeholder="Nombre, identificación o número de vivienda..." autocomplete="off" />
+                    </div>
+                    <div id="resultadosResidente" class="list-group position-absolute w-100 shadow-sm" style="z-index:1000; display:none;"></div>
+                    <span id="residenteError" class="text-danger small d-none">Debe asociar el visitante a un residente o unidad habitacional</span>
+                </div>
+
+                <div id="residenteSeleccionado" class="alert alert-info d-none">
+                    <span id="residenteSeleccionadoTexto"></span>
+                    <button type="button" class="btn-close float-end" onclick="limpiarResidenteSeleccionado()"></button>
+                </div>
+
+                <hr />
+
+                <!-- ===================== MOTIVO ===================== -->
+                <div class="mb-3">
+                    <label class="form-label">Motivo de la visita</label>
+                    <textarea name="Motivo" class="form-control" rows="2" maxlength="200" required></textarea>
+                </div>
+
+                <!-- ===================== VEHÍCULO ===================== -->
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" name="IngresaEnVehiculo" id="IngresaEnVehiculo" value="true" />
+                    <label class="form-check-label" for="IngresaEnVehiculo">Ingresa en vehículo</label>
+                </div>
+
+                <div id="camposVehiculo" class="row g-3 mb-3 d-none">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Placa</label>
+                        <input type="text" name="Placa" class="form-control" />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Tipo de vehículo</label>
+                        <input type="text" name="TipoVehiculo" class="form-control" placeholder="Opcional" />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Observaciones</label>
+                        <input type="text" name="ObservacionesVehiculo" class="form-control" placeholder="Opcional" />
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Registrar ingreso</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        // ---------- Buscar visitante ----------
+        const inputVisitante = document.getElementById('buscarVisitante');
+        const resultadosVisitante = document.getElementById('resultadosVisitante');
+        let timeoutVisitante;
+
+        inputVisitante.addEventListener('input', () => {
+            clearTimeout(timeoutVisitante);
+            const termino = inputVisitante.value.trim();
+            if (termino.length < 2) { resultadosVisitante.style.display = 'none'; return; }
+
+            timeoutVisitante = setTimeout(async () => {
+                const resp = await fetch('@Url.Action("BuscarVisitantes")?termino=' + encodeURIComponent(termino));
+                const data = await resp.json();
+                resultadosVisitante.innerHTML = '';
+
+                if (data.length === 0) {
+                    resultadosVisitante.style.display = 'none';
+                    return;
+                }
+
+                data.forEach(v => {
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = 'list-group-item list-group-item-action';
+                    item.textContent = `${v.nombre} — ${v.identificacion}`;
+                    item.onclick = () => seleccionarVisitante(v);
+                    resultadosVisitante.appendChild(item);
+                });
+                resultadosVisitante.style.display = 'block';
+            }, 300);
+        });
+
+        function seleccionarVisitante(v) {
+            document.getElementById('IdVisitanteExistente').value = v.id;
+            document.getElementById('visitanteSeleccionadoNombre').textContent = `${v.nombre} — ${v.identificacion}`;
+            document.getElementById('visitanteSeleccionado').classList.remove('d-none');
+            document.getElementById('camposVisitanteNuevo').classList.add('d-none');
+            inputVisitante.value = '';
+            resultadosVisitante.style.display = 'none';
+        }
+
+        function limpiarVisitanteSeleccionado() {
+            document.getElementById('IdVisitanteExistente').value = '';
+            document.getElementById('visitanteSeleccionado').classList.add('d-none');
+            document.getElementById('camposVisitanteNuevo').classList.remove('d-none');
+        }
+
+        document.getElementById('btnVisitanteNuevo').addEventListener('click', limpiarVisitanteSeleccionado);
+
+        // ---------- Buscar residente / vivienda ----------
+        const inputResidente = document.getElementById('buscarResidente');
+        const resultadosResidente = document.getElementById('resultadosResidente');
+        let timeoutResidente;
+
+        inputResidente.addEventListener('input', () => {
+            clearTimeout(timeoutResidente);
+            const termino = inputResidente.value.trim();
+            if (termino.length < 2) { resultadosResidente.style.display = 'none'; return; }
+
+            timeoutResidente = setTimeout(async () => {
+                const resp = await fetch('@Url.Action("BuscarResidentes")?termino=' + encodeURIComponent(termino));
+                const data = await resp.json();
+                resultadosResidente.innerHTML = '';
+
+                if (data.length === 0) {
+                    resultadosResidente.style.display = 'none';
+                    return;
+                }
+
+                data.forEach(r => {
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = 'list-group-item list-group-item-action';
+                    item.textContent = `${r.nombreResidente} — Cédula ${r.identificacionResidente} — Vivienda ${r.numeroVivienda}`;
+                    item.onclick = () => seleccionarResidente(r);
+                    resultadosResidente.appendChild(item);
+                });
+                resultadosResidente.style.display = 'block';
+            }, 300);
+        });
+
+        function seleccionarResidente(r) {
+            document.getElementById('IdUsuario').value = r.idUsuario;
+            document.getElementById('IdVivienda').value = r.idVivienda;
+            document.getElementById('residenteSeleccionadoTexto').textContent =
+                `${r.nombreResidente} — Vivienda ${r.numeroVivienda}`;
+            document.getElementById('residenteSeleccionado').classList.remove('d-none');
+            document.getElementById('residenteError').classList.add('d-none');
+            inputResidente.value = '';
+            resultadosResidente.style.display = 'none';
+        }
+
+        function limpiarResidenteSeleccionado() {
+            document.getElementById('IdUsuario').value = '';
+            document.getElementById('IdVivienda').value = '';
+            document.getElementById('residenteSeleccionado').classList.add('d-none');
+        }
+
+        // ---------- Toggle de vehículo ----------
+        document.getElementById('IngresaEnVehiculo').addEventListener('change', function () {
+            document.getElementById('camposVehiculo').classList.toggle('d-none', !this.checked);
+        });
+
+        // ---------- Validación mínima antes de enviar ----------
+        document.getElementById('formRegistroManual').addEventListener('submit', function (e) {
+            if (!document.getElementById('IdUsuario').value || !document.getElementById('IdVivienda').value) {
+                e.preventDefault();
+                document.getElementById('residenteError').classList.remove('d-none');
+            }
+        });
+
+        // Cerrar dropdowns al hacer click afuera
+        document.addEventListener('click', (e) => {
+            if (!inputVisitante.contains(e.target) && !resultadosVisitante.contains(e.target)) {
+                resultadosVisitante.style.display = 'none';
+            }
+            if (!inputResidente.contains(e.target) && !resultadosResidente.contains(e.target)) {
+                resultadosResidente.style.display = 'none';
+            }
+        });
+    </script>
+}

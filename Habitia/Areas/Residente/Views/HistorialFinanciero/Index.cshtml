@@ -1,0 +1,48 @@
+﻿@model Habitia.ViewModels.Financiero.Residente.HistorialFinancieroViewModel
+@{
+    ViewData["Title"] = "Mi historial financiero";
+}
+<link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
+
+<h4 class="mb-3">Mi historial financiero</h4>
+
+<div class="fin-card">
+    <div class="fin-card-body p-0">
+        <div class="table-responsive">
+            <table class="table fin-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Descripción</th>
+                        <th>Monto</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Registros.Any())
+                    {
+                        <tr><td colspan="5" class="text-center text-muted py-4">No hay registros</td></tr>
+                    }
+                    @foreach (var r in Model.Registros)
+                    {
+                        var badgeClass = r.Estado switch
+                        {
+                            "Pendiente" => "badge-pendiente",
+                            "En revisión" => "badge-revision",
+                            "Pagado" => "badge-pagado",
+                            _ => "badge-aplicado"
+                        };
+                        <tr>
+                            <td>@r.TipoRegistro</td>
+                            <td>@r.Descripcion</td>
+                            <td>@r.Monto.ToString("C")</td>
+                            <td>@r.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td><span class="badge @badgeClass">@r.Estado</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

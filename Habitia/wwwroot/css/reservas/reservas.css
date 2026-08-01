@@ -1,0 +1,84 @@
+﻿/* ==========================================================
+   reservas.css
+   Complementos puntuales a Bootstrap para el módulo de Reservas.
+   No se redefine nada que Bootstrap ya resuelva.
+   ========================================================== */
+
+/* Miniatura cuadrada y recortada para las tarjetas de área común */
+.reserva-thumb {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-top-left-radius: var(--bs-card-inner-border-radius);
+    border-top-right-radius: var(--bs-card-inner-border-radius);
+}
+
+/* Fotos dentro del detalle del área (galería más pequeña que la miniatura) */
+.reserva-foto-galeria img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: var(--bs-border-radius);
+}
+
+/* Miniatura pequeña dentro de filas de tabla (listados admin) */
+.reserva-thumb-sm {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+}
+
+/* Evita que el motivo largo rompa el layout de la tabla */
+.reserva-motivo-col {
+    max-width: 220px;
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* ============================================
+   MINIATURA DE FOTO EN LA TABLA DE RESERVAS
+============================================ */
+
+.reserva-foto-celda {
+    position: relative;
+    width: fit-content;
+}
+
+.reserva-foto-thumb {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #E5E7EB;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+    .reserva-foto-thumb:hover {
+        transform: scale(1.06);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+.reserva-foto-contador {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    background-color: #336332;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 3px 5px;
+    border-radius: 999px;
+    border: 2px solid #fff;
+}
+
+/* ============================================
+   MODAL DE FOTO EN GRANDE (carrusel)
+============================================ */
+
+.reserva-foto-grande {
+    max-height: 70vh;
+    object-fit: contain;
+    background-color: #101010;
+}

@@ -3,6 +3,6 @@
     public class EditarRolesVM
     {
         public string Id { get; set; }
-        public List<string> Roles { get; set; }
+        public string Rol { get; set; }
     }
 }

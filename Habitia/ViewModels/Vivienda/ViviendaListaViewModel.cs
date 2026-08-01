@@ -1,4 +1,5 @@
 ﻿using Habitia.Enums;
+
 namespace Habitia.ViewModels.Vivienda
 {
     public class ViviendaListaViewModel
@@ -12,5 +13,8 @@ namespace Habitia.ViewModels.Vivienda
         public int InquilinosActuales { get; set; }
         public bool ViveAhi { get; set; }
         public bool EsPropietario { get; set; }
+
+        // "Familiares" o "Inquilinos" según si el propietario vive ahí.
+        public string EtiquetaInquilinos { get; set; } = "Inquilinos";
     }
 }

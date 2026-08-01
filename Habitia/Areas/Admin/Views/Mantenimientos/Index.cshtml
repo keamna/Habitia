@@ -16,6 +16,10 @@
 {
     <div class="alert alert-success">@TempData["Success"]</div>
 }
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
 
 @if (!Model.Any())
 {
@@ -27,9 +31,10 @@ else
         <thead>
             <tr>
                 <th>Descripción</th>
+                <th>Incidencia</th>
                 <th>Tipo</th>
                 <th>Asignado a</th>
-                <th>Fecha Programada</th>
+                <th>Fecha de creación</th>
                 <th>Estado</th>
                 <th></th>
             </tr>
@@ -39,9 +44,14 @@ else
             {
                 <tr>
                     <td>@m.TC_Descripcion</td>
+                    <td>
+                        <a asp-controller="Incidencias" asp-action="Details" asp-route-id="@m.TN_IdIncidencia">
+                            @m.Incidencia?.TC_Titulo
+                        </a>
+                    </td>
                     <td>@m.Tipo?.TC_Nombre</td>
                     <td>@m.PersonalAsignado?.UserName</td>
-                    <td>@m.TF_FechaProgramada.ToString("dd/MM/yyyy")</td>
+                    <td>@m.TF_FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</td>
                     <td>
                         <span class="badge @(m.TN_Estado switch {
                             Habitia.Enums.EstadoMantenimientoEnum.Programado => "bg-secondary",

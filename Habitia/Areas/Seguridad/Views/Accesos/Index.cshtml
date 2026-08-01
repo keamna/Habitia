@@ -1,0 +1,160 @@
+﻿@model List<Habitia.ViewModels.Acceso.AccesoViewModel>
+
+@{
+    ViewData["Title"] = "Control de Accesos";
+    var esAdmin = ViewBag.EsAdmin as bool? ?? false;
+}
+
+<div class="container py-4">
+
+    @if (esAdmin)
+    {
+        <partial name="_AccesoTabs" />
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h1 class="h3 mb-0">Control de Accesos</h1>
+
+        @if (!esAdmin)
+        {
+            <div class="d-flex gap-2">
+                <a asp-action="RegistroManual" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil-square me-1"></i> Registro manual
+                </a>
+                <a asp-action="ValidarQR" class="btn btn-primary">
+                    <i class="bi bi-qr-code-scan me-1"></i> Validar QR
+                </a>
+            </div>
+        }
+    </div>
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success" role="alert">@TempData["Exito"]</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
+    }
+
+    <div class="btn-group mb-3" role="group">
+        <button type="button" class="btn btn-sm btn-outline-secondary active" onclick="filtrar('todos', this)">Todos</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="filtrar('dentro', this)">Dentro ahora</button>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="tablaAccesos">
+                <thead class="table-light">
+                    <tr>
+                        <th>Visitante</th>
+                        <th>Identificación</th>
+                        <th>Residente</th>
+                        <th>Vivienda</th>
+                        <th>Motivo</th>
+                        <th>Ingreso</th>
+                        <th>Salida</th>
+                        <th>Vehículo</th>
+                        <th>Origen</th>
+                        <th>Estado</th>
+                        @if (!esAdmin)
+                        {
+                            <th class="text-end"></th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="@(esAdmin ? 10 : 11)" class="text-center text-secondary py-4">
+                                No hay registros de acceso.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var a in Model)
+                        {
+                            <tr data-dentro="@(a.EstaDentro ? "1" : "0")">
+                                <td>@a.NombreVisitante</td>
+                                <td>@a.IdentificacionVisitante</td>
+                                <td>@a.NombreResidente</td>
+                                <td>@a.NumeroVivienda</td>
+                                <td class="reserva-motivo-col">@a.Motivo</td>
+                                <td>@a.FechaIngreso.ToString("dd/MM/yyyy hh:mm tt")</td>
+                                <td>@(a.FechaSalida.HasValue ? a.FechaSalida.Value.ToString("dd/MM/yyyy hh:mm tt") : "—")</td>
+                                <td>
+                                    @if (a.TieneVehiculo)
+                                    {
+                                        <span title="@a.TipoVehiculo @a.ObservacionesVehiculo">@a.PlacaVehiculo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (a.OrigenAcceso == "QR")
+                                    {
+                                        <span class="badge text-bg-info">QR</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge text-bg-secondary">Manual</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (a.EstaDentro)
+                                    {
+                                        <span class="badge text-bg-success">Dentro</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge text-bg-secondary">Salió</span>
+                                    }
+                                </td>
+                                @if (!esAdmin)
+                                {
+                                    <td class="text-end">
+                                        @if (a.EstaDentro)
+                                        {
+                                            <form asp-action="RegistrarSalida" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@a.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    Registrar salida
+                                                </button>
+                                            </form>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    }
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        function filtrar(modo, boton) {
+            document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
+            boton.classList.add('active');
+
+            document.querySelectorAll('#tablaAccesos tbody tr[data-dentro]').forEach(fila => {
+                if (modo === 'todos' || fila.dataset.dentro === '1') {
+                    fila.style.display = '';
+                } else {
+                    fila.style.display = 'none';
+                }
+            });
+        }
+    </script>
+}

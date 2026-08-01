@@ -1,0 +1,206 @@
+﻿@model Habitia.ViewModels.Vivienda.ViviendaDetalleViewModel
+@{
+    ViewData["Title"] = "Detalle de vivienda";
+}
+<style>
+    .flecha-detalle {
+        transition: transform 0.2s ease;
+    }
+
+        .flecha-detalle.rotada {
+            transform: rotate(180deg);
+        }
+
+    .usuario-info-mini {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .usuario-info-mini img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .usuario-info-mini i {
+            font-size: 32px;
+            color: #ccc;
+        }
+
+    .fila-detalle-expandida td {
+        background-color: #F8F9FA;
+        border-top: none;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Detalle de vivienda</h2>
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</div>
+@if (TempData["MensajeExito"] != null)
+{
+    <div class="alert alert-success">@TempData["MensajeExito"]</div>
+}
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-start">
+            <div class="col-md-3">
+                <strong>Código:</strong><br />
+                @Model.Numero
+            </div>
+            <div class="col-md-3">
+                <strong>Tipo:</strong><br />
+                @(Model.Tipo == Habitia.Enums.TipoViviendaEnum.Apartamento ? "Departamento" : Model.Tipo.ToString())
+            </div>
+            <div class="col-md-3">
+                <strong>Propietario:</strong><br />
+                @if (Model.Propietario != null)
+                {
+                    <button class="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-1"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#detallePropietario"
+                            onclick="this.querySelector('i').classList.toggle('rotada')">
+                        @Model.Propietario.Nombre
+                        <i class="bi bi-chevron-down flecha-detalle"></i>
+                    </button>
+                }
+                else
+                {
+                    <span class="text-muted">Sin propietario</span>
+                }
+            </div>
+            <div class="col-md-3">
+                <strong>@Model.EtiquetaInquilinos permitidos:</strong><br />
+                @Model.CantidadInquilinos
+                @if (Model.CantidadInquilinos == 0)
+                {
+                    <br />
+                    <small class="text-warning">Aún sin configurar por el propietario</small>
+                }
+            </div>
+        </div>
+
+        @if (Model.Propietario != null)
+        {
+            <div class="collapse mt-3" id="detallePropietario">
+                <div class="border rounded p-3 bg-light">
+                    <div class="usuario-info-mini mb-3">
+                        @if (!string.IsNullOrWhiteSpace(Model.Propietario.FotoPerfil))
+                        {
+                            <img src="@Model.Propietario.FotoPerfil" alt="Foto de perfil" />
+                        }
+                        else
+                        {
+                            <i class="bi bi-person-circle"></i>
+                        }
+                        <strong>@Model.Propietario.Nombre</strong>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <small class="text-muted">Identificación</small><br />
+                            @Model.Propietario.Identificacion
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Correo</small><br />
+                            @(Model.Propietario.Email ?? "No registrado")
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Teléfono</small><br />
+                            @(Model.Propietario.Telefono ?? "No registrado")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="mb-3">Usuarios asociados</h5>
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th style="width: 40px;"></th>
+                    <th>Identificación</th>
+                    <th>Nombre</th>
+                    <th>Relación</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.UsuariosAsociados.Any())
+                {
+                    var indice = 0;
+                    foreach (var u in Model.UsuariosAsociados)
+                    {
+                        indice++;
+                        var targetId = $"detalleUsuario{indice}";
+                        <tr>
+                            <td>
+                                <button class="btn btn-link p-0" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#@targetId"
+                                        onclick="this.querySelector('i').classList.toggle('rotada')">
+                                    <i class="bi bi-chevron-down flecha-detalle"></i>
+                                </button>
+                            </td>
+                            <td>@u.Identificacion</td>
+                            <td>@u.Nombre</td>
+                            <td>@u.TipoRelacion</td>
+                            <td>@u.Estado</td>
+                        </tr>
+                        <tr class="fila-detalle-expandida">
+                            <td colspan="5" class="p-0">
+                                <div class="collapse" id="@targetId">
+                                    <div class="p-3">
+                                        <div class="usuario-info-mini mb-3">
+                                            @if (!string.IsNullOrWhiteSpace(u.FotoPerfil))
+                                            {
+                                                <img src="@u.FotoPerfil" alt="Foto de perfil" />
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-person-circle"></i>
+                                            }
+                                            <strong>@u.Nombre</strong>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <small class="text-muted">Correo</small><br />
+                                                @(u.Email ?? "No registrado")
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-muted">Teléfono</small><br />
+                                                @(u.Telefono ?? "No registrado")
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-muted">¿Vive ahí?</small><br />
+                                                @(u.ViveAhi ? "Sí" : "No")
+                                            </div>
+                                            <div class="col-md-3">
+                                                <small class="text-muted">Estado</small><br />
+                                                @u.Estado
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5">
+                            <div class="text-center text-muted py-3">
+                                No hay usuarios asociados a esta vivienda.
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,47 @@
+﻿@model Habitia.ViewModels.Incidencias.IncidenciaPrioridadViewModel
+@{
+    ViewData["Title"] = "Asignar Prioridad";
+}
+
+<h2>Asignar Prioridad</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">@Model.Titulo</h5>
+        <p class="card-text">@Model.Descripcion</p>
+        <p class="text-muted mb-1">
+            Reportado por <strong>@Model.NombreUsuarioReporta</strong>
+            el @Model.FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")
+        </p>
+        <p class="mb-0">
+            <span class="badge bg-secondary">@Model.Responsabilidad</span>
+        </p>
+    </div>
+</div>
+
+<form asp-action="AsignarPrioridad" method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="Titulo" />
+    <input type="hidden" asp-for="Descripcion" />
+    <input type="hidden" asp-for="NombreUsuarioReporta" />
+    <input type="hidden" asp-for="FechaRegistro" />
+    <input type="hidden" asp-for="Responsabilidad" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="mb-3">
+        <label asp-for="Prioridad" class="form-label"></label>
+        <select asp-for="Prioridad" class="form-select"
+                asp-items="Html.GetEnumSelectList<Habitia.Enums.PrioridadEnum>()">
+            <option value="">-- Seleccione --</option>
+        </select>
+        <span asp-validation-for="Prioridad" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Asignar Prioridad</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
