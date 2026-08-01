@@ -1,5 +1,6 @@
 ﻿using Habitia.Data;
 using Habitia.Enums;
+using Habitia.Helpers;
 using Habitia.Models;
 using Habitia.ViewModels;
 using Microsoft.AspNetCore.Identity;
@@ -708,6 +709,36 @@ namespace Habitia.Controllers
 
 
         // =====================================================
+        // VERIFICAR EMAIL DISPONIBLE (paso 1 del registro)
+        // =====================================================
+        //
+        // Se llama desde el JS al presionar "Siguiente" en el paso 1,
+        // para avisar de inmediato si el correo ya está registrado,
+        // en vez de que el error aparezca hasta el final del paso 3.
+
+        [HttpGet]
+        public async Task<IActionResult> VerificarEmailDisponible(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return Json(new { disponible = false });
+            }
+
+            var usuarioExistente =
+                await _userManager.FindByEmailAsync(email);
+
+            return Json(new { disponible = usuarioExistente == null });
+        }
+
+
+
+
+
+
+
+
+
+        // =====================================================
         // OBTENER VIVIENDAS DISPONIBLES (según tipo y relación)
         // =====================================================
 
@@ -749,6 +780,7 @@ namespace Habitia.Controllers
             {
 
                 bool disponible = false;
+                string etiquetaRelacion = null;
 
 
                 if (relacion == TipoRelacionEnum.Propietario)
@@ -792,6 +824,16 @@ namespace Habitia.Controllers
                                 ));
 
                         disponible = inquilinosOcupados < vivienda.TN_CantidadInquilinos;
+
+                        // Aclara con qué etiqueta va a quedar registrado en
+                        // esa vivienda específica, según si el propietario
+                        // vive ahí o no (US: "Ocupante" en la tarjeta,
+                        // pero se muestra como Familiar o Inquilino aquí).
+                        if (disponible)
+                        {
+                            etiquetaRelacion =
+                                ViviendaHelper.ObtenerEtiquetaOcupantes(propietarioActivo.TB_ViveAhi);
+                        }
                     }
                 }
 
@@ -801,7 +843,8 @@ namespace Habitia.Controllers
                     resultado.Add(new
                     {
                         id = vivienda.TN_Id,
-                        numero = vivienda.TC_Numero
+                        numero = vivienda.TC_Numero,
+                        etiqueta = etiquetaRelacion
                     });
                 }
             }
@@ -831,6 +874,29 @@ namespace Habitia.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        // =====================================================
+        // VERIFICAR IDENTIFICACIÓN DISPONIBLE (paso 1 del registro)
+        // =====================================================
+        //
+        // Misma idea que VerificarEmailDisponible: se llama al presionar
+        // "Siguiente" en el paso 1, para avisar de inmediato si la cédula
+        // ya está registrada, sin esperar hasta el final del paso 3.
+
+        [HttpGet]
+        public async Task<IActionResult> VerificarIdentificacionDisponible(string identificacion)
+        {
+            if (string.IsNullOrWhiteSpace(identificacion))
+            {
+                return Json(new { disponible = false });
+            }
+
+            var yaExiste =
+                await _userManager.Users
+                .AnyAsync(u => u.TC_Identificacion == identificacion.Trim());
+
+            return Json(new { disponible = !yaExiste });
         }
 
 
