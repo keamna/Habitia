@@ -22,8 +22,12 @@ namespace Habitia.Models
         [Required]
         public EstadoIncidenciaEnum TN_Estado { get; set; }
 
+        // Ahora se define AL CREAR la incidencia, ya no en un paso posterior
         [Required]
         public ResponsabilidadEnum TN_Responsabilidad { get; set; }
+
+        // El Admin la asigna después, por eso es nullable
+        public PrioridadEnum? TN_Prioridad { get; set; }
 
         [Required]
         [MaxLength(100)]
@@ -38,11 +42,7 @@ namespace Habitia.Models
         [MaxLength(250)]
         public string? TC_ImagenUrl { get; set; }
 
-        [MaxLength(300)]
-        public string? TC_ComentarioAdicional { get; set; }
-
         // Relaciones
-
         [ForeignKey(nameof(TC_IdUsuario))]
         public ApplicationUser Usuario { get; set; }
 
@@ -51,5 +51,9 @@ namespace Habitia.Models
 
         [ForeignKey(nameof(TN_IdAreaComun))]
         public AreaComun? AreaComun { get; set; }
+
+        public Mantenimiento? Mantenimiento { get; set; }
+
+        public DateTime? TF_FechaResolucion { get; set; }
     }
 }

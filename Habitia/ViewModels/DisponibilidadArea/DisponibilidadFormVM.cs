@@ -29,5 +29,9 @@ namespace Habitia.ViewModels
 
         [Required(ErrorMessage = "Seleccione AM o PM")]
         public string HoraFinAmPm { get; set; }
+
+        [Required(ErrorMessage = "Indique la cantidad de personas permitidas")]
+        [Range(1, 100, ErrorMessage = "Ingrese una cantidad válida")]
+        public int Cantidad { get; set; }
     }
 }

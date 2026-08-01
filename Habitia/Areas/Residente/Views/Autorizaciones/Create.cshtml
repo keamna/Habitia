@@ -1,0 +1,154 @@
+﻿@model Habitia.ViewModels.Autorizacion.AutorizacionFormVM
+
+@{
+    ViewData["Title"] = "Nueva Autorización de Visita";
+}
+
+<div class="container py-4" style="max-width: 700px;">
+
+    <h1 class="h3 mb-4">Nueva Autorización de Visita</h1>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <form asp-action="Create" method="post" id="formNuevaAutorizacion">
+                @Html.AntiForgeryToken()
+
+                <!-- ===================== VISITANTE ===================== -->
+                <h6 class="text-secondary mb-2">Visitante</h6>
+
+                <input type="hidden" name="IdVisitanteExistente" id="IdVisitanteExistente" />
+
+                <div class="mb-3 position-relative">
+                    <label class="form-label">Buscar visitante ya registrado</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="buscarVisitante" class="form-control" placeholder="Nombre o identificación..." autocomplete="off" />
+                        <button type="button" class="btn btn-outline-secondary" id="btnVisitanteNuevo">Visitante nuevo</button>
+                    </div>
+                    <div id="resultadosVisitante" class="list-group position-absolute w-100 shadow-sm" style="z-index:1000; display:none;"></div>
+                </div>
+
+                <div id="camposVisitanteNuevo" class="row g-3 mb-3">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Nombre completo</label>
+                        <input type="text" name="NombreVisitante" id="NombreVisitante" class="form-control" />
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <label class="form-label">Tipo de identificación</label>
+                        <select name="TipoIdentificacionVisitante" id="TipoIdentificacionVisitante" class="form-select">
+                            <option value="">-- Seleccione --</option>
+                            @foreach (var valor in Enum.GetValues(typeof(Habitia.Enums.TipoIdentificacionEnum)))
+                            {
+                                <option value="@((int)valor)">@valor</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <label class="form-label">Identificación</label>
+                        <input type="text" name="IdentificacionVisitante" id="IdentificacionVisitante" class="form-control" />
+                    </div>
+                </div>
+
+                <div id="visitanteSeleccionado" class="alert alert-info d-none">
+                    Visitante seleccionado: <strong id="visitanteSeleccionadoNombre"></strong>
+                    <button type="button" class="btn-close float-end" onclick="limpiarVisitanteSeleccionado()"></button>
+                </div>
+
+                <hr />
+
+                <!-- ===================== FECHAS Y MOTIVO ===================== -->
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="FechaVisita" class="form-label">Fecha de la visita</label>
+                        <input asp-for="FechaVisita" type="date" class="form-control" />
+                        <span asp-validation-for="FechaVisita" class="text-danger small"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="FechaVencimiento" class="form-label">Fecha de vencimiento de la autorización</label>
+                        <input asp-for="FechaVencimiento" type="date" class="form-control" />
+                        <span asp-validation-for="FechaVencimiento" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Motivo" class="form-label">Motivo de la visita</label>
+                    <textarea asp-for="Motivo" class="form-control" rows="2" maxlength="200"></textarea>
+                    <span asp-validation-for="Motivo" class="text-danger small"></span>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Generar autorización</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const inputVisitante = document.getElementById('buscarVisitante');
+        const resultadosVisitante = document.getElementById('resultadosVisitante');
+        let timeoutVisitante;
+
+        inputVisitante.addEventListener('input', () => {
+            clearTimeout(timeoutVisitante);
+            const termino = inputVisitante.value.trim();
+            if (termino.length < 2) { resultadosVisitante.style.display = 'none'; return; }
+
+            timeoutVisitante = setTimeout(async () => {
+                const resp = await fetch('@Url.Action("BuscarVisitantes")?termino=' + encodeURIComponent(termino));
+                const data = await resp.json();
+                resultadosVisitante.innerHTML = '';
+
+                if (data.length === 0) {
+                    resultadosVisitante.style.display = 'none';
+                    return;
+                }
+
+                data.forEach(v => {
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = 'list-group-item list-group-item-action';
+                    item.textContent = `${v.nombre} — ${v.identificacion}`;
+                    item.onclick = () => seleccionarVisitante(v);
+                    resultadosVisitante.appendChild(item);
+                });
+                resultadosVisitante.style.display = 'block';
+            }, 300);
+        });
+
+        function seleccionarVisitante(v) {
+            document.getElementById('IdVisitanteExistente').value = v.id;
+            document.getElementById('visitanteSeleccionadoNombre').textContent = `${v.nombre} — ${v.identificacion}`;
+            document.getElementById('visitanteSeleccionado').classList.remove('d-none');
+            document.getElementById('camposVisitanteNuevo').classList.add('d-none');
+            inputVisitante.value = '';
+            resultadosVisitante.style.display = 'none';
+        }
+
+        function limpiarVisitanteSeleccionado() {
+            document.getElementById('IdVisitanteExistente').value = '';
+            document.getElementById('visitanteSeleccionado').classList.add('d-none');
+            document.getElementById('camposVisitanteNuevo').classList.remove('d-none');
+        }
+
+        document.getElementById('btnVisitanteNuevo').addEventListener('click', limpiarVisitanteSeleccionado);
+
+        document.addEventListener('click', (e) => {
+            if (!inputVisitante.contains(e.target) && !resultadosVisitante.contains(e.target)) {
+                resultadosVisitante.style.display = 'none';
+            }
+        });
+    </script>
+}

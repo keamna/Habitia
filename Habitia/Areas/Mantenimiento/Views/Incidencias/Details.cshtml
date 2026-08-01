@@ -1,0 +1,83 @@
+﻿@model Habitia.Models.Incidencia
+@{
+    ViewData["Title"] = "Detalle de Incidencia";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Detalle de Incidencia</h2>
+    <a asp-controller="Tareas" asp-action="Details" asp-route-id="@Model.Mantenimiento!.TN_Id" class="btn btn-secondary">
+        Volver a la tarea
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="card-title mb-0">@Model.TC_Titulo</h5>
+            <span class="badge @(Model.TN_Estado switch {
+                Habitia.Enums.EstadoIncidenciaEnum.Pendiente => "bg-warning text-dark",
+                Habitia.Enums.EstadoIncidenciaEnum.EnProceso => "bg-info text-dark",
+                Habitia.Enums.EstadoIncidenciaEnum.Resuelta => "bg-success",
+                _ => "bg-secondary"
+            })">
+                @Model.TN_Estado
+            </span>
+        </div>
+
+        <p class="card-text">@Model.TC_Descripcion</p>
+
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Reportado por</dt>
+            <dd class="col-sm-9">@Model.Usuario?.UserName</dd>
+
+            <dt class="col-sm-3">Fecha de registro</dt>
+            <dd class="col-sm-9">@Model.TF_FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</dd>
+
+            <dt class="col-sm-3">Ubicación</dt>
+            <dd class="col-sm-9">
+                @if (Model.TN_Tipo == Habitia.Enums.TipoIncidenciaEnum.Vivienda)
+                {
+                    <text>Vivienda: @(Model.Vivienda?.TC_Numero ?? "N/D")</text>
+                }
+                else
+                {
+                    <text>Área común: @(Model.AreaComun?.TC_Nombre ?? "N/D")</text>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Responsabilidad</dt>
+            <dd class="col-sm-9">
+                <span class="badge bg-secondary">@Model.TN_Responsabilidad</span>
+            </dd>
+
+            <dt class="col-sm-3">Prioridad</dt>
+            <dd class="col-sm-9">
+                @if (Model.TN_Prioridad.HasValue)
+                {
+                    <span class="badge @(Model.TN_Prioridad switch {
+                        Habitia.Enums.PrioridadEnum.Alta => "bg-danger",
+                        Habitia.Enums.PrioridadEnum.Media => "bg-warning text-dark",
+                        Habitia.Enums.PrioridadEnum.Baja => "bg-secondary",
+                        _ => "bg-secondary"
+                    })">
+                        @Model.TN_Prioridad
+                    </span>
+                }
+                else
+                {
+                    <span class="text-muted">Sin asignar</span>
+                }
+            </dd>
+
+            @if (!string.IsNullOrEmpty(Model.TC_ImagenUrl))
+            {
+                <dt class="col-sm-3">Evidencia</dt>
+                <dd class="col-sm-9">
+                    <a href="@Model.TC_ImagenUrl" target="_blank">
+                        <img src="@Model.TC_ImagenUrl" alt="Evidencia" class="img-thumbnail" style="max-width: 220px;" />
+                    </a>
+                </dd>
+            }
+        </dl>
+    </div>
+</div>

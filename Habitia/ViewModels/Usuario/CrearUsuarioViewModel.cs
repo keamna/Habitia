@@ -1,64 +1,48 @@
-﻿using Habitia.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using Habitia.Enums;
 
 namespace Habitia.ViewModels.Usuario
 {
-    public class CrearUsuarioViewModel : IValidatableObject
+    public class CrearUsuarioViewModel
     {
-        [Required]
-        [MaxLength(100)]
+        [Required(ErrorMessage = "El nombre es obligatorio.")]
+        [MaxLength(100, ErrorMessage = "El nombre no puede superar los 100 caracteres.")]
+        [Display(Name = "Nombre")]
         public string Nombre { get; set; }
 
-        [Required]
-        [MaxLength(100)]
+        [Required(ErrorMessage = "El apellido es obligatorio.")]
+        [MaxLength(100, ErrorMessage = "El apellido no puede superar los 100 caracteres.")]
+        [Display(Name = "Apellido")]
         public string Apellido { get; set; }
 
-        [Required]
-        public TipoIdentificacionEnum TipoIdentificacion { get; set; }
-
-        [Required]
-        [MaxLength(20)]
-        public string Identificacion { get; set; }
-
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "El correo es obligatorio.")]
+        [EmailAddress(ErrorMessage = "Debe ingresar un correo electrónico válido.")]
+        [Display(Name = "Correo")]
         public string Email { get; set; }
 
-        [Required]
-        public string Telefono { get; set; }
-
-        [Required]
-        [MinLength(6)]
+        [Required(ErrorMessage = "La contraseña es obligatoria.")]
+        [MinLength(8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres.")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Contraseña")]
         public string Password { get; set; }
 
-        [Required]
-        public List<string> Roles { get; set; } = new();
+        [Required(ErrorMessage = "Debe seleccionar el tipo de identificación.")]
+        [Display(Name = "Tipo de identificación")]
+        public TipoIdentificacionEnum? TipoIdentificacion { get; set; }
 
-        // Roles que el Admin puede asignar desde este formulario.
-        // "Residente" se excluye a propósito: ese rol se asigna
-        // automáticamente en UsuariosController.Aprobar() cuando
-        // el Admin aprueba una solicitud vinculada a una vivienda.
-        private static readonly string[] RolesPermitidos = { "Seguridad", "Mantenimiento" };
+        [Required(ErrorMessage = "La identificación es obligatoria.")]
+        [MaxLength(20, ErrorMessage = "La identificación no puede superar los 20 caracteres.")]
+        [Display(Name = "Identificación")]
+        public string Identificacion { get; set; }
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            if (Roles == null || !Roles.Any())
-            {
-                yield return new ValidationResult(
-                    "Debe seleccionar al menos un rol.",
-                    new[] { nameof(Roles) });
-                yield break;
-            }
+        [Required(ErrorMessage = "El teléfono es obligatorio.")]
+        [MaxLength(20, ErrorMessage = "El teléfono no puede superar los 20 caracteres.")]
+        [Phone(ErrorMessage = "Debe ingresar un número de teléfono válido.")]
+        [Display(Name = "Teléfono")]
+        public string Telefono { get; set; }
 
-            var rolesNoPermitidos = Roles.Except(RolesPermitidos).ToList();
-
-            if (rolesNoPermitidos.Any())
-            {
-                yield return new ValidationResult(
-                    $"Desde este formulario solo se pueden asignar los roles Seguridad o Mantenimiento. " +
-                    $"Rol(es) no permitido(s): {string.Join(", ", rolesNoPermitidos)}.",
-                    new[] { nameof(Roles) });
-            }
-        }
+        [Required(ErrorMessage = "Debe seleccionar un rol.")]
+        [Display(Name = "Rol")]
+        public string Rol { get; set; }
     }
 }

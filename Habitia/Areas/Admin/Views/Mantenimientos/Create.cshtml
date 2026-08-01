@@ -5,7 +5,6 @@
 }
 
 <partial name="_MantenimientoTabs" />
-
 <h2>Crear Tarea de Mantenimiento</h2>
 
 <form asp-action="Create" method="post" class="incidencia-form">
@@ -27,7 +26,7 @@
             </select>
             <span asp-validation-for="IdIncidencia" class="text-danger"></span>
             <div class="form-text">
-                Solo se muestran incidencias clasificadas como Común o Mixto que aún no tienen tarea asignada.
+                Solo se muestran incidencias con responsabilidad Común o Mixto que aún no tienen tarea asignada.
             </div>
         </div>
     }
@@ -46,7 +45,6 @@
             </select>
             <span asp-validation-for="IdTipoMantenimiento" class="text-danger"></span>
         </div>
-
         <div class="col-md-6 mb-3">
             <label asp-for="NuevoTipoMantenimiento" class="form-label"></label>
             <input asp-for="NuevoTipoMantenimiento" class="form-control" placeholder="Ej: Jardinería" />
@@ -63,13 +61,12 @@
         <span asp-validation-for="IdPersonalAsignado" class="text-danger"></span>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="FechaProgramada" class="form-label"></label>
-        <input asp-for="FechaProgramada" type="date" class="form-control" />
-        <span asp-validation-for="FechaProgramada" class="text-danger"></span>
+    <div class="alert alert-secondary">
+        <i class="bi bi-clock"></i>
+        La fecha y hora de creación de la tarea se registrará automáticamente al momento de guardar.
     </div>
 
-    <button type="submit" class="btn btn-primary">Crear Tarea</button>
+    <button type="submit" class="btn btn-primary">Asignar Tarea</button>
     <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
 </form>
 

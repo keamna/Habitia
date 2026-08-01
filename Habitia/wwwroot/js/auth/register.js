@@ -213,15 +213,17 @@
 
 
     // ==========================
-    // ENVIO FINAL
+    // ENVIO FINAL (AJAX)
     // ==========================
     if (registerForm) {
 
-        registerForm.addEventListener("submit", function (e) {
+        registerForm.addEventListener("submit", async function (e) {
 
             const paso3Activo = document.getElementById("paso3").classList.contains("activo");
 
             if (!paso3Activo) return;
+
+            e.preventDefault(); // el envío se maneja acá, no como submit tradicional
 
             document.getElementById("errTipoVivienda").innerHTML = "";
             document.getElementById("errVivienda").innerHTML = "";
@@ -240,53 +242,90 @@
                 valido = false;
             }
 
-            if (!valido) {
-                e.preventDefault();
+            if (!valido) return;
+
+            const formData = new FormData(registerForm);
+
+            btnPaso3.disabled = true;
+            btnPaso3.textContent = "Creando cuenta...";
+
+            try {
+
+                const respuesta = await fetch(registerForm.action || "/Account/Register", {
+                    method: "POST",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    body: formData
+                });
+
+                const data = await respuesta.json();
+
+                if (data.success) {
+
+                    mostrarModalPendiente();
+
+                } else {
+
+                    mostrarErroresRegistro(data.errors);
+
+                    btnPaso3.disabled = false;
+                    btnPaso3.textContent = "Crear cuenta";
+
+                }
+
+            } catch (error) {
+
+                console.error(error);
+
+                mostrarErroresRegistro(["Ocurrió un error al crear la cuenta. Intente de nuevo."]);
+
+                btnPaso3.disabled = false;
+                btnPaso3.textContent = "Crear cuenta";
+
             }
 
         });
     }
 
 
-    // ==========================
-    // MODAL REGISTRO (Bootstrap)
-    // ==========================
-    const registroPendiente = document.getElementById("registroPendiente");
-    const modalEl = document.getElementById("modalPendiente");
+    function mostrarErroresRegistro(errores) {
 
-    console.log("DEBUG registroPendiente element:", registroPendiente);
-    console.log("DEBUG registroPendiente.value:", registroPendiente ? registroPendiente.value : "ELEMENTO NO ENCONTRADO");
-    console.log("DEBUG modalEl:", modalEl);
-    console.log("DEBUG bootstrap disponible:", typeof bootstrap);
+        document.getElementById("errVivienda").innerHTML =
+            (errores && errores.length)
+                ? errores.join("<br>")
+                : "Ocurrió un error, intente de nuevo.";
 
-    if (registroPendiente && modalEl &&
-        registroPendiente.value.trim().toLowerCase() === "true") {
-
-        console.log("DEBUG condición cumplida, intentando mostrar modal...");
-
-        try {
-            const modal = new bootstrap.Modal(modalEl, {
-                backdrop: "static",
-                keyboard: false
-            });
-
-            modal.show();
-
-            console.log("DEBUG modal.show() ejecutado sin errores");
-        } catch (err) {
-            console.error("DEBUG error al mostrar el modal:", err);
-        }
-
-    } else {
-        console.log("DEBUG condición NO cumplida, el modal no se muestra");
     }
 
+
+    function mostrarModalPendiente() {
+
+        const modalEl = document.getElementById("modalPendiente");
+
+        if (!modalEl) return;
+
+        const modal = new bootstrap.Modal(modalEl, {
+            backdrop: "static",
+            keyboard: false
+        });
+
+        modal.show();
+
+    }
+
+
+    // ==========================
+    // BOTON ENTENDIDO (cierra el modal y redirige al inicio)
+    // ==========================
     const btnContinuar = document.getElementById("btnContinuar");
 
     if (btnContinuar) {
 
         btnContinuar.addEventListener("click", function () {
+
             window.location.href = "/";
+
         });
 
     }

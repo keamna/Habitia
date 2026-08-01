@@ -1,0 +1,165 @@
+﻿@model List<Habitia.ViewModels.Reserva.ReservaViewModel>
+
+@{
+    ViewData["Title"] = "Todas las Reservas";
+}
+
+<div class="container py-4">
+
+    <h1 class="h3 mb-4">Reservas</h1>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <strong>Listado completo de reservas</strong>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Área</th>
+                        <th>Residente</th>
+                        <th>Vivienda</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Motivo</th>
+                        <th>Personas</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center text-secondary py-4">
+                                No hay reservas registradas.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var r in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @if (r.FotosAreaComun != null && r.FotosAreaComun.Any())
+                                    {
+                                        <div class="reserva-foto-celda">
+                                            <img src="@r.FotosAreaComun.First()"
+                                                 alt="Foto de @r.NombreAreaComun"
+                                                 class="reserva-foto-thumb"
+                                                 role="button"
+                                                 data-fotos='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(r.FotosAreaComun))'
+                                                 data-nombre-area="@r.NombreAreaComun" />
+                                            @if (r.FotosAreaComun.Count > 1)
+                                            {
+                                                <span class="reserva-foto-contador">+@(r.FotosAreaComun.Count - 1)</span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary small">Sin foto</span>
+                                    }
+                                </td>
+                                <td>@r.NombreAreaComun</td>
+                                <td>@r.NombreResidente</td>
+                                <td>@r.NumeroVivienda</td>
+                                <td>@r.FechaHorario.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    @DateTime.Today.Add(r.HoraInicio).ToString("hh:mm tt") -
+                                    @DateTime.Today.Add(r.HoraFin).ToString("hh:mm tt")
+                                </td>
+                                <td class="reserva-motivo-col">@r.Motivo</td>
+                                <td>@r.Cantidad</td>
+                                <td>
+                                    @switch (r.Estado)
+                                    {
+                                        case Habitia.Enums.EstadoReservaEnum.Activa:
+                                            <span class="badge text-bg-success">Activa</span>
+                                            break;
+                                        case Habitia.Enums.EstadoReservaEnum.Finalizada:
+                                            <span class="badge text-bg-secondary">Finalizada</span>
+                                            break;
+                                        case Habitia.Enums.EstadoReservaEnum.Cancelada:
+                                            <span class="badge text-bg-danger">Cancelada</span>
+                                            break;
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= MODAL VER FOTOS EN GRANDE (carrusel) ================= -->
+<div class="modal fade" id="modalFotosArea" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalFotosAreaTitulo">Fotos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="carouselFotosArea" class="carousel slide">
+                    <div class="carousel-inner" id="carouselFotosAreaInner">
+                        <!-- se llena dinámicamente por JS -->
+                    </div>
+                    <button class="carousel-control-prev" type="button"
+                            data-bs-target="#carouselFotosArea" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Anterior</span>
+                    </button>
+                    <button class="carousel-control-next" type="button"
+                            data-bs-target="#carouselFotosArea" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Siguiente</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.reserva-foto-thumb').forEach(function (img) {
+
+            img.addEventListener('click', function () {
+
+                let fotos = [];
+
+                try {
+                    fotos = JSON.parse(img.dataset.fotos || '[]');
+                } catch (e) {
+                    fotos = [];
+                }
+
+                const nombreArea = img.dataset.nombreArea || 'Fotos';
+
+                const inner = document.getElementById('carouselFotosAreaInner');
+                inner.innerHTML = '';
+
+                fotos.forEach(function (url, index) {
+                    const item = document.createElement('div');
+                    item.className = 'carousel-item' + (index === 0 ? ' active' : '');
+                    item.innerHTML = `<img src="${url}" class="d-block w-100 reserva-foto-grande" alt="${nombreArea}">`;
+                    inner.appendChild(item);
+                });
+
+                document.getElementById('modalFotosAreaTitulo').textContent = nombreArea;
+
+                const modal = new bootstrap.Modal(document.getElementById('modalFotosArea'));
+                modal.show();
+            });
+
+        });
+    </script>
+}

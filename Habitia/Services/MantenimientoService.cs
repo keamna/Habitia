@@ -31,7 +31,7 @@ namespace Habitia.Services
             if (incidencia.TN_Responsabilidad == ResponsabilidadEnum.Privado)
             {
                 throw new InvalidOperationException(
-                    "No se puede generar una tarea de mantenimiento para una incidencia de tipo Privado.");
+                    "Las incidencias privadas no requieren tarea de mantenimiento.");
             }
 
             var yaTieneMantenimiento = await _context.Mantenimientos
@@ -47,6 +47,7 @@ namespace Habitia.Services
                 model.IdTipoMantenimiento,
                 model.NuevoTipoMantenimiento);
 
+            // La fecha ya no la ingresa el Admin: se registra automáticamente al crear la tarea.
             var mantenimiento = new Mantenimiento
             {
                 TN_IdIncidencia = incidencia.TN_Id,
@@ -54,8 +55,7 @@ namespace Habitia.Services
                 TN_IdAreaComun = incidencia.TN_IdAreaComun,
                 TC_IdPersonalAsignado = model.IdPersonalAsignado,
                 TC_Descripcion = model.Descripcion.Trim(),
-                TF_FechaProgramada = model.FechaProgramada,
-                TF_FechaInicio = DateTime.Now,
+                TF_FechaRegistro = DateTime.Now,
                 TN_Estado = EstadoMantenimientoEnum.Programado
             };
 
@@ -72,10 +72,13 @@ namespace Habitia.Services
         {
             return await _context.Mantenimientos
                 .Include(m => m.Incidencia)
+                    .ThenInclude(i => i.Vivienda)
+                .Include(m => m.Incidencia)
+                    .ThenInclude(i => i.AreaComun)
                 .Include(m => m.Tipo)
                 .Include(m => m.AreaComun)
                 .Where(m => m.TC_IdPersonalAsignado == idPersonal)
-                .OrderBy(m => m.TF_FechaProgramada)
+                .OrderByDescending(m => m.TF_FechaRegistro)
                 .ToListAsync();
         }
 
@@ -83,6 +86,9 @@ namespace Habitia.Services
         {
             return await _context.Mantenimientos
                 .Include(m => m.Incidencia)
+                    .ThenInclude(i => i.Vivienda)
+                .Include(m => m.Incidencia)
+                    .ThenInclude(i => i.AreaComun)
                 .Include(m => m.Tipo)
                 .Include(m => m.AreaComun)
                 .Include(m => m.PersonalAsignado)
@@ -102,6 +108,13 @@ namespace Habitia.Services
             {
                 throw new UnauthorizedAccessException(
                     "No tiene permiso para actualizar una tarea que no le fue asignada.");
+            }
+
+            // Regla nueva: una tarea Completada queda bloqueada, no se puede modificar más.
+            if (mantenimiento.TN_Estado == EstadoMantenimientoEnum.Completado)
+            {
+                throw new InvalidOperationException(
+                    "No es posible modificar una tarea que ya fue completada.");
             }
 
             mantenimiento.TN_Estado = model.Estado;
@@ -124,10 +137,13 @@ namespace Habitia.Services
         {
             return await _context.Mantenimientos
                 .Include(m => m.Incidencia)
+                    .ThenInclude(i => i.Vivienda)
+                .Include(m => m.Incidencia)
+                    .ThenInclude(i => i.AreaComun)
                 .Include(m => m.Tipo)
                 .Include(m => m.AreaComun)
                 .Include(m => m.PersonalAsignado)
-                .OrderByDescending(m => m.TF_FechaProgramada)
+                .OrderByDescending(m => m.TF_FechaRegistro)
                 .ToListAsync();
         }
     }

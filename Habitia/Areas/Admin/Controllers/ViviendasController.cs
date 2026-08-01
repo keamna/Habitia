@@ -1,5 +1,6 @@
 ﻿using Habitia.Data;
 using Habitia.Enums;
+using Habitia.Helpers;
 using Habitia.Models;
 using Habitia.ViewModels.Vivienda;
 using Microsoft.AspNetCore.Authorization;
@@ -30,42 +31,37 @@ namespace Habitia.Areas.Admin.Controllers
                 .ToListAsync();
 
 
-            var lista = viviendas.Select(v => new ViviendaListaViewModel
+            var lista = viviendas.Select(v =>
             {
-                Id = v.TN_Id,
+                var relacionPropietario = v.Usuarios
+                    .FirstOrDefault(x => x.TN_TipoRelacion == TipoRelacionEnum.Propietario);
 
-                Numero = v.TC_Numero,
+                return new ViviendaListaViewModel
+                {
+                    Id = v.TN_Id,
 
-                Tipo = v.TN_Tipo,
-                Estado = v.TN_Estado,
+                    Numero = v.TC_Numero,
 
-                CantidadInquilinos = v.TN_CantidadInquilinos,
+                    Tipo = v.TN_Tipo,
+                    Estado = v.TN_Estado,
 
+                    CantidadInquilinos = v.TN_CantidadInquilinos,
 
-                PropietarioNombre =
-                    v.Usuarios
-                    .Where(x =>
-                        x.TN_TipoRelacion == TipoRelacionEnum.Propietario)
-                    .Select(x =>
-                        x.Usuario.TC_Nombre + " " + x.Usuario.TC_Apellido)
-                    .FirstOrDefault()
-                    ?? "Sin propietario",
+                    PropietarioNombre = relacionPropietario != null
+                        ? relacionPropietario.Usuario.TC_Nombre + " " + relacionPropietario.Usuario.TC_Apellido
+                        : "Sin propietario",
 
+                    ViveAhi = relacionPropietario?.TB_ViveAhi ?? false,
 
-                ViveAhi =
-                    v.Usuarios
-                    .Where(x =>
-                        x.TN_TipoRelacion == TipoRelacionEnum.Propietario)
-                    .Select(x => x.TB_ViveAhi)
-                    .FirstOrDefault(),
+                    InquilinosActuales =
+                        v.Usuarios
+                        .Count(x =>
+                            x.TN_TipoRelacion == TipoRelacionEnum.Inquilino &&
+                            x.TN_Estado == EstadoUsuarioEnum.Activo),
 
-
-                InquilinosActuales =
-                    v.Usuarios
-                    .Count(x =>
-                        x.TN_TipoRelacion == TipoRelacionEnum.Inquilino &&
-                        x.TN_Estado == EstadoUsuarioEnum.Activo)
-
+                    // "Familiares" si el propietario vive ahí, "Inquilinos" si no.
+                    EtiquetaInquilinos = ViviendaHelper.ObtenerEtiquetaOcupantes(relacionPropietario?.TB_ViveAhi)
+                };
             }).ToList();
 
 
@@ -101,7 +97,7 @@ namespace Habitia.Areas.Admin.Controllers
 
             if (yaExiste)
             {
-                ModelState.AddModelError(nameof(model.Numero), $"Ya existe una vivienda con el código '{numeroNormalizado}'.");
+                TempData["MensajeError"] = "La vivienda ingresada ya se encuentra registrada.";
                 return View(model);
             }
 
@@ -111,7 +107,11 @@ namespace Habitia.Areas.Admin.Controllers
 
                 TN_Tipo = model.Tipo,
 
-                TN_CantidadInquilinos = model.CantidadInquilinos,
+                // El cupo lo define únicamente el propietario, desde su panel,
+                // una vez que quede registrado en la vivienda.
+                TN_CantidadInquilinos = 0,
+
+                // Sin usuarios asociados al crearla => Disponible.
                 TN_Estado = EstadoViviendaEnum.Disponible,
                 TF_FechaRegistro = DateTime.Now
             };
@@ -120,13 +120,144 @@ namespace Habitia.Areas.Admin.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["MensajeExito"] = "Vivienda creada correctamente.";
+            TempData["MensajeExito"] = "Vivienda registrada correctamente.";
 
             return RedirectToAction(nameof(Index));
         }
 
+        // GET EDITAR VIVIENDA
+
+        [HttpGet]
+        public async Task<IActionResult> Editar(int id)
+        {
+            var vivienda = await _context.Viviendas.FindAsync(id);
+
+            if (vivienda == null)
+            {
+                TempData["MensajeError"] = "No se encontraron viviendas con los datos ingresados.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var model = new ViviendaViewModel
+            {
+                Id = vivienda.TN_Id,
+                Numero = vivienda.TC_Numero,
+                Tipo = vivienda.TN_Tipo
+            };
+
+            return View(model);
+        }
+
+
+        // POST EDITAR VIVIENDA
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Editar(ViviendaViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var vivienda = await _context.Viviendas.FindAsync(model.Id);
+
+            if (vivienda == null)
+            {
+                TempData["MensajeError"] = "No se encontraron viviendas con los datos ingresados.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var numeroNormalizado = model.Numero.Trim();
+
+            var yaExiste = await _context.Viviendas
+                .AnyAsync(v => v.TC_Numero.ToLower() == numeroNormalizado.ToLower() && v.TN_Id != model.Id);
+
+            if (yaExiste)
+            {
+                ModelState.AddModelError(nameof(model.Numero), "La vivienda ingresada ya se encuentra registrada.");
+                return View(model);
+            }
+
+            try
+            {
+                vivienda.TC_Numero = numeroNormalizado;
+                vivienda.TN_Tipo = model.Tipo;
+                // Nota: TN_CantidadInquilinos no se toca aquí. Solo el propietario
+                // (residente) puede modificarlo, desde EditarCupo.
+                // Nota: TN_Estado tampoco se toca aquí. Disponible/Ocupada se
+                // recalculan solos según usuarios activos (ver UsuariosController),
+                // e Inactiva se maneja aparte con CambiarEstadoInactiva.
+
+                await _context.SaveChangesAsync();
+
+                TempData["MensajeExito"] = "Vivienda actualizada correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                TempData["MensajeError"] = "No fue posible completar la operación. Intente nuevamente.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+
+        // DETALLE DE VIVIENDA (consulta + usuarios asociados)
+
+        [HttpGet]
+        public async Task<IActionResult> Detalle(int id)
+        {
+            var vivienda = await _context.Viviendas
+                .Include(v => v.Usuarios)
+                    .ThenInclude(vu => vu.Usuario)
+                .FirstOrDefaultAsync(v => v.TN_Id == id);
+
+            if (vivienda == null)
+            {
+                TempData["MensajeError"] = "No se encontraron viviendas con los datos ingresados.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var relacionPropietario = vivienda.Usuarios
+                .FirstOrDefault(x => x.TN_TipoRelacion == TipoRelacionEnum.Propietario);
+
+            UsuarioDetalleViewModel MapearUsuario(ViviendaUsuario x) => new()
+            {
+                Id = x.TC_IdUsuario,
+                Identificacion = x.Usuario.TC_Identificacion,
+                Nombre = x.Usuario.TC_Nombre + " " + x.Usuario.TC_Apellido,
+                Email = x.Usuario.Email,
+                Telefono = x.Usuario.TC_Telefono,
+                FotoPerfil = x.Usuario.TC_FotoPerfil,
+                TipoRelacion = x.TN_TipoRelacion,
+                Estado = x.TN_Estado,
+                ViveAhi = x.TB_ViveAhi
+            };
+
+            var model = new ViviendaDetalleViewModel
+            {
+                Id = vivienda.TN_Id,
+                Numero = vivienda.TC_Numero,
+                Tipo = vivienda.TN_Tipo,
+                Estado = vivienda.TN_Estado,
+                CantidadInquilinos = vivienda.TN_CantidadInquilinos,
+                EtiquetaInquilinos = ViviendaHelper.ObtenerEtiquetaOcupantes(relacionPropietario?.TB_ViveAhi),
+                Propietario = relacionPropietario != null ? MapearUsuario(relacionPropietario) : null,
+                UsuariosAsociados = vivienda.Usuarios.Select(MapearUsuario).ToList()
+            };
+
+            return View(model);
+        }
+
 
         // OBTENER VIVIENDAS DISPONIBLES PARA REGISTRO
+        //
+        // Una vivienda es seleccionable para registrarse si:
+        //  - No tiene propietario todavía (estará en Disponible), o
+        //  - Tiene propietario que NO vive ahí y aún hay cupo de inquilinos
+        //    libre (en ese caso la vivienda ya está en Ocupada, pero igual
+        //    debe poder recibir más inquilinos hasta llenar el cupo).
+        // Nunca se incluyen viviendas Inactiva (las excluye el Admin a mano).
 
         [HttpGet]
         public async Task<IActionResult> Disponibles(
@@ -136,7 +267,7 @@ namespace Habitia.Areas.Admin.Controllers
                 .Include(v => v.Usuarios)
                 .Where(v =>
                     v.TN_Tipo == tipo &&
-                    v.TN_Estado == EstadoViviendaEnum.Disponible)
+                    v.TN_Estado != EstadoViviendaEnum.Inactiva)
                 .ToListAsync();
 
 
@@ -192,6 +323,42 @@ namespace Habitia.Areas.Admin.Controllers
             return Json(resultado);
         }
 
+        // VERIFICAR SI SE PUEDE ELIMINAR (usado antes de mostrar el modal)
+
+        [HttpGet]
+        public async Task<IActionResult> VerificarEliminacion(int id)
+        {
+            var relaciones = await _context.ViviendaUsuarios
+                .Where(x => x.TN_IdVivienda == id)
+                .ToListAsync();
+
+            var tienePendientes = relaciones
+                .Any(x => x.TN_Estado == EstadoUsuarioEnum.Pendiente);
+
+            if (tienePendientes)
+            {
+                return Json(new
+                {
+                    puedeEliminar = false,
+                    message = "No se puede eliminar la vivienda porque tiene solicitudes pendientes de aprobación. Apruebe o rechace esas solicitudes primero."
+                });
+            }
+
+            var tieneVinculoActivo = relaciones
+                .Any(x => x.TN_Estado == EstadoUsuarioEnum.Activo || x.TN_Estado == EstadoUsuarioEnum.Suspendido);
+
+            if (tieneVinculoActivo)
+            {
+                return Json(new
+                {
+                    puedeEliminar = false,
+                    message = "No se puede eliminar la vivienda porque tiene usuarios asociados (activos o suspendidos). Elimine o reasigne esos usuarios primero."
+                });
+            }
+
+            return Json(new { puedeEliminar = true });
+        }
+
         // ELIMINAR VIVIENDA
 
         [HttpPost]
@@ -245,6 +412,44 @@ namespace Habitia.Areas.Admin.Controllers
             await _context.SaveChangesAsync();
 
             return Json(new { success = true });
+        }
+
+
+        // CAMBIAR A INACTIVA / REACTIVAR (toggle manual del Admin)
+        //
+        // Al reactivar, se recalcula automáticamente entre Disponible/Ocupada
+        // según si la vivienda tiene usuarios activos en ese momento.
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CambiarEstadoInactiva([FromBody] IdViviendaVM model)
+        {
+            var vivienda = await _context.Viviendas
+                .Include(v => v.Usuarios)
+                .FirstOrDefaultAsync(v => v.TN_Id == model.Id);
+
+            if (vivienda == null)
+            {
+                return Json(new { success = false, message = "Vivienda no encontrada." });
+            }
+
+            if (vivienda.TN_Estado == EstadoViviendaEnum.Inactiva)
+            {
+                var cantidadActivos = vivienda.Usuarios
+                    .Count(x => x.TN_Estado == EstadoUsuarioEnum.Activo);
+
+                vivienda.TN_Estado = cantidadActivos > 0
+                    ? EstadoViviendaEnum.Ocupada
+                    : EstadoViviendaEnum.Disponible;
+            }
+            else
+            {
+                vivienda.TN_Estado = EstadoViviendaEnum.Inactiva;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, nuevoEstado = vivienda.TN_Estado.ToString() });
         }
     }
 }

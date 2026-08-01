@@ -3,7 +3,6 @@ using Habitia.Enums;
 using Habitia.Models;
 using Habitia.Services.Interfaces;
 using Habitia.ViewModels.Incidencias;
-using Habitia.ViewModels.Mantenimiento;
 using Microsoft.EntityFrameworkCore;
 
 namespace Habitia.Services
@@ -11,16 +10,13 @@ namespace Habitia.Services
     public class IncidenciaService : IIncidenciaService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IMantenimientoService _mantenimientoService;
 
-        public IncidenciaService(
-            ApplicationDbContext context,
-            IMantenimientoService mantenimientoService)
+        public IncidenciaService(ApplicationDbContext context)
         {
             _context = context;
-            _mantenimientoService = mantenimientoService;
         }
 
+        // Usado por Residente, Seguridad y Admin — mismo flujo para los tres roles.
         public async Task<Incidencia> CrearAsync(IncidenciaCreateViewModel model, string idUsuario, string? imagenUrl)
         {
             var incidencia = new Incidencia
@@ -29,9 +25,9 @@ namespace Habitia.Services
                 TN_Tipo = model.Tipo,
                 TN_IdVivienda = model.Tipo == TipoIncidenciaEnum.Vivienda ? model.IdVivienda : null,
                 TN_IdAreaComun = model.Tipo == TipoIncidenciaEnum.AreaComun ? model.IdAreaComun : null,
+                TN_Responsabilidad = model.Responsabilidad,
                 TC_Titulo = model.Titulo.Trim(),
                 TC_Descripcion = model.Descripcion.Trim(),
-                TC_ComentarioAdicional = model.ComentarioAdicional?.Trim(),
                 TC_ImagenUrl = imagenUrl,
                 TN_Estado = EstadoIncidenciaEnum.Pendiente,
                 TF_FechaRegistro = DateTime.Now
@@ -43,70 +39,14 @@ namespace Habitia.Services
             return incidencia;
         }
 
-        /// <summary>
-        /// Flujo exclusivo del Admin: crea la incidencia ya clasificada y, si la
-        /// responsabilidad es Común o Mixta, genera la tarea de mantenimiento
-        /// en la misma transacción. Si es Privada, solo registra la incidencia.
-        /// </summary>
-        public async Task<(Incidencia Incidencia, Mantenimiento? Mantenimiento)> CrearPorAdminAsync(
-            IncidenciaAdminCreateViewModel model, string idAdmin, string? imagenUrl)
-        {
-            await using var transaction = await _context.Database.BeginTransactionAsync();
-
-            try
-            {
-                var incidencia = new Incidencia
-                {
-                    TC_IdUsuario = idAdmin,
-                    TN_Tipo = model.Tipo,
-                    TN_IdVivienda = model.Tipo == TipoIncidenciaEnum.Vivienda ? model.IdVivienda : null,
-                    TN_IdAreaComun = model.Tipo == TipoIncidenciaEnum.AreaComun ? model.IdAreaComun : null,
-                    TC_Titulo = model.Titulo.Trim(),
-                    TC_Descripcion = model.Descripcion.Trim(),
-                    TC_ComentarioAdicional = model.ComentarioAdicional?.Trim(),
-                    TC_ImagenUrl = imagenUrl,
-                    TN_Responsabilidad = model.Responsabilidad,
-                    TN_Estado = EstadoIncidenciaEnum.Pendiente,
-                    TF_FechaRegistro = DateTime.Now
-                };
-
-                _context.Incidencias.Add(incidencia);
-                await _context.SaveChangesAsync();
-
-                Mantenimiento? mantenimiento = null;
-
-                // Regla de negocio: Privado no genera tarea de mantenimiento
-                if (model.Responsabilidad != ResponsabilidadEnum.Privado)
-                {
-                    var mantenimientoModel = new MantenimientoCreateViewModel
-                    {
-                        IdIncidencia = incidencia.TN_Id,
-                        IdTipoMantenimiento = model.IdTipoMantenimiento,
-                        NuevoTipoMantenimiento = model.NuevoTipoMantenimiento,
-                        IdPersonalAsignado = model.IdPersonalAsignado!,
-                        FechaProgramada = model.FechaProgramada!.Value,
-                        Descripcion = model.DescripcionTarea!.Trim()
-                    };
-
-                    mantenimiento = await _mantenimientoService.ConvertirDesdeIncidenciaAsync(mantenimientoModel);
-                }
-
-                await transaction.CommitAsync();
-                return (incidencia, mantenimiento);
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
-        }
-
         public async Task<List<IncidenciaListItemViewModel>> ObtenerTodasAsync(IncidenciaFiltroViewModel? filtro = null)
         {
             var query = _context.Incidencias
                 .Include(i => i.Usuario)
                 .Include(i => i.Vivienda)
                 .Include(i => i.AreaComun)
+                .Include(i => i.Mantenimiento)
+                    .ThenInclude(m => m!.Tipo)
                 .AsQueryable();
 
             if (filtro != null)
@@ -128,11 +68,7 @@ namespace Habitia.Services
                 .OrderByDescending(i => i.TF_FechaRegistro)
                 .ToListAsync();
 
-            var idsConMantenimiento = await _context.Mantenimientos
-                .Select(m => m.TN_IdIncidencia)
-                .ToListAsync();
-
-            return incidencias.Select(i => MapearAListItem(i, idsConMantenimiento)).ToList();
+            return incidencias.Select(MapearAListItem).ToList();
         }
 
         public async Task<List<IncidenciaListItemViewModel>> ObtenerPorUsuarioAsync(string idUsuario)
@@ -141,15 +77,13 @@ namespace Habitia.Services
                 .Include(i => i.Usuario)
                 .Include(i => i.Vivienda)
                 .Include(i => i.AreaComun)
+                .Include(i => i.Mantenimiento)
+                    .ThenInclude(m => m!.Tipo)
                 .Where(i => i.TC_IdUsuario == idUsuario)
                 .OrderByDescending(i => i.TF_FechaRegistro)
                 .ToListAsync();
 
-            var idsConMantenimiento = await _context.Mantenimientos
-                .Select(m => m.TN_IdIncidencia)
-                .ToListAsync();
-
-            return incidencias.Select(i => MapearAListItem(i, idsConMantenimiento)).ToList();
+            return incidencias.Select(MapearAListItem).ToList();
         }
 
         public async Task<Incidencia?> ObtenerPorIdAsync(int id)
@@ -158,17 +92,23 @@ namespace Habitia.Services
                 .Include(i => i.Usuario)
                 .Include(i => i.Vivienda)
                 .Include(i => i.AreaComun)
+                .Include(i => i.Mantenimiento)
+                    .ThenInclude(m => m!.Tipo)
+                .Include(i => i.Mantenimiento)
+                    .ThenInclude(m => m!.PersonalAsignado)
                 .FirstOrDefaultAsync(i => i.TN_Id == id);
         }
 
-        public async Task ClasificarAsync(IncidenciaClasificarViewModel model)
+        // Reemplaza a "ClasificarAsync": ya no se elige el tipo de responsabilidad
+        // aquí (eso se define al crear la incidencia), solo se asigna la prioridad.
+        public async Task AsignarPrioridadAsync(IncidenciaPrioridadViewModel model)
         {
             var incidencia = await _context.Incidencias.FirstOrDefaultAsync(i => i.TN_Id == model.Id);
 
             if (incidencia == null)
                 throw new InvalidOperationException("La incidencia no existe.");
 
-            incidencia.TN_Responsabilidad = model.Responsabilidad;
+            incidencia.TN_Prioridad = model.Prioridad;
             await _context.SaveChangesAsync();
         }
 
@@ -188,21 +128,24 @@ namespace Habitia.Services
             return await _context.Mantenimientos.AnyAsync(m => m.TN_IdIncidencia == idIncidencia);
         }
 
-        private static IncidenciaListItemViewModel MapearAListItem(Incidencia i, List<int> idsConMantenimiento)
+        // Cierre de incidencia Privada: puede hacerlo el residente propietario o el Admin.
+        public async Task MarcarComoResueltaAsync(int idIncidencia, string idUsuarioQueResuelve, bool esAdmin)
         {
-            return new IncidenciaListItemViewModel
-            {
-                Id = i.TN_Id,
-                Titulo = i.TC_Titulo,
-                Ubicacion = i.TN_Tipo == TipoIncidenciaEnum.Vivienda
-                    ? $"Vivienda: {i.Vivienda?.TC_Numero ?? "N/D"}"
-                    : $"Área común: {i.AreaComun?.TC_Nombre ?? "N/D"}",
-                Estado = i.TN_Estado,
-                Responsabilidad = i.TN_Responsabilidad,
-                FechaRegistro = i.TF_FechaRegistro,
-                NombreUsuarioReporta = i.Usuario?.UserName ?? "N/D",
-                TieneMantenimientoAsociado = idsConMantenimiento.Contains(i.TN_Id)
-            };
+            var incidencia = await _context.Incidencias.FirstOrDefaultAsync(i => i.TN_Id == idIncidencia);
+
+            if (incidencia == null)
+                throw new InvalidOperationException("La incidencia no existe.");
+
+            if (incidencia.TN_Responsabilidad != ResponsabilidadEnum.Privado)
+                throw new InvalidOperationException("No fue posible completar la operación. Intente nuevamente.");
+
+            if (!esAdmin && incidencia.TC_IdUsuario != idUsuarioQueResuelve)
+                throw new UnauthorizedAccessException("No tiene permiso para modificar esta incidencia.");
+
+            incidencia.TN_Estado = EstadoIncidenciaEnum.Resuelta;
+            incidencia.TF_FechaResolucion = DateTime.Now;
+
+            await _context.SaveChangesAsync();
         }
 
         public async Task<List<Incidencia>> ObtenerElegiblesParaMantenimientoAsync()
@@ -221,5 +164,25 @@ namespace Habitia.Services
                 .ToListAsync();
         }
 
+        private static IncidenciaListItemViewModel MapearAListItem(Incidencia i)
+        {
+            return new IncidenciaListItemViewModel
+            {
+                Id = i.TN_Id,
+                Titulo = i.TC_Titulo,
+                Ubicacion = i.TN_Tipo == TipoIncidenciaEnum.Vivienda
+                    ? $"Vivienda: {i.Vivienda?.TC_Numero ?? "N/D"}"
+                    : $"Área común: {i.AreaComun?.TC_Nombre ?? "N/D"}",
+                Estado = i.TN_Estado,
+                Responsabilidad = i.TN_Responsabilidad,
+                Prioridad = i.TN_Prioridad,
+                FechaRegistro = i.TF_FechaRegistro,
+                NombreUsuarioReporta = i.Usuario?.UserName ?? "N/D",
+                TieneMantenimientoAsociado = i.Mantenimiento != null,
+                MantenimientoTipoNombre = i.Mantenimiento?.Tipo?.TC_Nombre,
+                MantenimientoEstado = i.Mantenimiento?.TN_Estado,
+                MantenimientoId = i.Mantenimiento?.TN_Id
+            };
+        }
     }
 }

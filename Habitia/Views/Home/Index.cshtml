@@ -1,11 +1,348 @@
-﻿@{
-    ViewData["Title"] = "Inicio";
-}
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Habitia · Sistema de gestión de condominios</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
 
-<section class="hero-section">
+<header class="public-header">
+    <div class="public-header__brand">
+        <a href="/" aria-label="Habitia - Inicio">
+            <img src="img/logo.png" alt="Habitia" />
+        </a>
+    </div>
+
+    <nav class="public-header__nav">
+        <a href="#inicio" class="active">Inicio</a>
+        <a href="#que-es">Qué es Habitia</a>
+        <a href="#roles">Roles</a>
+        <a href="#funcionalidades">Funcionalidades</a>
+        <a href="#contacto">Contacto</a>
+    </nav>
+
+    <div class="public-header__auth">
+        <a href="/Account/Login" class="public-header__login">Iniciar sesión</a>
+        <a href="/Account/Register" class="btn-registrarse">Registrarse</a>
+    </div>
+</header>
+
+<section class="hero-section" id="inicio">
     <div class="hero">
         <div class="hero-content">
             <h1 class="hero-title">La plataforma todo en uno para<br />la gestión de condominios</h1>
         </div>
     </div>
 </section>
+<section class="intro-section" id="que-es">
+    <div class="intro-content">
+        <span class="section-eyebrow">Sobre la plataforma</span>
+        <h2 class="section-title">Un solo sistema para administrar todo el condominio</h2>
+        <p class="section-lead">
+            Habitia centraliza accesos, pagos, documentos, incidencias y comunicación de la
+            comunidad en una sola plataforma, pensada para el día a día de administradores,
+            residentes, seguridad y mantenimiento.
+        </p>
+    </div>
+
+    <div class="pillars-marquee" data-marquee>
+    <div class="pillars-track">
+        <div class="pillar">
+            <span class="pillar__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </span>
+            <h3 class="pillar__title">Automatización</h3>
+            <p class="pillar__desc">Cargos, notificaciones y reportes se generan solos, sin procesos manuales repetitivos.</p>
+        </div>
+
+        <div class="pillar">
+            <span class="pillar__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 3v18h18"></path>
+                    <path d="M7 15l4-6 3 4 5-8"></path>
+                </svg>
+            </span>
+            <h3 class="pillar__title">Transparencia</h3>
+            <p class="pillar__desc">Pagos y cargos administrativos visibles en tiempo real, sin letra pequeña.</p>
+        </div>
+
+        <div class="pillar">
+            <span class="pillar__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2 4 5v6c0 5 3.4 8.7 8 11 4.6-2.3 8-6 8-11V5l-8-3z"></path>
+                    <path d="m9 12 2 2 4-4"></path>
+                </svg>
+            </span>
+            <h3 class="pillar__title">Seguridad</h3>
+            <p class="pillar__desc">Control de accesos y visitas con código QR, con registro de cada entrada.</p>
+        </div>
+
+        <div class="pillar">
+            <span class="pillar__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </span>
+            <h3 class="pillar__title">Comunidad</h3>
+            <p class="pillar__desc">Documentos, asambleas y un espacio para que los residentes se conecten entre sí.</p>
+        </div>
+    </div>
+    </div>
+</section>
+<section class="roles-section" id="roles">
+    <div class="intro-content">
+        <span class="section-eyebrow">Un sistema, varios roles</span>
+        <h2 class="section-title">Cada usuario ve lo que necesita</h2>
+        <p class="section-lead">
+            Administración, residentes, seguridad y mantenimiento trabajan sobre la misma
+            plataforma, cada uno con su propia vista.
+        </p>
+    </div>
+
+    <div class="directory-board">
+        <div class="directory-board__header">Habitia · Directorio de roles</div>
+
+        <div class="directory-board__rows">
+            <div class="directory-board__row">
+                <span class="directory-board__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="7" width="20" height="14" rx="2"></rect>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                    </svg>
+                </span>
+                <span class="directory-board__text">
+                    <span class="directory-board__label">Administrador</span>
+                    <span class="directory-board__desc">Cargos y pagos, documentos, asambleas y reportes administrativos.</span>
+                </span>
+            </div>
+
+            <div class="directory-board__row">
+                <span class="directory-board__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 11 9-8 9 8"></path>
+                        <path d="M5 10v10h14V10"></path>
+                    </svg>
+                </span>
+                <span class="directory-board__text">
+                    <span class="directory-board__label">Residente</span>
+                    <span class="directory-board__desc">Pagos, reserva de amenidades, autorización de visitas y reporte de incidencias.</span>
+                </span>
+            </div>
+
+            <div class="directory-board__row">
+                <span class="directory-board__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2 4 5v6c0 5 3.4 8.7 8 11 4.6-2.3 8-6 8-11V5l-8-3z"></path>
+                    </svg>
+                </span>
+                <span class="directory-board__text">
+                    <span class="directory-board__label">Seguridad</span>
+                    <span class="directory-board__desc">Control de accesos por código QR y registro de visitantes.</span>
+                </span>
+            </div>
+
+            <div class="directory-board__row">
+                <span class="directory-board__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                    </svg>
+                </span>
+                <span class="directory-board__text">
+                    <span class="directory-board__label">Mantenimiento</span>
+                    <span class="directory-board__desc">Recibe incidencias asignadas y actualiza su estado hasta resolverlas.</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <p class="roles-note"><strong>Un mismo usuario puede tener más de un rol</strong> dentro del condominio.</p>
+</section>
+<section class="features-section" id="funcionalidades">
+    <div class="intro-content">
+        <span class="section-eyebrow">Funcionalidades</span>
+        <h2 class="section-title">Todo lo que necesita un condominio, en un solo lugar</h2>
+        <p class="section-lead">Organizado por área, para que cada función encuentre a quien la necesita.</p>
+    </div>
+
+    <div class="features-marquee" data-marquee>
+    <div class="features-track">
+        <div class="feature-card">
+            <span class="feature-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="7.5" cy="15.5" r="5.5"></circle>
+                    <path d="m21 2-9.6 9.6"></path>
+                    <path d="m15.5 7.5 3 3L22 7l-3-3"></path>
+                </svg>
+            </span>
+            <h3 class="feature-card__title">Accesos y seguridad</h3>
+            <ul class="feature-card__list">
+                <li>Control de accesos al condominio</li>
+                <li>Gestión de visitas y autorizaciones, con código QR o registro manual</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <span class="feature-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 21h18"></path>
+                    <path d="M5 21V7l7-4 7 4v14"></path>
+                    <path d="M9 21v-6h6v6"></path>
+                </svg>
+            </span>
+            <h3 class="feature-card__title">Administración de la propiedad</h3>
+            <ul class="feature-card__list">
+                <li>Gestión de viviendas</li>
+                <li>Cargos administrativos y registro de pagos (SINPE, tarjeta o efectivo)</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <span class="feature-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <path d="M14 2v6h6"></path>
+                    <path d="M9 15h6"></path>
+                    <path d="M9 11h6"></path>
+                </svg>
+            </span>
+            <h3 class="feature-card__title">Gestión comunitaria</h3>
+            <ul class="feature-card__list">
+                <li>Documentos y asambleas, presenciales o virtuales, en un solo lugar</li>
+                <li>Marketplace comunitario para publicar productos y servicios</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <span class="feature-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
+            </span>
+            <h3 class="feature-card__title">Soporte y mantenimiento</h3>
+            <ul class="feature-card__list">
+                <li>Gestión de incidencias, desde el reporte hasta la resolución</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <span class="feature-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 3v18h18"></path>
+                    <rect x="7" y="12" width="3" height="6"></rect>
+                    <rect x="12" y="8" width="3" height="10"></rect>
+                    <rect x="17" y="5" width="3" height="13"></rect>
+                </svg>
+            </span>
+            <h3 class="feature-card__title">Control administrativo</h3>
+            <ul class="feature-card__list">
+                <li>Generación de reportes administrativos</li>
+                <li>Registro, autenticación y gestión de usuarios, con soporte para varios roles por usuario</li>
+            </ul>
+        </div>
+    </div>
+    </div>
+</section>
+<section class="flow-section" id="flujo">
+    <div class="intro-content">
+        <span class="section-eyebrow">En la práctica</span>
+        <h2 class="section-title">Así se conectan los roles entre sí</h2>
+        <p class="section-lead">Un ejemplo simple de cómo una incidencia recorre el sistema.</p>
+    </div>
+
+    <div class="flow-steps">
+        <div class="flow-step">
+            <span class="flow-step__num">1</span>
+            <h3 class="flow-step__title">Residente reporta</h3>
+            <p class="flow-step__desc">Reporta una incidencia desde su cuenta, con descripción y ubicación.</p>
+        </div>
+
+        <div class="flow-connector"></div>
+
+        <div class="flow-step">
+            <span class="flow-step__num">2</span>
+            <h3 class="flow-step__title">Mantenimiento resuelve</h3>
+            <p class="flow-step__desc">Recibe el ticket asignado y actualiza el estado hasta resolverlo.</p>
+        </div>
+
+        <div class="flow-connector"></div>
+
+        <div class="flow-step">
+            <span class="flow-step__num">3</span>
+            <h3 class="flow-step__title">Administrador supervisa</h3>
+            <p class="flow-step__desc">Da seguimiento y lo refleja en los reportes administrativos.</p>
+        </div>
+    </div>
+</section>
+<section class="benefits-section" id="beneficios">
+    <div class="intro-content">
+        <span class="section-eyebrow">Beneficios</span>
+        <h2 class="section-title">Pensado para simplificar la vida en comunidad</h2>
+    </div>
+
+    <div class="benefits-grid">
+        <div class="benefit-card">
+            <span class="benefit-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 6v6l4 2"></path>
+                </svg>
+            </span>
+            <h3 class="benefit-card__title">Ahorra tiempo</h3>
+            <p class="benefit-card__desc">Menos trámites manuales para administración y residentes.</p>
+        </div>
+
+        <div class="benefit-card">
+            <span class="benefit-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            </span>
+            <h3 class="benefit-card__title">Transparencia</h3>
+            <p class="benefit-card__desc">Cargos y pagos visibles para todos, sin ambigüedad.</p>
+        </div>
+
+        <div class="benefit-card">
+            <span class="benefit-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+            </span>
+            <h3 class="benefit-card__title">Comunicación centralizada</h3>
+            <p class="benefit-card__desc">Documentos, asambleas y avisos en un solo lugar.</p>
+        </div>
+
+        <div class="benefit-card">
+            <span class="benefit-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2 4 5v6c0 5 3.4 8.7 8 11 4.6-2.3 8-6 8-11V5l-8-3z"></path>
+                </svg>
+            </span>
+            <h3 class="benefit-card__title">Más seguridad</h3>
+            <p class="benefit-card__desc">Cada acceso queda registrado y autorizado.</p>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section" id="contacto">
+    <h2 class="cta-title">¿Listo para conocer Habitia?</h2>
+    <a href="/Account/Register" class="btn-registrarse">Solicitar acceso</a>
+</section>
+<footer class="site-footer">
+    <div class="site-footer__inner">
+        <span class="site-footer__brand">Habitia</span>
+        <span class="site-footer__meta">Proyecto universitario · Sistema de gestión de condominios</span>
+    </div>
+</footer>
+    <script src="interactions.js"></script>
+</body>
+</html>

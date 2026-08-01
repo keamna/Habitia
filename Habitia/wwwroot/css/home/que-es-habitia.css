@@ -1,0 +1,141 @@
+﻿/* ===================================================================
+   Habitia · ¿Qué es Habitia? (intro + pilares) — estilo tech
+   Usa las variables definidas en header-hero.css
+   =================================================================== */
+
+.section-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--habitia-green);
+    margin: 0 0 14px;
+}
+
+    .section-eyebrow::before {
+        content: "";
+        width: 18px;
+        height: 2px;
+        background: var(--habitia-accent);
+        border-radius: 2px;
+    }
+
+.section-title {
+    margin: 0 0 16px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+    line-height: 1.25;
+    color: var(--habitia-text);
+}
+
+.section-lead {
+    margin: 0;
+    max-width: 640px;
+    font-size: 1.02rem;
+    line-height: 1.65;
+    color: var(--habitia-text-muted);
+}
+
+.intro-section {
+    padding: 96px 48px;
+    background: var(--habitia-bg);
+}
+
+.intro-content {
+    max-width: 720px;
+    margin: 0 auto 52px;
+    text-align: center;
+}
+
+    .intro-content .section-eyebrow {
+        justify-content: center;
+    }
+
+    .intro-content .section-lead {
+        margin: 0 auto;
+    }
+
+.pillars-marquee {
+    overflow: hidden;
+    width: 100%;
+    padding: 4px 0;
+}
+
+.pillars-track {
+    display: flex;
+    gap: 20px;
+    width: max-content;
+    will-change: transform;
+}
+
+/* ---------- Pilares: mismo estilo que las tarjetas de Beneficios ---------- */
+
+.pillar {
+    flex-shrink: 0;
+    width: 220px;
+    text-align: center;
+    padding: 10px;
+}
+
+.pillar__icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--habitia-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    transition: box-shadow .25s ease, transform .25s ease;
+}
+
+.pillar:hover .pillar__icon {
+    box-shadow: 0 0 0 8px var(--habitia-accent-soft);
+    transform: translateY(-3px);
+}
+
+.pillar__icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--habitia-accent);
+}
+
+.pillar__title {
+    margin: 0 0 8px;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--habitia-text);
+}
+
+.pillar__desc {
+    margin: 0;
+    font-size: 0.87rem;
+    line-height: 1.5;
+    color: var(--habitia-text-muted);
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 900px) {
+    .intro-section {
+        padding: 64px 24px;
+    }
+
+    .pillar {
+        width: 200px;
+    }
+}
+
+@media (max-width: 560px) {
+    .intro-section {
+        padding: 52px 20px;
+    }
+
+    .pillar {
+        width: 180px;
+    }
+}

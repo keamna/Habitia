@@ -1,5 +1,6 @@
 ﻿using Habitia.Data;
 using Habitia.Enums;
+using Habitia.Helpers;
 using Habitia.Models;
 using Habitia.ViewModels.Vivienda;
 using Microsoft.AspNetCore.Authorization;
@@ -68,7 +69,8 @@ namespace Habitia.Areas.Residente.Controllers
                     InquilinosActuales = inquilinosActuales,
                     ViveAhi = relacion.TB_ViveAhi,
                     EsPropietario = relacion.TN_TipoRelacion == TipoRelacionEnum.Propietario &&
-                                     relacion.TN_Estado == EstadoUsuarioEnum.Activo
+                                     relacion.TN_Estado == EstadoUsuarioEnum.Activo,
+                    EtiquetaInquilinos = ViviendaHelper.ObtenerEtiquetaOcupantes(propietario?.TB_ViveAhi)
                 });
             }
 
@@ -81,14 +83,14 @@ namespace Habitia.Areas.Residente.Controllers
         {
             var userId = _userManager.GetUserId(User);
 
-            var esPropietario = await _context.ViviendaUsuarios
-                .AnyAsync(x =>
+            var relacionPropietario = await _context.ViviendaUsuarios
+                .FirstOrDefaultAsync(x =>
                     x.TN_IdVivienda == id &&
                     x.TC_IdUsuario == userId &&
                     x.TN_TipoRelacion == TipoRelacionEnum.Propietario &&
                     x.TN_Estado == EstadoUsuarioEnum.Activo);
 
-            if (!esPropietario)
+            if (relacionPropietario == null)
             {
                 return Forbid();
             }
@@ -112,7 +114,8 @@ namespace Habitia.Areas.Residente.Controllers
                 Id = vivienda.TN_Id,
                 Numero = vivienda.TC_Numero,
                 InquilinosActuales = inquilinosActuales,
-                CantidadInquilinos = vivienda.TN_CantidadInquilinos
+                CantidadInquilinos = vivienda.TN_CantidadInquilinos,
+                EtiquetaInquilinos = ViviendaHelper.ObtenerEtiquetaOcupantes(relacionPropietario.TB_ViveAhi)
             };
 
             return View(model);
@@ -125,14 +128,14 @@ namespace Habitia.Areas.Residente.Controllers
         {
             var userId = _userManager.GetUserId(User);
 
-            var esPropietario = await _context.ViviendaUsuarios
-                .AnyAsync(x =>
+            var relacionPropietario = await _context.ViviendaUsuarios
+                .FirstOrDefaultAsync(x =>
                     x.TN_IdVivienda == model.Id &&
                     x.TC_IdUsuario == userId &&
                     x.TN_TipoRelacion == TipoRelacionEnum.Propietario &&
                     x.TN_Estado == EstadoUsuarioEnum.Activo);
 
-            if (!esPropietario)
+            if (relacionPropietario == null)
             {
                 return Forbid();
             }
@@ -155,7 +158,7 @@ namespace Habitia.Areas.Residente.Controllers
             {
                 ModelState.AddModelError(
                     nameof(model.CantidadInquilinos),
-                    $"No puede fijar un cupo menor a los {inquilinosActuales} inquilinos que ya están registrados o pendientes de aprobación."
+                    $"No puede fijar un cupo menor a los {inquilinosActuales} que ya están registrados o pendientes de aprobación."
                 );
             }
 
@@ -163,13 +166,14 @@ namespace Habitia.Areas.Residente.Controllers
             {
                 model.Numero = vivienda.TC_Numero;
                 model.InquilinosActuales = inquilinosActuales;
+                model.EtiquetaInquilinos = ViviendaHelper.ObtenerEtiquetaOcupantes(relacionPropietario.TB_ViveAhi);
                 return View(model);
             }
 
             vivienda.TN_CantidadInquilinos = model.CantidadInquilinos;
             await _context.SaveChangesAsync();
 
-            TempData["MensajeExito"] = "Cupo de inquilinos actualizado correctamente.";
+            TempData["MensajeExito"] = "Cupo actualizado correctamente.";
 
             return RedirectToAction(nameof(Index));
         }

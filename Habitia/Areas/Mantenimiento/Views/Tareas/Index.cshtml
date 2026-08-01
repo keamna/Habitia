@@ -1,27 +1,32 @@
 ﻿@model List<Habitia.Models.Mantenimiento>
 @{
-    ViewData["Title"] = "Mis Tareas Asignadas";
+    ViewData["Title"] = "Mis Tareas de Mantenimiento";
 }
 
-<h2>Mis Tareas Asignadas</h2>
+<h2>Mis Tareas de Mantenimiento</h2>
 
 @if (TempData["Success"] != null)
 {
     <div class="alert alert-success">@TempData["Success"]</div>
 }
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
 
 @if (!Model.Any())
 {
-    <div class="alert alert-info">No tiene tareas de mantenimiento asignadas.</div>
+    <div class="alert alert-info">No tenés tareas de mantenimiento asignadas.</div>
 }
 else
 {
     <table class="table table-hover align-middle">
         <thead>
             <tr>
+                <th>Incidencia</th>
                 <th>Descripción</th>
                 <th>Tipo</th>
-                <th>Fecha Programada</th>
+                <th>Fecha de creación</th>
                 <th>Estado</th>
                 <th></th>
             </tr>
@@ -30,9 +35,19 @@ else
             @foreach (var m in Model)
             {
                 <tr>
+                    <td>
+                        <a asp-controller="Incidencias" asp-action="Details" asp-route-id="@m.TN_IdIncidencia">
+                            @m.Incidencia?.TC_Titulo
+                        </a>
+                        <div class="text-muted small">
+                            @(m.Incidencia?.TN_Tipo == Habitia.Enums.TipoIncidenciaEnum.Vivienda
+                                ? $"Vivienda: {m.Incidencia?.Vivienda?.TC_Numero}"
+                                : $"Área común: {m.Incidencia?.AreaComun?.TC_Nombre}")
+                        </div>
+                    </td>
                     <td>@m.TC_Descripcion</td>
                     <td>@m.Tipo?.TC_Nombre</td>
-                    <td>@m.TF_FechaProgramada.ToString("dd/MM/yyyy")</td>
+                    <td>@m.TF_FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</td>
                     <td>
                         <span class="badge @(m.TN_Estado switch {
                             Habitia.Enums.EstadoMantenimientoEnum.Programado => "bg-secondary",
@@ -45,7 +60,11 @@ else
                         </span>
                     </td>
                     <td>
-                        <a asp-action="ActualizarEstado" asp-route-id="@m.TN_Id" class="btn btn-sm btn-primary">Actualizar</a>
+                        <a asp-action="Details" asp-route-id="@m.TN_Id" class="btn btn-sm btn-outline-primary">Ver</a>
+                        @if (m.TN_Estado != Habitia.Enums.EstadoMantenimientoEnum.Completado)
+                        {
+                            <a asp-action="Actualizar" asp-route-id="@m.TN_Id" class="btn btn-sm btn-primary">Actualizar</a>
+                        }
                     </td>
                 </tr>
             }

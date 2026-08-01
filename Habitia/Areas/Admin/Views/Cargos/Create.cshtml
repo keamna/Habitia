@@ -1,0 +1,84 @@
+﻿@model Habitia.ViewModels.Financiero.Admin.CargoCreateViewModel
+@{
+    ViewData["Title"] = "Crear cargo";
+}
+<link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
+<partial name="_FinancieroTabs" />
+
+<h4 class="mb-3">Crear cargo</h4>
+
+<div class="fin-card">
+    <div class="fin-card-body">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="alert alert-danger d-none" id="validationSummary"></div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Residente</label>
+                    <select asp-for="TC_IdResidente" asp-items="Model.Residentes" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                    </select>
+                    <span asp-validation-for="TC_IdResidente" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Tipo de cargo</label>
+                    <select asp-for="TN_IdTipoCargo" asp-items="Model.TiposCargo" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                    </select>
+                    <span asp-validation-for="TN_IdTipoCargo" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Monto base</label>
+                    <input asp-for="TN_MontoBase" type="number" step="0.01" class="form-control" id="montoBase" />
+                    <span asp-validation-for="TN_MontoBase" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">IVA</label>
+                    <input asp-for="TN_MontoIva" type="number" step="0.01" class="form-control" id="montoIva" />
+                    <span asp-validation-for="TN_MontoIva" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Monto total</label>
+                    <input type="text" class="form-control" id="montoTotal" readonly value="0.00" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Fecha de vencimiento</label>
+                    <input asp-for="TF_FechaVencimiento" type="date" class="form-control" />
+                    <span asp-validation-for="TF_FechaVencimiento" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Descripción</label>
+                    <textarea asp-for="TC_Descripcion" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="TC_Descripcion" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn" style="background-color:#336332;color:#fff;">
+                    <i class="bi bi-save"></i> Guardar
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function calcularTotal() {
+            const base = parseFloat(document.getElementById('montoBase').value) || 0;
+            const iva = parseFloat(document.getElementById('montoIva').value) || 0;
+            document.getElementById('montoTotal').value = (base + iva).toFixed(2);
+        }
+        document.getElementById('montoBase').addEventListener('input', calcularTotal);
+        document.getElementById('montoIva').addEventListener('input', calcularTotal);
+    </script>
+}

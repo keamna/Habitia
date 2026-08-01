@@ -21,13 +21,9 @@
 
 
 body {
-
     background-color: var(--habitia-bg);
-
     font-family: 'DM Sans', sans-serif;
-
     margin: 0;
-
 }
 
 
@@ -40,11 +36,8 @@ body {
 
 
 .habitia-wrapper {
-
     display: flex;
-
     min-height: 100vh;
-
 }
 
 
@@ -58,23 +51,14 @@ body {
 
 
 .habitia-sidebar {
-
     width: 260px;
-
     flex-shrink: 0;
-
     background-color: var(--habitia-sidebar-bg);
-
     border-right: 1px solid var(--habitia-border);
-
     display: flex;
-
     flex-direction: column;
-
     justify-content: space-between;
-
     padding-bottom: 20px;
-
 }
 
 
@@ -88,44 +72,29 @@ body {
 
 
 .habitia-brand {
-
     display: flex;
-
     align-items: center;
-
     gap: 2px;
-
     padding: 22px 20px;
-
     border-bottom: 1px solid var(--habitia-border);
-
 }
 
 
 
-.habitia-brand img {
-
-    width: 70px;
-
-    height: 70px;
-
-    object-fit: contain;
-
-}
+    .habitia-brand img {
+        width: 70px;
+        height: 70px;
+        object-fit: contain;
+    }
 
 
 
-.habitia-brand span {
-
-    font-family: 'Poppins', sans-serif;
-
-    font-weight: 700;
-
-    font-size: 1.25rem;
-
-    color: var(--habitia-green-active);
-
-}
+    .habitia-brand span {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: var(--habitia-green-active);
+    }
 
 
 
@@ -139,15 +108,10 @@ body {
 
 
 .habitia-nav {
-
     padding: 18px 12px;
-
     display: flex;
-
     flex-direction: column;
-
     gap: 5px;
-
 }
 
 
@@ -155,80 +119,111 @@ body {
 
 
 .habitia-nav-item {
-
-
     display: flex;
-
     align-items: center;
-
     gap: 11px;
-
     padding: 11px 14px;
-
     border-radius: 9px;
-
     color: var(--habitia-text-gray);
-
     text-decoration: none;
-
     font-weight: 500;
-
     font-size: 0.92rem;
-
     transition: .2s ease;
-
 }
 
 
 
 
 
-.habitia-nav-item i {
+    .habitia-nav-item i {
+        font-size: 1rem;
+        width: 20px;
+        text-align: center;
+    }
 
-    font-size: 1rem;
 
-    width: 20px;
 
-    text-align: center;
 
+
+
+    .habitia-nav-item:hover {
+        background-color: rgba(51,99,50,0.08);
+        color: var(--habitia-green-active);
+        text-decoration: none;
+    }
+
+
+
+
+
+
+    .habitia-nav-item.active {
+        background-color: var(--habitia-green-active);
+        color: #FFFFFF;
+    }
+
+
+
+
+        .habitia-nav-item.active i {
+            color: #FFFFFF;
+        }
+
+
+
+
+
+
+
+/* =========================
+   SECCIONES DEL MENÚ
+   (agrupan los ítems por rol; el título
+   solo se muestra cuando el usuario tiene 2+ roles)
+========================= */
+
+
+.habitia-nav-seccion {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 
 
 
 
+    .habitia-nav-seccion:not(:first-child) {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--habitia-border);
+    }
 
-.habitia-nav-item:hover {
 
-    background-color: rgba(51,99,50,0.08);
 
-    color: var(--habitia-green-active);
 
-    text-decoration: none;
 
+
+.habitia-nav-seccion-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 14px 6px;
+    color: var(--habitia-text-gray);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 
 
 
 
-
-.habitia-nav-item.active {
-
-    background-color: var(--habitia-green-active);
-
-    color: #FFFFFF;
-
-}
-
-
-
-
-.habitia-nav-item.active i {
-
-    color: #FFFFFF;
-
-}
+    .habitia-nav-seccion-titulo i {
+        font-size: 0.82rem;
+        width: 20px;
+        text-align: center;
+    }
 
 
 
@@ -242,24 +237,17 @@ body {
 
 
 .habitia-sidebar-footer {
-
     padding: 0 20px;
-
 }
 
 
 
 
 .habitia-user {
-
     display: flex;
-
     align-items: center;
-
     gap: 10px;
-
     padding: 14px 0;
-
 }
 
 
@@ -268,25 +256,15 @@ body {
 
 
 .habitia-user-avatar {
-
     width: 36px;
-
     height: 36px;
-
     border-radius: 50%;
-
     background-color: #D9D9D9;
-
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
     color: #FFFFFF;
-
     flex-shrink: 0;
-
 }
 
 
@@ -294,15 +272,10 @@ body {
 
 
 .habitia-user-name {
-
     font-weight: 600;
-
     color: #1a1a1a;
-
     font-size: 0.9rem;
-
     line-height: 1.2;
-
 }
 
 
@@ -310,11 +283,8 @@ body {
 
 
 .habitia-user-role {
-
     font-size: 0.78rem;
-
     color: var(--habitia-text-gray);
-
 }
 
 
@@ -329,29 +299,17 @@ body {
 
 
 .habitia-logout {
-
     display: flex;
-
     align-items: center;
-
     gap: 8px;
-
     color: var(--habitia-red);
-
     text-decoration: none;
-
     font-weight: 600;
-
     font-size: 0.9rem;
-
     background: none;
-
     border: none;
-
     padding: 0;
-
     cursor: pointer;
-
 }
 
 
@@ -366,11 +324,8 @@ body {
 
 
 .habitia-content {
-
     flex: 1;
-
     padding: 28px 36px;
-
 }
 
 
@@ -384,34 +339,26 @@ body {
 ========================= */
 
 
-@media(max-width:900px){
+@media(max-width:900px) {
 
 
     .habitia-sidebar {
-
         width: 220px;
-
     }
 
 
     .habitia-content {
-
         padding: 24px;
-
     }
-
-
 }
 
 
 
-@media(max-width:700px){
+@media(max-width:700px) {
 
 
     .habitia-sidebar {
-
         width: 70px;
-
     }
 
 
@@ -420,26 +367,28 @@ body {
     .habitia-user-name,
     .habitia-user-role,
     .habitia-logout span {
-
-        display:none;
-
+        display: none;
     }
 
 
     .habitia-nav-item {
+        justify-content: center;
+        padding: 12px;
+    }
 
-        justify-content:center;
 
-        padding:12px;
+    .habitia-nav-seccion-titulo {
+        display: none;
+    }
 
+
+    .habitia-nav-seccion:not(:first-child) {
+        margin-top: 8px;
+        padding-top: 8px;
     }
 
 
     .habitia-sidebar-footer {
-
-        padding:0 12px;
-
+        padding: 0 12px;
     }
-
-
 }

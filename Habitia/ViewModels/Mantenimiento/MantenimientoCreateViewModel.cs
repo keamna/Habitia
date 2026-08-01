@@ -15,14 +15,9 @@ namespace Habitia.ViewModels.Mantenimiento
         [Display(Name = "Nuevo tipo de mantenimiento")]
         public string? NuevoTipoMantenimiento { get; set; }
 
-        [Required(ErrorMessage = "Debe asignar personal de mantenimiento.")]
+        [Required(ErrorMessage = "Debe asignar al menos una persona de mantenimiento.")]
         [Display(Name = "Personal asignado")]
         public string IdPersonalAsignado { get; set; }
-
-        [Required(ErrorMessage = "La fecha programada es obligatoria.")]
-        [DataType(DataType.Date)]
-        [Display(Name = "Fecha programada")]
-        public DateTime FechaProgramada { get; set; }
 
         [Required(ErrorMessage = "La descripción es obligatoria.")]
         [StringLength(200, MinimumLength = 5)]
@@ -30,7 +25,6 @@ namespace Habitia.ViewModels.Mantenimiento
         public string Descripcion { get; set; }
 
         public List<SelectListItem>? IncidenciasElegibles { get; set; }
-
         public List<SelectListItem>? TiposMantenimiento { get; set; }
         public List<SelectListItem>? PersonalMantenimiento { get; set; }
 
@@ -51,13 +45,6 @@ namespace Habitia.ViewModels.Mantenimiento
                 yield return new ValidationResult(
                     "No puede seleccionar un tipo existente e ingresar uno nuevo al mismo tiempo.",
                     new[] { nameof(NuevoTipoMantenimiento) });
-            }
-
-            if (FechaProgramada.Date < DateTime.Today)
-            {
-                yield return new ValidationResult(
-                    "La fecha programada no puede ser anterior al día de hoy.",
-                    new[] { nameof(FechaProgramada) });
             }
         }
     }

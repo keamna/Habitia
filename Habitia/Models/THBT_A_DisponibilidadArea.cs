@@ -30,11 +30,16 @@ namespace Habitia.Models
         [Required]
         public bool TB_Estado { get; set; }
 
+        [Required]
+        [Range(1, 100, ErrorMessage = "Cantidad inválida")]
+        public int TN_Cantidad { get; set; }
+
+        public bool TB_Reservado { get; set; } = false;
 
         // Relaciones
 
         [ForeignKey(nameof(TN_IdAreaComun))]
-        public AreaComun Area { get; set; }
+        public AreaComun AreaComun { get; set; }
 
 
         public ICollection<Reserva> Reservas { get; set; }

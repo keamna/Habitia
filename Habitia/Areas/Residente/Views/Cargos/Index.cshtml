@@ -1,0 +1,48 @@
+﻿@model List<Habitia.ViewModels.Financiero.Residente.CargoPendienteViewModel>
+@{
+    ViewData["Title"] = "Mis cargos";
+}
+<link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
+
+<h4 class="mb-3">Mis cargos pendientes</h4>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="row g-3">
+    @if (!Model.Any())
+    {
+        <div class="col-12">
+            <div class="fin-card">
+                <div class="fin-card-body text-center text-muted py-4">
+                    No tienes cargos pendientes
+                </div>
+            </div>
+        </div>
+    }
+    @foreach (var c in Model)
+    {
+        <div class="col-md-6 col-lg-4">
+            <div class="fin-card h-100">
+                <div class="fin-card-header"><i class="bi bi-receipt"></i> @c.TipoCargo</div>
+                <div class="fin-card-body">
+                    <p class="text-muted mb-1">@c.TC_Descripcion</p>
+                    <p class="fin-monto-total mb-2">@c.TN_MontoTotal.ToString("C")</p>
+                    <p class="small mb-1"><strong>Vence:</strong> @c.TF_FechaVencimiento.ToString("dd/MM/yyyy")</p>
+                    <span class="badge badge-pendiente mb-3">@c.EstadoCargo</span>
+                    <div>
+                        <a asp-action="Pagar" asp-route-id="@c.TN_Id" class="btn btn-sm w-100" style="background-color:#336332;color:#fff;">
+                            <i class="bi bi-cash-coin"></i> Pagar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,5 +1,7 @@
-﻿using Habitia.Enums;
+﻿// Usado por el Admin para Crear/Editar.  NO incluye CantidadInquilinos:
+// ese dato solo lo gestiona el propietario (residente) desde su panel.
 using System.ComponentModel.DataAnnotations;
+using Habitia.Enums;
 
 namespace Habitia.ViewModels.Vivienda
 {
@@ -7,19 +9,10 @@ namespace Habitia.ViewModels.Vivienda
     {
         public int Id { get; set; }
 
+        [Required(ErrorMessage = "Debe completar todos los campos obligatorios.")]
+        public string Numero { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El número de vivienda es obligatorio.")]
-        public string Numero { get; set; }
-
-
-
-        [Required(ErrorMessage = "Seleccione el tipo de vivienda.")]
+        [Required(ErrorMessage = "Debe completar todos los campos obligatorios.")]
         public TipoViviendaEnum Tipo { get; set; }
-
-
-
-        [Required(ErrorMessage = "Indique la cantidad de inquilinos.")]
-        [Range(0, 10, ErrorMessage = "La cantidad debe estar entre 0 y 10.")]
-        public int CantidadInquilinos { get; set; }
     }
 }

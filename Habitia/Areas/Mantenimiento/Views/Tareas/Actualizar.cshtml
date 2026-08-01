@@ -1,0 +1,45 @@
+﻿@model Habitia.ViewModels.Mantenimiento.MantenimientoEstadoUpdateViewModel
+@{
+    ViewData["Title"] = "Actualizar Tarea";
+}
+
+<h2>Actualizar Tarea de Mantenimiento</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">@ViewBag.Titulo</h5>
+        <p class="card-text text-muted mb-0">@ViewBag.Descripcion</p>
+    </div>
+</div>
+
+<form asp-action="Actualizar" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="mb-3">
+        <label asp-for="Estado" class="form-label"></label>
+        <select asp-for="Estado" class="form-select"
+                asp-items="Html.GetEnumSelectList<Habitia.Enums.EstadoMantenimientoEnum>()">
+        </select>
+        <span asp-validation-for="Estado" class="text-danger"></span>
+        <div class="form-text">
+            Al marcar como <strong>Completado</strong>, la incidencia asociada se cerrará automáticamente
+            como Resuelta y esta tarea quedará bloqueada para futuras modificaciones.
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Observaciones" class="form-label"></label>
+        <textarea asp-for="Observaciones" class="form-control" rows="4"
+                  placeholder="Describa los resultados o el trabajo realizado..."></textarea>
+        <span asp-validation-for="Observaciones" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

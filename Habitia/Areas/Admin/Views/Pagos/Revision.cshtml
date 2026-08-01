@@ -1,0 +1,51 @@
+﻿@model List<Habitia.ViewModels.Financiero.Admin.ValidarPagoViewModel>
+@{
+    ViewData["Title"] = "Pagos en revisión";
+}
+<link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
+<partial name="_FinancieroTabs" />
+
+<h4 class="mb-3">Pagos en revisión</h4>
+
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+
+<div class="fin-card">
+    <div class="fin-card-body p-0">
+        <div class="table-responsive">
+            <table class="table fin-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Residente</th>
+                        <th>Monto</th>
+                        <th>Método</th>
+                        <th>Fecha de pago</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="5" class="text-center text-muted py-4">No hay pagos pendientes de revisión</td></tr>
+                    }
+                    @foreach (var p in Model)
+                    {
+                        <tr>
+                            <td>@p.NombreResidente</td>
+                            <td>@p.TN_MontoTotal.ToString("C")</td>
+                            <td>@p.MetodoPago</td>
+                            <td>@p.TF_FechaPago.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <a asp-action="Detalle" asp-route-id="@p.TN_IdPago" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-eye"></i> Revisar
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

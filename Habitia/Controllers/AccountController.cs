@@ -106,10 +106,11 @@ namespace Habitia.Controllers
 
             }
 
-
-
-
-
+            if (usuario.TN_Estado == EstadoUsuarioEnum.Suspendido)
+            {
+                ModelState.AddModelError("", "Su cuenta ha sido suspendida. Contacte al administrador para más información.");
+                return View(model);
+            }
 
             var resultado =
                 await _signInManager.PasswordSignInAsync(
@@ -267,8 +268,31 @@ namespace Habitia.Controllers
             RegisterViewModel model)
         {
 
+            bool esAjax =
+                Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+
+
+
             if (!ModelState.IsValid)
             {
+
+                if (esAjax)
+                {
+
+                    var erroresModelo =
+                        ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+
+                    return Json(new
+                    {
+                        success = false,
+                        errors = erroresModelo
+                    });
+
+                }
+
                 return View(model);
             }
 
@@ -295,6 +319,16 @@ namespace Habitia.Controllers
                     "",
                     "Debe seleccionar una vivienda."
                 );
+
+
+                if (esAjax)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        errors = new[] { "Debe seleccionar una vivienda." }
+                    });
+                }
 
 
                 return View(model);
@@ -339,6 +373,16 @@ namespace Habitia.Controllers
                     );
 
 
+                    if (esAjax)
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            errors = new[] { "Esta vivienda ya tiene propietario." }
+                        });
+                    }
+
+
                     return View(model);
 
                 }
@@ -380,6 +424,57 @@ namespace Habitia.Controllers
                         "",
                         "La vivienda no tiene propietario aprobado."
                     );
+
+
+                    if (esAjax)
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            errors = new[] { "La vivienda no tiene propietario aprobado." }
+                        });
+                    }
+
+
+                    return View(model);
+
+                }
+
+
+
+                // Respetar el cupo de inquilinos definido para la vivienda
+                // (el mismo campo sirve tanto para arrendatarios como para
+                // personas que conviven con el propietario).
+                var inquilinosOcupados =
+                    await _context.ViviendaUsuarios
+                    .CountAsync(x =>
+                        x.TN_IdVivienda == vivienda.TN_Id &&
+                        x.TN_TipoRelacion == TipoRelacionEnum.Inquilino &&
+                        (
+                            x.TN_Estado == EstadoUsuarioEnum.Activo ||
+                            x.TN_Estado == EstadoUsuarioEnum.Pendiente
+                        )
+                    );
+
+
+
+                if (inquilinosOcupados >= vivienda.TN_CantidadInquilinos)
+                {
+
+                    ModelState.AddModelError(
+                        "",
+                        "Esta vivienda ya alcanzó el cupo máximo de inquilinos."
+                    );
+
+
+                    if (esAjax)
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            errors = new[] { "Esta vivienda ya alcanzó el cupo máximo de inquilinos." }
+                        });
+                    }
 
 
                     return View(model);
@@ -485,6 +580,16 @@ namespace Habitia.Controllers
                 }
 
 
+                if (esAjax)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        errors = resultado.Errors.Select(e => e.Description).ToList()
+                    });
+                }
+
+
                 return View(model);
 
             }
@@ -566,6 +671,23 @@ namespace Habitia.Controllers
 
 
 
+            // ==========================================
+            // RESPUESTA FINAL
+            // ==========================================
+
+
+            if (esAjax)
+            {
+
+                return Json(new
+                {
+                    success = true
+                });
+
+            }
+
+
+
             TempData["RegistroPendiente"] = true;
 
 
@@ -595,14 +717,29 @@ namespace Habitia.Controllers
             TipoRelacionEnum relacion)
         {
 
-            var viviendas =
-                await _context.Viviendas
+            var query =
+                _context.Viviendas
                 .Include(v => v.Usuarios)
-                .Where(x =>
-                    x.TN_Tipo == tipo &&
-                    x.TN_Estado == EstadoViviendaEnum.Disponible
-                )
-                .ToListAsync();
+                .Where(x => x.TN_Tipo == tipo)
+                .AsQueryable();
+
+
+            // Solo para Propietario nos interesa que la vivienda esté
+            // marcada como Disponible (todavía sin dueño reclamándola).
+            // Para Inquilino la vivienda YA tiene dueño activo (por eso
+            // su TN_Estado suele cambiar a Ocupada al aprobarlo), así
+            // que acá NO filtramos por TN_Estado.
+            if (relacion == TipoRelacionEnum.Propietario)
+            {
+                query =
+                    query.Where(x =>
+                        x.TN_Estado == EstadoViviendaEnum.Disponible
+                    );
+            }
+
+
+            var viviendas =
+                await query.ToListAsync();
 
 
             var resultado = new List<object>();
@@ -631,10 +768,12 @@ namespace Habitia.Controllers
                 }
                 else if (relacion == TipoRelacionEnum.Inquilino)
                 {
-                    // Para Inquilino se necesita un propietario ya Activo
-                    // (no Pendiente), y que aún haya cupo de inquilinos,
-                    // contando también las solicitudes Pendientes para no
-                    // sobrevender el cupo mientras se aprueban.
+                    // Para Inquilino solo se necesita un propietario Activo,
+                    // sin importar si vive ahí o no (el mismo cupo
+                    // TN_CantidadInquilinos sirve tanto para gente que
+                    // alquila como para gente que convive con el dueño).
+                    // Se cuentan también las solicitudes Pendientes para
+                    // no sobrevender el cupo mientras se aprueban.
                     var propietarioActivo =
                         vivienda.Usuarios
                         .FirstOrDefault(x =>

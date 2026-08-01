@@ -11,20 +11,26 @@
     </a>
 </div>
 
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
 <div class="card">
     <div class="card-body">
 
         <div class="d-flex justify-content-end gap-2 mb-3">
             <div class="input-group" style="max-width: 260px;">
                 <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control" placeholder="Buscar usuario..." />
+                <input type="text" class="form-control" id="inputBuscarUsuario" placeholder="Buscar usuario..." />
             </div>
 
-            <select class="form-select" style="max-width: 160px;">
-                <option>Todos</option>
-                <option>Pendientes</option>
-                <option>Activos</option>
-                <option>Rechazados</option>
+            <select class="form-select" id="filtroEstadoUsuario" style="max-width: 160px;">
+                <option value="">Todos</option>
+                <option value="Pendiente">Pendientes</option>
+                <option value="Activo">Activos</option>
+                <option value="Suspendido">Suspendidos</option>
+                <option value="Rechazado">Rechazados</option>
             </select>
         </div>
 
@@ -41,10 +47,10 @@
                     <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="usuariosTbody">
                 @foreach (var item in Model)
                 {
-                    <tr>
+                    <tr data-estado="@item.Estado" data-nombre="@item.NombreCompleto.ToLower()" data-identificacion="@item.NumeroIdentificacion.ToLower()">
                         <td>@item.NumeroIdentificacion</td>
                         <td><strong>@item.NombreCompleto</strong></td>
                         <td>@item.Email</td>
@@ -57,6 +63,10 @@
                             else if (item.Estado == "Pendiente")
                             {
                                 <span class="badge bg-warning text-dark">Pendiente</span>
+                            }
+                            else if (item.Estado == "Suspendido")
+                            {
+                                <span class="badge bg-danger">Suspendido</span>
                             }
                             else
                             {
@@ -108,9 +118,26 @@
                                     </button>
 
                                     <div class="dropdown-menu-fila">
-                                        <a href="#" onclick='abrirRoles(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.Roles)))'>
-                                            Cambiar roles
-                                        </a>
+                                        @if (!item.Roles.Contains("Residente"))
+                                        {
+                                            <a href="#" onclick='abrirRoles(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.Roles)))'>
+                                                Cambiar rol
+                                            </a>
+                                        }
+
+                                        @if (item.Estado == "Activo")
+                                        {
+                                            <a href="#" class="text-warning" onclick="suspenderUsuario('@item.Id')">
+                                                Suspender
+                                            </a>
+                                        }
+                                        else if (item.Estado == "Suspendido")
+                                        {
+                                            <a href="#" class="text-success" onclick="reactivarUsuario('@item.Id')">
+                                                Reactivar
+                                            </a>
+                                        }
+
                                         <a href="#" class="text-danger btn-eliminar-usuario"
                                            onclick='abrirEliminar(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.NombreCompleto)))'>
                                             Eliminar
@@ -127,31 +154,27 @@
     </div>
 </div>
 
-<!-- MODAL ROLES (clases propias, requeridas por usuarios.js) -->
+<!-- MODAL ROLES (radio: un solo rol, solo Seguridad/Mantenimiento) -->
 <div id="modalRoles" class="modal-overlay">
     <div class="modal-card">
-        <div class="modal-titulo">Asignar roles</div>
-        <div class="modal-desc">Selecciona los roles del usuario.</div>
+        <div class="modal-titulo">Cambiar rol</div>
+        <div class="modal-desc">Seleccioná el rol del usuario. Solo se puede tener un rol a la vez.</div>
 
         <input type="hidden" id="rolesUsuarioId" />
 
         <div id="rolesContainer" class="roles-opciones">
             <label class="rol-opcion">
-                <input type="checkbox" value="Residente" />
-                Residente
-            </label>
-            <label class="rol-opcion">
-                <input type="checkbox" value="Seguridad" />
+                <input type="radio" name="rolUsuario" value="Seguridad" />
                 Seguridad
             </label>
             <label class="rol-opcion">
-                <input type="checkbox" value="Mantenimiento" />
+                <input type="radio" name="rolUsuario" value="Mantenimiento" />
                 Mantenimiento
             </label>
         </div>
 
         <div id="rolesError" class="roles-error" style="display:none;">
-            Debe seleccionar al menos un rol.
+            Debe seleccionar un rol.
         </div>
 
         <div class="modal-footer">
@@ -161,7 +184,7 @@
     </div>
 </div>
 
-<!-- MODAL ELIMINAR USUARIO (clases propias, requeridas por usuarios.js) -->
+<!-- MODAL ELIMINAR USUARIO -->
 <div id="modalEliminar" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-icon modal-icon-danger">

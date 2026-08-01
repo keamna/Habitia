@@ -1,81 +1,42 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using Habitia.Models
 @inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
 
-
-
-<ul class="navbar-nav">
-
-
-@if(SignInManager.IsSignedIn(User))
+@if (SignInManager.IsSignedIn(User))
 {
+    var usuario = await UserManager.GetUserAsync(User);
+    var roles = usuario != null ? await UserManager.GetRolesAsync(usuario) : new List<string>();
 
+    string areaDestino = "Residente";
+    string controllerDestino = "Home";
 
-<li class="nav-item">
+    if (roles.Contains("Admin"))
+    {
+        areaDestino = "Admin";
+        controllerDestino = "Dashboard";
+    }
+    else if (roles.Contains("Seguridad"))
+    {
+        areaDestino = "Seguridad";
+        controllerDestino = "Home";
+    }
+    else if (roles.Contains("Mantenimiento"))
+    {
+        areaDestino = "Mantenimiento";
+        controllerDestino = "Home";
+    }
 
-<span class="nav-link">
-
-Hola @User.Identity.Name
-
-</span>
-
-</li>
-
-
-
-<li class="nav-item">
-
-
-<form asp-controller="Account"
-      asp-action="Logout"
-      method="post">
-
-
-<button class="nav-link btn btn-link">
-
-Cerrar sesión
-
-</button>
-
-
-</form>
-
-
-</li>
-
-
+    <a class="public-header__login" asp-area="@areaDestino" asp-controller="@controllerDestino" asp-action="Index">
+        Panel
+    </a>
+    <form asp-controller="Account" asp-action="Logout" asp-area="" method="post" class="d-inline">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn-registrarse">Cerrar sesión</button>
+    </form>
 }
 else
 {
-
-
-<li class="nav-item">
-
-<a class="nav-link"
-asp-controller="Account"
-asp-action="Register">
-
-Registrarse
-
-</a>
-
-</li>
-
-
-
-<li class="nav-item">
-
-<a class="nav-link"
-asp-controller="Account"
-asp-action="Login">
-
-Login
-
-</a>
-
-</li>
-
-
+    <a class="public-header__login" asp-area="" asp-controller="Account" asp-action="Login">Iniciar sesión</a>
+    <a class="btn-registrarse" asp-area="" asp-controller="Account" asp-action="Register">Registrarse</a>
 }
-
-
-</ul>

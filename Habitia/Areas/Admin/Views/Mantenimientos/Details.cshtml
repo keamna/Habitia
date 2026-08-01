@@ -7,9 +7,20 @@
 
 <div class="card">
     <div class="card-body">
-        <h5 class="card-title">@Model.TC_Descripcion</h5>
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="card-title mb-0">@Model.TC_Descripcion</h5>
+            <span class="badge @(Model.TN_Estado switch {
+                Habitia.Enums.EstadoMantenimientoEnum.Programado => "bg-secondary",
+                Habitia.Enums.EstadoMantenimientoEnum.EnProceso => "bg-info text-dark",
+                Habitia.Enums.EstadoMantenimientoEnum.Completado => "bg-success",
+                Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "bg-danger",
+                _ => "bg-secondary"
+            })">
+                @Model.TN_Estado
+            </span>
+        </div>
 
-        <dl class="row">
+        <dl class="row mb-0">
             <dt class="col-sm-3">Incidencia asociada</dt>
             <dd class="col-sm-9">
                 <a asp-controller="Incidencias" asp-action="Details" asp-route-id="@Model.TN_IdIncidencia">
@@ -23,37 +34,27 @@
             <dt class="col-sm-3">Personal asignado</dt>
             <dd class="col-sm-9">@Model.PersonalAsignado?.UserName</dd>
 
-            <dt class="col-sm-3">Fecha programada</dt>
-            <dd class="col-sm-9">@Model.TF_FechaProgramada.ToString("dd/MM/yyyy")</dd>
-
-            <dt class="col-sm-3">Fecha de inicio</dt>
-                <dd class="col-sm-9">
-                    @(Model.TF_FechaInicio?.ToString("dd/MM/yyyy HH:mm") ?? "-")
-                </dd>
+            <dt class="col-sm-3">Fecha de creación</dt>
+            <dd class="col-sm-9">@Model.TF_FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</dd>
 
             @if (Model.TF_FechaFin.HasValue)
             {
                 <dt class="col-sm-3">Fecha de finalización</dt>
-                <dd class="col-sm-9">@Model.TF_FechaFin.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                <dd class="col-sm-9">@Model.TF_FechaFin.Value.ToString("dd/MM/yyyy hh:mm tt")</dd>
             }
-
-            <dt class="col-sm-3">Estado</dt>
-            <dd class="col-sm-9">
-                <span class="badge @(Model.TN_Estado switch {
-                    Habitia.Enums.EstadoMantenimientoEnum.Programado => "bg-secondary",
-                    Habitia.Enums.EstadoMantenimientoEnum.EnProceso => "bg-info text-dark",
-                    Habitia.Enums.EstadoMantenimientoEnum.Completado => "bg-success",
-                    Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "bg-danger",
-                    _ => "bg-secondary"
-                })">
-                    @Model.TN_Estado
-                </span>
-            </dd>
 
             @if (!string.IsNullOrEmpty(Model.TC_Observaciones))
             {
                 <dt class="col-sm-3">Observaciones</dt>
                 <dd class="col-sm-9">@Model.TC_Observaciones</dd>
+            }
+
+            @if (Model.TN_Estado == Habitia.Enums.EstadoMantenimientoEnum.Completado)
+            {
+                <dt class="col-sm-3"></dt>
+                <dd class="col-sm-9">
+                    <span class="text-muted"><i class="bi bi-lock-fill"></i> Esta tarea ya fue completada y no puede modificarse.</span>
+                </dd>
             }
         </dl>
     </div>

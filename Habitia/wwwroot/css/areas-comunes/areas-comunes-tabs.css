@@ -1,0 +1,59 @@
+﻿/* =========================
+   TABS: Áreas Comunes / Reservas (Admin)
+   Mismo lenguaje visual que .habitia-nav-item
+========================= */
+
+.ac-tabs {
+    display: flex;
+    gap: 6px;
+    background-color: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 12px;
+    padding: 6px;
+    width: fit-content;
+}
+
+.ac-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 9px;
+    color: var(--habitia-text-gray);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: .2s ease;
+}
+
+    .ac-tab i {
+        font-size: 0.95rem;
+    }
+
+    .ac-tab:hover {
+        background-color: rgba(51,99,50,0.08);
+        color: var(--habitia-green-active);
+        text-decoration: none;
+    }
+
+    .ac-tab.active {
+        background-color: var(--habitia-green-active);
+        color: #FFFFFF;
+    }
+
+        .ac-tab.active i {
+            color: #FFFFFF;
+        }
+
+
+@media(max-width:500px) {
+
+    .ac-tabs {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .ac-tab span {
+        display: none;
+    }
+}

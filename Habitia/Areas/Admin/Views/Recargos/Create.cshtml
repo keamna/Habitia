@@ -1,0 +1,46 @@
+﻿@model Habitia.ViewModels.Financiero.Admin.RecargoCreateViewModel
+@{
+    ViewData["Title"] = "Aplicar recargo";
+}
+<link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
+<partial name="_FinancieroTabs" />
+
+<h4 class="mb-3">Aplicar recargo</h4>
+
+<div class="fin-card">
+    <div class="fin-card-body">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Cargo vencido</label>
+                    <select asp-for="TN_IdCargo" asp-items="Model.CargosVencidos" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                    </select>
+                    <span asp-validation-for="TN_IdCargo" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Tipo de recargo</label>
+                    <select asp-for="TN_IdTipoRecargo" asp-items="Model.TiposRecargo" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                    </select>
+                    <span asp-validation-for="TN_IdTipoRecargo" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Valor (monto fijo o %)</label>
+                    <input asp-for="TN_Valor" type="number" step="0.01" class="form-control" />
+                    <span asp-validation-for="TN_Valor" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn" style="background-color:#336332;color:#fff;">
+                    <i class="bi bi-save"></i> Guardar
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

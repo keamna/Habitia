@@ -1,4 +1,4 @@
-﻿@model Habitia.ViewModels.Incidencias.IncidenciaAdminCreateViewModel
+﻿@model Habitia.ViewModels.Incidencias.IncidenciaCreateViewModel
 @{
     ViewData["Title"] = "Registrar Incidencia";
 }
@@ -49,77 +49,27 @@
     </div>
 
     <div class="mb-3">
+        <label asp-for="Responsabilidad" class="form-label"></label>
+        <select asp-for="Responsabilidad" class="form-select"
+                asp-items="Html.GetEnumSelectList<Habitia.Enums.ResponsabilidadEnum>()">
+            <option value="">-- Seleccione --</option>
+        </select>
+        <span asp-validation-for="Responsabilidad" class="text-danger"></span>
+        <div class="form-text">
+            <strong>Privado:</strong> incidencia dentro de una vivienda, responsabilidad del residente o propietario.<br />
+            <strong>Común:</strong> incidencia en un área compartida, responsabilidad del condominio.<br />
+            <strong>Mixto:</strong> involucra tanto una zona privada como una común.
+        </div>
+    </div>
+
+    <div class="mb-3">
         <label asp-for="Evidencia" class="form-label"></label>
         <input asp-for="Evidencia" type="file" class="form-control" accept=".jpg,.jpeg,.png" />
         <div class="form-text">Formatos permitidos: JPG, PNG. Tamaño máximo: 5 MB.</div>
         <span asp-validation-for="Evidencia" class="text-danger"></span>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="ComentarioAdicional" class="form-label"></label>
-        <textarea asp-for="ComentarioAdicional" class="form-control" rows="2"></textarea>
-        <span asp-validation-for="ComentarioAdicional" class="text-danger"></span>
-    </div>
-
-    <h5 class="mt-4">Clasificación</h5>
-    <hr />
-
-    <div class="mb-3">
-        <label asp-for="Responsabilidad" class="form-label"></label>
-        <select asp-for="Responsabilidad" class="form-select" id="selectResponsabilidad"
-                asp-items="Html.GetEnumSelectList<Habitia.Enums.ResponsabilidadEnum>()">
-            <option value="">-- Seleccione --</option>
-        </select>
-        <span asp-validation-for="Responsabilidad" class="text-danger"></span>
-        <div class="form-text">
-            <strong>Privado:</strong> no genera tarea de mantenimiento, solo se notifica al residente.<br />
-            <strong>Común / Mixto:</strong> genera automáticamente una tarea de mantenimiento.
-        </div>
-    </div>
-
-    <div id="seccionMantenimiento">
-        <h5 class="mt-4">Tarea de Mantenimiento</h5>
-        <hr />
-
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label asp-for="IdTipoMantenimiento" class="form-label"></label>
-                <select asp-for="IdTipoMantenimiento" class="form-select" asp-items="Model.TiposMantenimiento">
-                    <option value="">-- Tipo existente --</option>
-                </select>
-                <span asp-validation-for="IdTipoMantenimiento" class="text-danger"></span>
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <label asp-for="NuevoTipoMantenimiento" class="form-label"></label>
-                <input asp-for="NuevoTipoMantenimiento" class="form-control" placeholder="Ej: Jardinería" />
-                <span asp-validation-for="NuevoTipoMantenimiento" class="text-danger"></span>
-                <div class="form-text">Complete solo si el tipo no existe en la lista.</div>
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="IdPersonalAsignado" class="form-label"></label>
-            <select asp-for="IdPersonalAsignado" class="form-select" asp-items="Model.PersonalMantenimiento">
-                <option value="">-- Seleccione personal --</option>
-            </select>
-            <span asp-validation-for="IdPersonalAsignado" class="text-danger"></span>
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="FechaProgramada" class="form-label"></label>
-            <input asp-for="FechaProgramada" type="date" class="form-control" />
-            <span asp-validation-for="FechaProgramada" class="text-danger"></span>
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="DescripcionTarea" class="form-label"></label>
-            <input asp-for="DescripcionTarea" class="form-control" />
-            <span asp-validation-for="DescripcionTarea" class="text-danger"></span>
-        </div>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Registrar</button>
+    <button type="submit" class="btn btn-primary">Reportar Incidencia</button>
     <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
 </form>
 
@@ -132,19 +82,10 @@
             document.getElementById('grupoAreaComun').style.display = tipo === '2' ? 'block' : 'none';
         }
 
-        function toggleSeccionMantenimiento() {
-            const responsabilidad = document.getElementById('selectResponsabilidad').value;
-            // ResponsabilidadEnum: Privado = 1, Comun = 2, Mixto = 3
-            const seccion = document.getElementById('seccionMantenimiento');
-            seccion.style.display = (responsabilidad === '2' || responsabilidad === '3') ? 'block' : 'none';
-        }
-
         document.getElementById('selectTipo').addEventListener('change', toggleCamposUbicacion);
-        document.getElementById('selectResponsabilidad').addEventListener('change', toggleSeccionMantenimiento);
 
         document.addEventListener('DOMContentLoaded', function () {
             toggleCamposUbicacion();
-            toggleSeccionMantenimiento();
         });
     </script>
 }

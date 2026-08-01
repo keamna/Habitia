@@ -1,0 +1,135 @@
+﻿/* /wwwroot/css/financiero/financiero.css */
+
+.fin-card {
+    background-color: #FFFFFF; 
+    border: 1px solid #ECECEC;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.fin-card-header {
+    background-color: #FFFFFF; 
+    border-bottom: 1px solid #ECECEC;
+    border-radius: 12px 12px 0 0;
+    padding: 16px 20px;
+    font-weight: 700;
+    color: #275126;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fin-card-body {
+    padding: 20px;
+}
+
+.fin-table thead th {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #848484;
+    border-bottom: 2px solid #ECECEC;
+}
+
+.fin-table td {
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+/* Badges de estado */
+.badge-pendiente {
+    background-color: #FFF3CD;
+    color: #856404;
+}
+
+.badge-revision {
+    background-color: #D1ECF1;
+    color: #0C5460;
+}
+
+.badge-pagado {
+    background-color: #D4EDDA;
+    color: #275126;
+}
+
+.badge-aplicado {
+    background-color: #E2E3E5;
+    color: #383D41;
+}
+
+.fin-monto-total {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #336332;
+}
+
+.fin-dato-copiable {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #F8F9FA;
+    border: 1px solid #ECECEC;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+}
+
+.fin-btn-copiar {
+    border: none;
+    background: none;
+    color: #336332;
+    cursor: pointer;
+}
+
+.fin-comprobante-preview img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid #ECECEC;
+}
+
+.fin-tarjeta-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+/* ============================================
+   TABS DEL MÓDULO FINANCIERO
+============================================ */
+
+.fin-tabs {
+    display: flex;
+    gap: 6px;
+    border-bottom: 1px solid #ECECEC;
+    padding-bottom: 0;
+    overflow-x: auto;
+}
+
+.fin-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px 10px 0 0;
+    color: #848484;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.88rem;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    border-bottom: none;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+    .fin-tab:hover {
+        background-color: #F2FDF2;
+        color: #275126;
+        text-decoration: none;
+    }
+
+    .fin-tab.active {
+        background-color: #FFFFFF;
+        color: #336332;
+        border-color: #ECECEC;
+        box-shadow: 0 -2px 0 #336332 inset;
+    }

@@ -1,5 +1,8 @@
-﻿using Habitia.Models;
+﻿using Habitia.Enums;
+using Habitia.Models;
+using Habitia.Models.Acceso;
 using Habitia.Models.Catalogos;
+using Habitia.Models.Financiero;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +22,7 @@ namespace Habitia.Data
         public DbSet<Visitante> Visitantes { get; set; }
         public DbSet<Vehiculo> Vehiculos { get; set; }
         public DbSet<Autorizacion> Autorizaciones { get; set; }
+        public DbSet<Acceso> Accesos { get; set; }
         public DbSet<AreaComun> AreasComunes { get; set; }
         public DbSet<DisponibilidadArea> Disponibilidades { get; set; }
         public DbSet<Reserva> Reservas { get; set; }
@@ -29,9 +33,24 @@ namespace Habitia.Data
         public DbSet<Publicacion> Publicaciones { get; set; }
         public DbSet<THBT_CAT_CategoriaPublicacion> CategoriasPublicacion { get; set; }
 
+        public DbSet<THBT_A_Pago> Pagos { get; set; }
+        public DbSet<THBT_A_Cargo> Cargos { get; set; }
+        public DbSet<THBT_A_ConfiguracionPago> ConfiguracionesPago { get; set; }
+        public DbSet<THBT_CAT_EstadoCargo> EstadosCargo { get; set; }
+
+        public DbSet<THBT_CAT_MetodoPago> MetodosPago { get; set; }
+        public DbSet<THBT_CAT_TipoCargo> TiposCargo { get; set; }
+        public DbSet<THBT_CAT_TipoRecargo> TiposRecargo { get; set; }
+        public DbSet<THBT_CAT_TipoTarjeta> TiposTarjeta { get; set; }
+        public DbSet<THBT_H_Cargo> HistorialCargos { get; set; }
+        public DbSet<THBT_H_Pago> HistorialPagos { get; set; }
+        public DbSet<THBT_A_Recargo> Recargos { get; set; }
+
         public DbSet<ResenaPublicacion> ResenasPublicacion { get; set; }
 
         public DbSet<AreaComunFoto> AreaComunFotos { get; set; }
+
+        public DbSet<THBT_H_ConfiguracionPago> HistorialConfiguracionesPago { get; set; }
 
         // Catálogos
         public DbSet<TipoArea> TiposArea { get; set; }
@@ -129,7 +148,6 @@ namespace Habitia.Data
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasIndex(m => m.TN_Estado);
-                entity.HasIndex(m => m.TF_FechaProgramada);
             });
 
             // ==========================================================
@@ -148,6 +166,169 @@ namespace Habitia.Data
                 entity.HasIndex(v => v.TC_Numero)
                     .IsUnique();
             });
+
+            // ==========================================================
+            // Visitante / Vehiculo (catálogo reutilizable)
+            // ==========================================================
+            builder.Entity<Vehiculo>(entity =>
+            {
+                entity.HasOne(v => v.Visitante)
+                    .WithMany(vi => vi.Vehiculos)
+                    .HasForeignKey(v => v.TN_IdVisitante)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ==========================================================
+            // Autorizacion (US-05: generada por el residente, código QR)
+            // ==========================================================
+            builder.Entity<Autorizacion>(entity =>
+            {
+                entity.HasOne(a => a.Visitante)
+                    .WithMany(v => v.Autorizaciones)
+                    .HasForeignKey(a => a.TN_IdVisitante)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Residente que autoriza
+                entity.HasOne(a => a.Usuario)
+                    .WithMany()
+                    .HasForeignKey(a => a.TC_IdUsuario)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(a => a.Vivienda)
+                    .WithMany()
+                    .HasForeignKey(a => a.TN_IdVivienda)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // El código QR debe ser único para que la validación en garita no sea ambigua
+                entity.HasIndex(a => a.TC_Codigo)
+                    .IsUnique();
+
+                // Acelera "consultar autorizaciones activas / vencidas" (US-05, punto 5)
+                entity.HasIndex(a => a.TN_Estado);
+                entity.HasIndex(a => a.TF_FechaVencimiento);
+            });
+
+            // ==========================================================
+            // Acceso (US-04: registro manual o validación de QR)
+            // ==========================================================
+            builder.Entity<Acceso>(entity =>
+            {
+                entity.HasOne(a => a.Visitante)
+                    .WithMany()
+                    .HasForeignKey(a => a.TN_IdVisitante)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Residente que autoriza o recibe la visita
+                entity.HasOne(a => a.Usuario)
+                    .WithMany()
+                    .HasForeignKey(a => a.TC_IdUsuario)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(a => a.Vivienda)
+                    .WithMany()
+                    .HasForeignKey(a => a.TN_IdVivienda)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Opcional: solo si el ingreso nació de validar un QR (US-04, punto 3)
+                entity.HasOne(a => a.Autorizacion)
+                    .WithMany(au => au.Accesos)
+                    .HasForeignKey(a => a.TN_IdAutorizacion)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Opcional: solo si el visitante ingresó en vehículo (US-04, punto 4)
+                entity.HasOne(a => a.Vehiculo)
+                    .WithMany()
+                    .HasForeignKey(a => a.TN_IdVehiculo)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Evita usar la misma autorización para crear dos accesos distintos
+                entity.HasIndex(a => a.TN_IdAutorizacion)
+                    .IsUnique()
+                    .HasFilter("[TN_IdAutorizacion] IS NOT NULL");
+
+                // Acelera "quién está dentro ahora mismo" (TF_FechaSalida IS NULL) y el historial
+                entity.HasIndex(a => a.TF_FechaIngreso);
+                entity.HasIndex(a => a.TF_FechaSalida);
+            });
+
+            // ==========================================================
+            // Financiero (US-10)
+            // ==========================================================
+            builder.Entity<THBT_A_Cargo>(entity =>
+            {
+                // Residente al que pertenece el cargo
+                entity.HasOne(c => c.Residente)
+                    .WithMany()
+                    .HasForeignKey(c => c.TC_IdResidente)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(c => c.TipoCargo)
+                    .WithMany()
+                    .HasForeignKey(c => c.TN_IdTipoCargo)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(c => c.EstadoCargo)
+                    .WithMany()
+                    .HasForeignKey(c => c.TN_IdEstadoCargo)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Acelera "cargos pendientes del residente" y "cargos vencidos" (US-10, puntos 2.2 y 4.1)
+                entity.HasIndex(c => c.TN_IdEstadoCargo);
+                entity.HasIndex(c => c.TF_FechaVencimiento);
+            });
+
+            builder.Entity<THBT_A_Pago>(entity =>
+            {
+                entity.HasOne(p => p.Cargo)
+                    .WithMany()
+                    .HasForeignKey(p => p.TN_IdCargo)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(p => p.MetodoPago)
+                    .WithMany()
+                    .HasForeignKey(p => p.TN_IdMetodoPago)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            builder.Entity<THBT_A_Recargo>(entity =>
+            {
+                entity.HasOne(r => r.Cargo)
+                    .WithMany()
+                    .HasForeignKey(r => r.TN_IdCargo)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.TipoRecargo)
+                    .WithMany()
+                    .HasForeignKey(r => r.TN_IdTipoRecargo)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Regla de negocio: no se permiten tipos de cargo duplicados (igual que TipoMantenimiento)
+            builder.Entity<THBT_CAT_TipoCargo>(entity =>
+            {
+                entity.HasIndex(t => t.TC_Nombre)
+                    .IsUnique();
+            });
+
+            // ==========================================================
+            // Seed de catálogos Financiero
+            // ==========================================================
+            builder.Entity<THBT_CAT_EstadoCargo>().HasData(
+                new THBT_CAT_EstadoCargo { TN_Id = 1, TC_Nombre = "Pendiente" },
+                new THBT_CAT_EstadoCargo { TN_Id = 2, TC_Nombre = "En revisión" },
+                new THBT_CAT_EstadoCargo { TN_Id = 3, TC_Nombre = "Pagado" }
+            );
+
+            builder.Entity<THBT_CAT_MetodoPago>().HasData(
+                new THBT_CAT_MetodoPago { TN_Id = 1, TC_Nombre = "Efectivo" },
+                new THBT_CAT_MetodoPago { TN_Id = 2, TC_Nombre = "Tarjeta" },
+                new THBT_CAT_MetodoPago { TN_Id = 3, TC_Nombre = "SINPE" }
+            );
+
+            builder.Entity<THBT_CAT_TipoRecargo>().HasData(
+                new THBT_CAT_TipoRecargo { TN_Id = 1, TC_Nombre = "Fijo" },
+                new THBT_CAT_TipoRecargo { TN_Id = 2, TC_Nombre = "Porcentaje" }
+            );
         }
     }
 }

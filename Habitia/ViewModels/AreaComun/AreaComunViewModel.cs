@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Habitia.ViewModels
 {
-    public class AreaComunVM
+    public class AreaComunViewModel
     {
         public int Id { get; set; }
 
@@ -25,6 +25,14 @@ namespace Habitia.ViewModels
         public int Capacidad { get; set; }
 
         public bool Estado { get; set; }
+
+        [Required(ErrorMessage = "Ingrese la anticipación mínima")]
+        [Range(0, 168, ErrorMessage = "Ingrese un número válido de horas")]
+        public int AnticipacionHoras { get; set; }
+
+        [Required(ErrorMessage = "Ingrese la anticipación mínima")]
+        [Range(0, 59, ErrorMessage = "Ingrese un número válido de minutos")]
+        public int AnticipacionMinutos { get; set; }
 
         [ValidateNever]
         public List<IFormFile> Fotos { get; set; }

@@ -17,20 +17,17 @@ namespace Habitia.Areas.Admin.Controllers
     public class IncidenciasController : Controller
     {
         private readonly IIncidenciaService _incidenciaService;
-        private readonly ITipoMantenimientoService _tipoMantenimientoService;
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _env;
 
         public IncidenciasController(
             IIncidenciaService incidenciaService,
-            ITipoMantenimientoService tipoMantenimientoService,
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             IWebHostEnvironment env)
         {
             _incidenciaService = incidenciaService;
-            _tipoMantenimientoService = tipoMantenimientoService;
             _context = context;
             _userManager = userManager;
             _env = env;
@@ -52,9 +49,10 @@ namespace Habitia.Areas.Admin.Controllers
         }
 
         // GET: /Admin/Incidencias/Create
+        // El Admin reporta con el MISMO formulario que Residente/Seguridad
         public async Task<IActionResult> Create()
         {
-            var model = new IncidenciaAdminCreateViewModel();
+            var model = new IncidenciaCreateViewModel();
             await CargarListasAsync(model);
             return View(model);
         }
@@ -62,7 +60,7 @@ namespace Habitia.Areas.Admin.Controllers
         // POST: /Admin/Incidencias/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(IncidenciaAdminCreateViewModel model)
+        public async Task<IActionResult> Create(IncidenciaCreateViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -75,12 +73,9 @@ namespace Habitia.Areas.Admin.Controllers
             try
             {
                 var imagenUrl = await ArchivoHelper.GuardarEvidenciaAsync(model.Evidencia, _env.WebRootPath);
-                var resultado = await _incidenciaService.CrearPorAdminAsync(model, idAdmin!, imagenUrl);
+                await _incidenciaService.CrearAsync(model, idAdmin!, imagenUrl);
 
-                TempData["Success"] = resultado.Mantenimiento != null
-                    ? "Incidencia registrada y tarea de mantenimiento generada correctamente."
-                    : "Incidencia registrada correctamente (responsabilidad Privada, sin tarea asociada).";
-
+                TempData["Success"] = "Incidencia reportada correctamente.";
                 return RedirectToAction(nameof(Index));
             }
             catch (InvalidOperationException ex)
@@ -102,15 +97,15 @@ namespace Habitia.Areas.Admin.Controllers
             return View(incidencia);
         }
 
-        // GET: /Admin/Incidencias/Clasificar/5
-        public async Task<IActionResult> Clasificar(int id)
+        // GET: /Admin/Incidencias/AsignarPrioridad/5
+        public async Task<IActionResult> AsignarPrioridad(int id)
         {
             var incidencia = await _incidenciaService.ObtenerPorIdAsync(id);
 
             if (incidencia == null)
                 return NotFound();
 
-            var model = new IncidenciaClasificarViewModel
+            var model = new IncidenciaPrioridadViewModel
             {
                 Id = incidencia.TN_Id,
                 Titulo = incidencia.TC_Titulo,
@@ -123,24 +118,18 @@ namespace Habitia.Areas.Admin.Controllers
             return View(model);
         }
 
-        // POST: /Admin/Incidencias/Clasificar
+        // POST: /Admin/Incidencias/AsignarPrioridad
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Clasificar(IncidenciaClasificarViewModel model)
+        public async Task<IActionResult> AsignarPrioridad(IncidenciaPrioridadViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
             try
             {
-                await _incidenciaService.ClasificarAsync(model);
-                TempData["Success"] = "Incidencia clasificada correctamente.";
-
-                if (model.Responsabilidad != ResponsabilidadEnum.Privado)
-                {
-                    return RedirectToAction("Create", "Mantenimientos", new { idIncidencia = model.Id });
-                }
-
+                await _incidenciaService.AsignarPrioridadAsync(model);
+                TempData["Success"] = "Prioridad asignada correctamente.";
                 return RedirectToAction(nameof(Details), new { id = model.Id });
             }
             catch (InvalidOperationException ex)
@@ -150,9 +139,28 @@ namespace Habitia.Areas.Admin.Controllers
             }
         }
 
-        // El Admin ve todas las viviendas/áreas comunes del condominio, más
-        // los catálogos de mantenimiento, porque su formulario es combinado.
-        private async Task CargarListasAsync(IncidenciaAdminCreateViewModel model)
+        // POST: /Admin/Incidencias/MarcarComoResuelta/5
+        // Cierre manual de incidencias Privadas (el Admin puede cerrarla si el residente no lo hizo)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarcarComoResuelta(int id)
+        {
+            var idAdmin = _userManager.GetUserId(User);
+
+            try
+            {
+                await _incidenciaService.MarcarComoResueltaAsync(id, idAdmin!, esAdmin: true);
+                TempData["Success"] = "Incidencia marcada como resuelta correctamente.";
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        private async Task CargarListasAsync(IncidenciaCreateViewModel model)
         {
             model.Viviendas = await _context.Viviendas
                 .OrderBy(v => v.TC_Numero)
@@ -163,17 +171,6 @@ namespace Habitia.Areas.Admin.Controllers
                 .OrderBy(a => a.TC_Nombre)
                 .Select(a => new SelectListItem { Value = a.TN_Id.ToString(), Text = a.TC_Nombre })
                 .ToListAsync();
-
-            var tipos = await _tipoMantenimientoService.ObtenerActivosAsync();
-            model.TiposMantenimiento = tipos
-                .Select(t => new SelectListItem { Value = t.TN_Id.ToString(), Text = t.TC_Nombre })
-                .ToList();
-
-            var personal = await _userManager.GetUsersInRoleAsync("Mantenimiento");
-            model.PersonalMantenimiento = personal
-                .OrderBy(u => u.UserName)
-                .Select(u => new SelectListItem { Value = u.Id, Text = u.UserName })
-                .ToList();
         }
     }
 }
