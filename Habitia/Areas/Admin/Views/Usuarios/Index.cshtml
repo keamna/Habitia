@@ -4,161 +4,224 @@
     ViewData["Title"] = "Usuarios";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Usuarios registrados</h2>
-    <a asp-area="Admin" asp-controller="Usuarios" asp-action="Crear" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> Nuevo Usuario
-    </a>
-</div>
+@functions {
+    string Iniciales(string nombreCompleto)
+    {
+        if (string.IsNullOrWhiteSpace(nombreCompleto)) return "?";
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
+        var partes = nombreCompleto.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        if (partes.Length == 1) return partes[0].Substring(0, 1).ToUpper();
+
+        return (partes[0].Substring(0, 1) + partes[^1].Substring(0, 1)).ToUpper();
+    }
 }
 
-<div class="card">
-    <div class="card-body">
+<div class="usuarios-page">
 
-        <div class="d-flex justify-content-end gap-2 mb-3">
-            <div class="input-group" style="max-width: 260px;">
-                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control" id="inputBuscarUsuario" placeholder="Buscar usuario..." />
+    <div class="usuarios-page-header">
+        <div>
+            <h1 class="usuarios-page-titulo">Usuarios</h1>
+            <p class="usuarios-page-subtitulo">Administra las cuentas, roles y accesos de la comunidad.</p>
+        </div>
+        <a asp-area="Admin" asp-controller="Usuarios" asp-action="Crear" class="btn-nuevo-usuario">
+            <i class="bi bi-plus-lg"></i> Nuevo usuario
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-exito">
+            <i class="bi bi-check-circle"></i> @TempData["Success"]
+        </div>
+    }
+
+    <div class="tabla-card">
+
+        <div class="tabla-header">
+            <div class="tabla-titulo">
+                Usuarios registrados
+                <span class="tabla-contador">@Model.Count</span>
             </div>
-
-            <select class="form-select" id="filtroEstadoUsuario" style="max-width: 160px;">
-                <option value="">Todos</option>
-                <option value="Pendiente">Pendientes</option>
-                <option value="Activo">Activos</option>
-                <option value="Suspendido">Suspendidos</option>
-                <option value="Rechazado">Rechazados</option>
-            </select>
         </div>
 
-        <table class="table table-hover align-middle">
-            <thead>
-                <tr>
-                    <th>Identificación</th>
-                    <th>Usuario</th>
-                    <th>Email</th>
-                    <th>Teléfono</th>
-                    <th>Estado</th>
-                    <th>Rol</th>
-                    <th>Vivienda</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="usuariosTbody">
-                @foreach (var item in Model)
-                {
-                    <tr data-estado="@item.Estado" data-nombre="@item.NombreCompleto.ToLower()" data-identificacion="@item.NumeroIdentificacion.ToLower()">
-                        <td>@item.NumeroIdentificacion</td>
-                        <td><strong>@item.NombreCompleto</strong></td>
-                        <td>@item.Email</td>
-                        <td>@item.Telefono</td>
-                        <td>
-                            @if (item.Estado == "Activo")
-                            {
-                                <span class="badge bg-success">Activo</span>
-                            }
-                            else if (item.Estado == "Pendiente")
-                            {
-                                <span class="badge bg-warning text-dark">Pendiente</span>
-                            }
-                            else if (item.Estado == "Suspendido")
-                            {
-                                <span class="badge bg-danger">Suspendido</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">@item.Estado</span>
-                            }
-                        </td>
-                        <td>
-                            @foreach (var rol in item.Roles)
-                            {
-                                <span class="badge bg-success me-1">@rol</span>
-                            }
-                        </td>
-                        <td>
-                            @if (item.Viviendas.Any())
-                            {
-                                foreach (var vivienda in item.Viviendas)
+        <div class="filtros-bar">
+            <div class="buscador">
+                <i class="bi bi-search"></i>
+                <input type="text" id="inputBuscarUsuario" placeholder="Buscar por nombre o identificación..." />
+            </div>
+
+            <div class="filtros-selects">
+                <select class="select-filtro" id="filtroEstadoUsuario">
+                    <option value="">Todos los estados</option>
+                    <option value="Pendiente">Pendientes</option>
+                    <option value="Activo">Activos</option>
+                    <option value="Suspendido">Suspendidos</option>
+                    <option value="Rechazado">Rechazados</option>
+                </select>
+
+                <select class="select-filtro" id="filtroRolUsuario">
+                    <option value="">Todos los roles</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Residente">Residente</option>
+                    <option value="Seguridad">Seguridad</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="tabla-scroll">
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Identificación</th>
+                        <th>Contacto</th>
+                        <th>Estado</th>
+                        <th>Rol</th>
+                        <th>Vivienda</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="usuariosTbody">
+                    @foreach (var item in Model)
+                    {
+                        <tr data-estado="@item.Estado"
+                            data-roles="@string.Join(",", item.Roles).ToLower()"
+                            data-nombre="@item.NombreCompleto.ToLower()"
+                            data-identificacion="@item.NumeroIdentificacion.ToLower()">
+
+                            <td>
+                                <div class="usuario-celda">
+                                    <div class="usuario-avatar">@Iniciales(item.NombreCompleto)</div>
+                                    <div>
+                                        <div class="usuario-nombre">@item.NombreCompleto</div>
+                                        <div class="usuario-id-sub">@item.Email</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>@item.NumeroIdentificacion</td>
+
+                            <td>
+                                <div class="usuario-telefono">@item.Telefono</div>
+                            </td>
+
+                            <td>
+                                @if (item.Estado == "Activo")
                                 {
-                                    <div class="mb-2">
-                                        <div>
-                                            @vivienda.Codigo
-                                            <small class="text-muted">(@vivienda.TipoRelacion)</small>
+                                    <span class="badge badge-activo"><span class="badge-dot"></span>Activo</span>
+                                }
+                                else if (item.Estado == "Pendiente")
+                                {
+                                    <span class="badge badge-pendiente"><span class="badge-dot"></span>Pendiente</span>
+                                }
+                                else if (item.Estado == "Suspendido")
+                                {
+                                    <span class="badge badge-suspendido"><span class="badge-dot"></span>Suspendido</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-rechazado"><span class="badge-dot"></span>@item.Estado</span>
+                                }
+                            </td>
+
+                            <td>
+                                <div class="roles-lista">
+                                    @foreach (var rol in item.Roles)
+                                    {
+                                        <span class="badge badge-rol">@rol</span>
+                                    }
+                                </div>
+                            </td>
+
+                            <td>
+                                @if (item.Viviendas.Any())
+                                {
+                                    @foreach (var vivienda in item.Viviendas)
+                                    {
+                                        <div class="vivienda-item">
+                                            <div class="vivienda-item-linea">
+                                                <span class="vivienda-codigo">@vivienda.Codigo</span>
+                                                <span class="vivienda-relacion">@vivienda.TipoRelacion</span>
+                                                @if (vivienda.Estado == "Pendiente")
+                                                {
+                                                    <span class="badge badge-pendiente badge-mini">Pendiente</span>
+                                                }
+                                            </div>
+
+                                            @* Aprobar/Rechazar se hacen por vivienda, ya que un usuario
+                                               puede tener solicitudes pendientes en más de una (solo
+                                               si es propietario en cada una). *@
                                             @if (vivienda.Estado == "Pendiente")
                                             {
-                                                <span class="badge bg-warning text-dark ms-1">Pendiente</span>
+                                                <div class="vivienda-acciones">
+                                                    <button class="btn-aprobar"
+                                                            onclick="aprobarUsuario('@item.Id', @vivienda.ViviendaId)">
+                                                        <i class="bi bi-check-lg"></i> Aprobar
+                                                    </button>
+                                                    <button class="btn-rechazar"
+                                                            onclick="rechazarUsuario('@item.Id', @vivienda.ViviendaId)">
+                                                        <i class="bi bi-x-lg"></i> Rechazar
+                                                    </button>
+                                                </div>
                                             }
                                         </div>
-
-                                        @* Aprobar/Rechazar se hacen por vivienda, ya que un usuario
-                                           puede tener solicitudes pendientes en más de una (solo
-                                           si es propietario en cada una). *@
-                                        @if (vivienda.Estado == "Pendiente")
-                                        {
-                                            <div class="mt-1">
-                                                <button class="btn btn-sm btn-aprobar"
-                                                        onclick="aprobarUsuario('@item.Id', @vivienda.ViviendaId)">
-                                                    <i class="bi bi-check-lg"></i> Aprobar
-                                                </button>
-                                                <button class="btn btn-sm btn-rechazar"
-                                                        onclick="rechazarUsuario('@item.Id', @vivienda.ViviendaId)">
-                                                    <i class="bi bi-x-lg"></i> Rechazar
-                                                </button>
-                                            </div>
-                                        }
-                                    </div>
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                <span class="text-muted">Sin vivienda</span>
-                            }
-                        </td>
-                        <td>
-                            <div class="fila-acciones">
-                                @if (!item.Roles.Contains("Admin"))
+                                else
                                 {
-                                    <button class="btn-menu-fila">
-                                        <i class="bi bi-three-dots-vertical"></i>
-                                    </button>
-
-                                    <div class="dropdown-menu-fila">
-                                        @if (!item.Roles.Contains("Residente"))
-                                        {
-                                            <a href="#" onclick='abrirRoles(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.Roles)))'>
-                                                Cambiar rol
-                                            </a>
-                                        }
-
-                                        @if (item.Estado == "Activo")
-                                        {
-                                            <a href="#" class="text-warning" onclick="suspenderUsuario('@item.Id')">
-                                                Suspender
-                                            </a>
-                                        }
-                                        else if (item.Estado == "Suspendido")
-                                        {
-                                            <a href="#" class="text-success" onclick="reactivarUsuario('@item.Id')">
-                                                Reactivar
-                                            </a>
-                                        }
-
-                                        <a href="#" class="text-danger btn-eliminar-usuario"
-                                           onclick='abrirEliminar(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.NombreCompleto)))'>
-                                            Eliminar
-                                        </a>
-                                    </div>
+                                    <span class="sin-vivienda">Sin vivienda</span>
                                 }
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                            </td>
+
+                            <td>
+                                <div class="fila-acciones">
+                                    @if (!item.Roles.Contains("Admin"))
+                                    {
+                                        <button class="btn-menu-fila">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+
+                                        <div class="dropdown-menu-fila">
+                                            @if (!item.Roles.Contains("Residente"))
+                                            {
+                                                <a href="#" onclick='abrirRoles(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.Roles)))'>
+                                                    Cambiar rol
+                                                </a>
+                                            }
+
+                                            @if (item.Estado == "Activo")
+                                            {
+                                                <a href="#" class="text-warning" onclick="suspenderUsuario('@item.Id')">
+                                                    Suspender
+                                                </a>
+                                            }
+                                            else if (item.Estado == "Suspendido")
+                                            {
+                                                <a href="#" class="text-success" onclick="reactivarUsuario('@item.Id')">
+                                                    Reactivar
+                                                </a>
+                                            }
+
+                                            <a href="#" class="text-danger btn-eliminar-usuario"
+                                               onclick='abrirEliminar(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.NombreCompleto)))'>
+                                                Eliminar
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="tabla-empty" id="tablaEmptyState" style="display:none;">
+                <i class="bi bi-people"></i>
+                No se encontraron usuarios con esos filtros.
+            </div>
+        </div>
 
     </div>
 </div>

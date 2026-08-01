@@ -20,6 +20,10 @@
 
 
 
+html, body {
+    height: 100%;
+}
+
 body {
     background-color: var(--habitia-bg);
     font-family: 'DM Sans', sans-serif;
@@ -37,7 +41,8 @@ body {
 
 .habitia-wrapper {
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden; /* el body ya no scrollea completo; el scroll vive adentro de .habitia-content */
 }
 
 
@@ -53,13 +58,36 @@ body {
 .habitia-sidebar {
     width: 260px;
     flex-shrink: 0;
+    height: 100vh;
+    overflow-y: auto; /* si el menú llega a ser más alto que la pantalla, scrollea solo el sidebar */
     background-color: var(--habitia-sidebar-bg);
     border-right: 1px solid var(--habitia-border);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     padding-bottom: 20px;
+    /* Scrollbar delgada (Firefox) */
+    scrollbar-width: thin;
+    scrollbar-color: #D9D9D9 transparent;
 }
+
+    /* Scrollbar delgada (Chrome, Edge, Safari) */
+    .habitia-sidebar::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .habitia-sidebar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .habitia-sidebar::-webkit-scrollbar-thumb {
+        background-color: #D9D9D9;
+        border-radius: 10px;
+    }
+
+        .habitia-sidebar::-webkit-scrollbar-thumb:hover {
+            background-color: #B0B0B0;
+        }
 
 
 
@@ -249,8 +277,29 @@ body {
 
 .habitia-content {
     flex: 1;
+    height: 100vh;
+    overflow-y: auto; /* aquí es donde ahora vive el scroll de las tablas y del resto del contenido */
     padding: 28px 36px;
+    scrollbar-width: thin;
+    scrollbar-color: #D9D9D9 transparent;
 }
+
+    .habitia-content::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .habitia-content::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .habitia-content::-webkit-scrollbar-thumb {
+        background-color: #D9D9D9;
+        border-radius: 10px;
+    }
+
+        .habitia-content::-webkit-scrollbar-thumb:hover {
+            background-color: #B0B0B0;
+        }
 
 
 

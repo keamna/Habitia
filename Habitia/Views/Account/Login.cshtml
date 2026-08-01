@@ -8,7 +8,8 @@
 <h1 class="auth-title">Iniciar Sesión</h1>
 <p class="auth-subtitle">Completa los campos para iniciar sesión a tu cuenta.</p>
 
-<form asp-action="Login" method="post" class="auth-form">
+<form asp-action="Login" method="post" class="auth-form" id="loginForm" novalidate>
+
     <div asp-validation-summary="All" class="auth-validation-summary"></div>
 
     <div class="auth-field">
@@ -19,7 +20,7 @@
                 <i class="bi bi-x-circle"></i>
             </button>
         </div>
-        <span asp-validation-for="Email" class="auth-error"></span>
+        <span asp-validation-for="Email" class="auth-error" id="errEmail"></span>
     </div>
 
     <div class="auth-field">
@@ -30,7 +31,7 @@
                 <i class="bi bi-eye"></i>
             </button>
         </div>
-        <span asp-validation-for="Password" class="auth-error"></span>
+        <span asp-validation-for="Password" class="auth-error" id="errPassword"></span>
     </div>
 
     <div class="auth-row">
@@ -41,7 +42,7 @@
         <a asp-controller="Account" asp-action="ForgotPassword" class="auth-link-muted">¿Olvidaste la contraseña?</a>
     </div>
 
-    <button type="submit" class="auth-submit">Iniciar sesión</button>
+    <button type="submit" class="auth-submit" id="btnLogin">Iniciar sesión</button>
 
     <p class="auth-footer-text">
         ¿No tienes cuenta? <a asp-controller="Account" asp-action="Register" class="auth-link">Crear cuenta</a>
@@ -73,5 +74,43 @@
                 input.focus();
             });
         });
+
+        // ==========================
+        // VALIDACIÓN LOGIN
+        // ==========================
+        var loginForm = document.getElementById('loginForm');
+
+        if (loginForm) {
+            loginForm.addEventListener('submit', function (e) {
+
+                var valido = true;
+
+                document.querySelectorAll('.auth-error').forEach(function (el) {
+                    el.innerHTML = '';
+                });
+
+                var email = document.getElementById('Email').value.trim();
+                var password = document.getElementById('Password').value;
+
+                var regexCorreo = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+
+                if (email === '') {
+                    document.getElementById('errEmail').innerHTML = 'Ingrese su correo';
+                    valido = false;
+                } else if (!regexCorreo.test(email)) {
+                    document.getElementById('errEmail').innerHTML = 'Ingrese un correo válido';
+                    valido = false;
+                }
+
+                if (password === '') {
+                    document.getElementById('errPassword').innerHTML = 'Ingrese su contraseña';
+                    valido = false;
+                }
+
+                if (!valido) {
+                    e.preventDefault();
+                }
+            });
+        }
     </script>
 }
