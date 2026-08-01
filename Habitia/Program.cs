@@ -1,6 +1,5 @@
 using Habitia.Data;
 using Habitia.Data.Seed;
-using Habitia.Enums;
 using Habitia.Models;
 using Habitia.Services;
 using Habitia.Services.Interfaces;

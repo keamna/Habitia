@@ -303,6 +303,19 @@ namespace Habitia.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            builder.Entity<ResenaPublicacion>(entity =>
+            {
+                entity.HasOne(r => r.Usuario)
+                    .WithMany()
+                    .HasForeignKey(r => r.TC_IdUsuario)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Publicacion)
+                    .WithMany(p => p.Resenas) 
+                    .HasForeignKey(r => r.TN_IdPublicacion)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
             // Regla de negocio: no se permiten tipos de cargo duplicados (igual que TipoMantenimiento)
             builder.Entity<THBT_CAT_TipoCargo>(entity =>
             {
