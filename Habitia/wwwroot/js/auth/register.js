@@ -36,7 +36,7 @@
 
 
     // ==========================
-    // PASO 1
+    // PASO 1 — DATOS PERSONALES
     // ==========================
     if (btnPaso1) {
 
@@ -46,27 +46,74 @@
 
             document.querySelectorAll(".field-error").forEach(e => e.innerHTML = "");
 
+            const tipoId = document.getElementById("TC_TipoIdentificacion").value;
+            const numeroId = document.getElementById("TC_NumeroIdentificacion").value.trim();
             const nombre = document.getElementById("TC_NombreCompleto").value.trim();
+            const telefono = document.getElementById("TC_Telefono").value.trim();
             const correo = document.getElementById("Email").value.trim();
             const password = document.getElementById("Password").value;
             const confirm = document.getElementById("ConfirmPassword").value;
 
+            const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const regexTelefono = /^[0-9]{8,15}$/;
+            const regexNumeroId = /^[A-Za-z0-9-]{4,20}$/;
+
+            // Tipo de identificación
+            if (tipoId === "") {
+                document.getElementById("errTipoId").innerHTML = "Seleccione el tipo de identificación";
+                valido = false;
+            }
+
+            // Número de identificación
+            if (numeroId === "") {
+                document.getElementById("errNumeroId").innerHTML = "Ingrese el número de identificación";
+                valido = false;
+            } else if (!regexNumeroId.test(numeroId)) {
+                document.getElementById("errNumeroId").innerHTML = "Número de identificación inválido";
+                valido = false;
+            }
+
+            // Nombre completo
             if (nombre === "") {
                 document.getElementById("errNombre").innerHTML = "Ingrese su nombre";
                 valido = false;
+            } else if (nombre.split(" ").filter(p => p.length > 0).length < 2) {
+                document.getElementById("errNombre").innerHTML = "Ingrese nombre y apellido";
+                valido = false;
             }
 
+            // Teléfono
+            if (telefono === "") {
+                document.getElementById("errTelefono").innerHTML = "Ingrese su teléfono";
+                valido = false;
+            } else if (!regexTelefono.test(telefono)) {
+                document.getElementById("errTelefono").innerHTML = "Ingrese un teléfono válido (solo números)";
+                valido = false;
+            }
+
+            // Correo
             if (correo === "") {
                 document.getElementById("errEmail").innerHTML = "Ingrese su correo";
                 valido = false;
-            }
-
-            if (password === "") {
-                document.getElementById("errPassword").innerHTML = "Ingrese una contraseña";
+            } else if (!regexCorreo.test(correo)) {
+                document.getElementById("errEmail").innerHTML = "Ingrese un correo válido";
                 valido = false;
             }
 
-            if (confirm !== password) {
+            // Contraseña
+            if (password === "") {
+                document.getElementById("errPassword").innerHTML = "Ingrese una contraseña";
+                valido = false;
+            } else if (password.length < 6) {
+                document.getElementById("errPassword").innerHTML = "La contraseña debe tener al menos 6 caracteres";
+                valido = false;
+            }
+
+            // Confirmar contraseña
+            if (confirm === "") {
+                document.getElementById("errConfirmPassword").innerHTML = "Confirme la contraseña";
+                valido = false;
+            } else if (confirm !== password) {
                 document.getElementById("errConfirmPassword").innerHTML = "Las contraseñas no coinciden";
                 valido = false;
             }
@@ -92,6 +139,8 @@
 
             tipoRelacion = this.dataset.valor;
 
+            document.getElementById("errRelacion").innerHTML = "";
+
             const hidden = document.getElementById("TC_TipoRelacion");
 
             if (tipoRelacion === "Propietario") {
@@ -101,6 +150,10 @@
             }
 
             const vive = document.getElementById("viveAhiSection");
+
+            // Al cambiar de opción, se limpia cualquier selección previa de "vive ahí"
+            document.querySelectorAll(".toggle-option").forEach(o => o.classList.remove("active"));
+            document.getElementById("errViveAhi").innerHTML = "";
 
             if (tipoRelacion === "Propietario") {
                 vive.style.display = "block";
@@ -127,6 +180,8 @@
 
             document.getElementById("TB_ViveAhi").value = this.dataset.valor;
 
+            document.getElementById("errViveAhi").innerHTML = "";
+
         });
     });
 
@@ -138,12 +193,14 @@
 
         btnPaso2.addEventListener("click", function () {
 
+            let valido = true;
+
             document.getElementById("errRelacion").innerHTML = "";
             document.getElementById("errViveAhi").innerHTML = "";
 
             if (tipoRelacion === "") {
                 document.getElementById("errRelacion").innerHTML = "Seleccione una opción";
-                return;
+                valido = false;
             }
 
             if (tipoRelacion === "Propietario") {
@@ -152,11 +209,13 @@
 
                 if (vive === "") {
                     document.getElementById("errViveAhi").innerHTML = "Seleccione una opción";
-                    return;
+                    valido = false;
                 }
             }
 
-            mostrarPaso(3);
+            if (valido) {
+                mostrarPaso(3);
+            }
         });
     }
 
@@ -177,6 +236,7 @@
             document.getElementById("TC_TipoVivienda").value = tipoVivienda;
 
             document.getElementById("errTipoVivienda").innerHTML = "";
+            document.getElementById("errVivienda").innerHTML = "";
 
             cargarViviendas(tipoVivienda);
 
@@ -197,6 +257,10 @@
             const respuesta = await fetch(`/Account/ObtenerViviendas?tipo=${tipo}&relacion=${relacion}`);
             const viviendas = await respuesta.json();
 
+            if (!viviendas || viviendas.length === 0) {
+                document.getElementById("errVivienda").innerHTML = "No hay viviendas disponibles para esta opción";
+            }
+
             viviendas.forEach(v => {
                 const option = document.createElement("option");
                 option.value = v.id;
@@ -208,8 +272,17 @@
 
         } catch (error) {
             console.log(error);
+            document.getElementById("errVivienda").innerHTML = "No se pudieron cargar las viviendas. Intente de nuevo.";
         }
     }
+
+
+    // Limpia el error de vivienda apenas el usuario elige una
+    document.addEventListener("change", function (e) {
+        if (e.target && e.target.id === "TN_ViviendaId") {
+            document.getElementById("errVivienda").innerHTML = "";
+        }
+    });
 
 
     // ==========================
