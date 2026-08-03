@@ -1,0 +1,48 @@
+﻿@model Habitia.ViewModels.Documento.CategoriaDocumentoFormVM
+
+@{
+    ViewData["Title"] = "Nueva categoría";
+}
+
+<partial name="_DocumentosTabs" />
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <h2 class="mb-0">Nueva categoría</h2>
+</div>
+
+<div class="card">
+    <div class="card-body">
+
+        <form asp-action="Crear" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-4">
+                <label asp-for="Nombre" class="form-label"></label>
+                <input asp-for="Nombre" class="form-control"
+                       placeholder="Ej: Circulares" autofocus />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+                <div class="form-text">
+                    No se permiten categorías con nombres repetidos.
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i> Guardar
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

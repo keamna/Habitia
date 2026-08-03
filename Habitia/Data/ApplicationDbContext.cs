@@ -2,6 +2,7 @@
 using Habitia.Models;
 using Habitia.Models.Acceso;
 using Habitia.Models.Catalogos;
+using Habitia.Models.Documentos;
 using Habitia.Models.Financiero;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -55,6 +56,13 @@ namespace Habitia.Data
         // Catálogos
         public DbSet<TipoArea> TiposArea { get; set; }
         public DbSet<TipoMantenimiento> TiposMantenimiento { get; set; }
+
+        // ===== US-11: Documentos y Asambleas =====
+        public DbSet<Documento> Documentos { get; set; }
+        public DbSet<Asamblea> Asambleas { get; set; }
+        public DbSet<ParticipanteAsamblea> ParticipantesAsamblea { get; set; }
+        public DbSet<DocumentoAsamblea> DocumentosAsamblea { get; set; }
+        public DbSet<CategoriaDocumento> CategoriasDocumento { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -322,6 +330,86 @@ namespace Habitia.Data
                 entity.HasIndex(t => t.TC_Nombre)
                     .IsUnique();
             });
+
+            // ==========================================================
+            // US-11: Documentos y Asambleas
+            // ==========================================================
+            builder.Entity<Documento>(entity =>
+            {
+                entity.HasOne(d => d.Categoria)
+                    .WithMany(c => c.Documentos)
+                    .HasForeignKey(d => d.TN_IdCategoria)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(d => d.Usuario)
+                    .WithMany()
+                    .HasForeignKey(d => d.TC_IdUsuario)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Acelera "documentos activos por categoría" (vista del residente)
+                entity.HasIndex(d => d.TB_Estado);
+                entity.HasIndex(d => d.TN_IdCategoria);
+            });
+
+            // Regla de negocio: no se permiten categorías duplicadas
+            builder.Entity<CategoriaDocumento>(entity =>
+            {
+                entity.HasIndex(c => c.TC_Nombre)
+                    .IsUnique();
+            });
+
+            builder.Entity<Asamblea>(entity =>
+            {
+                entity.HasOne(a => a.Usuario)
+                    .WithMany()
+                    .HasForeignKey(a => a.TC_IdUsuario)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(a => a.TN_Estado);
+                entity.HasIndex(a => a.TF_FechaHora);
+            });
+
+            builder.Entity<ParticipanteAsamblea>(entity =>
+            {
+                entity.HasOne(p => p.Asamblea)
+                    .WithMany(a => a.Participantes)
+                    .HasForeignKey(p => p.TN_IdAsamblea)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(p => p.Usuario)
+                    .WithMany()
+                    .HasForeignKey(p => p.TC_IdUsuario)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Un residente no puede confirmar dos veces la misma asamblea
+                entity.HasIndex(p => new { p.TN_IdAsamblea, p.TC_IdUsuario })
+                    .IsUnique();
+            });
+
+            builder.Entity<DocumentoAsamblea>(entity =>
+            {
+                entity.HasOne(da => da.Asamblea)
+                    .WithMany(a => a.Documentos)
+                    .HasForeignKey(da => da.TN_IdAsamblea)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(da => da.Documento)
+                    .WithMany(d => d.Asambleas)
+                    .HasForeignKey(da => da.TN_IdDocumento)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Evita asociar el mismo documento dos veces a una asamblea
+                entity.HasIndex(da => new { da.TN_IdAsamblea, da.TN_IdDocumento })
+                    .IsUnique();
+            });
+
+            // Seed de categorías de documento
+            builder.Entity<CategoriaDocumento>().HasData(
+                new CategoriaDocumento { TN_Id = 1, TC_Nombre = "Reglamentos", TB_Estado = true },
+                new CategoriaDocumento { TN_Id = 2, TC_Nombre = "Actas", TB_Estado = true },
+                new CategoriaDocumento { TN_Id = 3, TC_Nombre = "Comunicados", TB_Estado = true },
+                new CategoriaDocumento { TN_Id = 4, TC_Nombre = "Otros", TB_Estado = true }
+            );
 
             // ==========================================================
             // Seed de catálogos Financiero

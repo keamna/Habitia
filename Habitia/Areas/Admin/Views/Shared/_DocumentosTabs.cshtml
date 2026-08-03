@@ -1,0 +1,28 @@
+﻿@{
+    var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
+
+    var esDocumentos = string.Equals(controladorActual, "Documentos", StringComparison.OrdinalIgnoreCase);
+    var esCategorias = string.Equals(controladorActual, "CategoriasDocumento", StringComparison.OrdinalIgnoreCase);
+    var esAsambleas = string.Equals(controladorActual, "Asambleas", StringComparison.OrdinalIgnoreCase);
+}
+
+<ul class="nav nav-tabs documentos-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link @(esDocumentos ? "active" : "")"
+           asp-area="Admin" asp-controller="Documentos" asp-action="Index">
+            <i class="bi bi-file-earmark-text-fill"></i> Documentos
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(esCategorias ? "active" : "")"
+           asp-area="Admin" asp-controller="CategoriasDocumento" asp-action="Index">
+            <i class="bi bi-tags-fill"></i> Categorías
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(esAsambleas ? "active" : "")"
+           asp-area="Admin" asp-controller="Asambleas" asp-action="Index">
+            <i class="bi bi-people-fill"></i> Asambleas
+        </a>
+    </li>
+</ul>

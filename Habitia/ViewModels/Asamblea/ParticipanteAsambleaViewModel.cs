@@ -15,7 +15,10 @@ namespace Habitia.ViewModels.Asamblea
         public string IdUsuario { get; set; }
 
 
-        public bool Asistencia { get; set; }
+        public bool Confirmado { get; set; }
+
+
+        public bool Asistio { get; set; }
 
 
         public DateTime FechaRegistro { get; set; }

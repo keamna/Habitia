@@ -1,0 +1,100 @@
+﻿@model Habitia.ViewModels.Asamblea.AsambleaFormVM
+@using Habitia.Enums
+
+@{
+    ViewData["Title"] = "Editar asamblea";
+}
+
+<partial name="_DocumentosTabs" />
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <h2 class="mb-0">Editar asamblea</h2>
+</div>
+
+<div class="card">
+    <div class="card-body">
+
+        <form asp-action="Editar" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Titulo" class="form-label"></label>
+                <input asp-for="Titulo" class="form-control" />
+                <span asp-validation-for="Titulo" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="FechaHora" class="form-label"></label>
+                    <input asp-for="FechaHora" type="datetime-local" class="form-control" />
+                    <span asp-validation-for="FechaHora" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Modalidad" class="form-label"></label>
+                    <select asp-for="Modalidad" class="form-select" id="selModalidad">
+                        <option value="1">Presencial</option>
+                        <option value="2">Virtual</option>
+                    </select>
+                    <span asp-validation-for="Modalidad" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Lugar" class="form-label" id="lblLugar"></label>
+                <input asp-for="Lugar" class="form-control" id="txtLugar" />
+                <div class="form-text" id="ayudaLugar"></div>
+                <span asp-validation-for="Lugar" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Descripcion" class="form-label"></label>
+                <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Descripcion" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i> Guardar cambios
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function () {
+            var sel = document.getElementById("selModalidad");
+            var lbl = document.getElementById("lblLugar");
+            var txt = document.getElementById("txtLugar");
+            var ayuda = document.getElementById("ayudaLugar");
+
+            function actualizar() {
+                var virtual = sel.value === "2";
+
+                lbl.textContent = virtual ? "Enlace de la reunión" : "Lugar";
+                txt.placeholder = virtual
+                    ? "https://meet.google.com/..."
+                    : "Ej: Salón comunal del condominio";
+                ayuda.textContent = virtual
+                    ? "Pegue aquí el enlace de la videollamada."
+                    : "Indique dónde se realizará la asamblea.";
+            }
+
+            sel.addEventListener("change", actualizar);
+            actualizar();
+        })();
+    </script>
+}

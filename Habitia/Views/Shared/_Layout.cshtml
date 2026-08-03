@@ -38,6 +38,12 @@
         .Contains(controladorActual, StringComparer.OrdinalIgnoreCase)
         && string.Equals(areaActual, "Admin", StringComparison.OrdinalIgnoreCase);
 
+    // "Documentos y Asambleas" agrupa Documentos + CategoriasDocumento + Asambleas
+    // (Admin), navegados internamente mediante tabs (_DocumentosTabs).
+    var esDocumentosAdmin = new[] { "Documentos", "CategoriasDocumento", "Asambleas" }
+        .Contains(controladorActual, StringComparer.OrdinalIgnoreCase)
+        && string.Equals(areaActual, "Admin", StringComparison.OrdinalIgnoreCase);
+
     // Para que "Reservas" (que existe en varias áreas) solo se marque
     // activo dentro de la sección de área correspondiente, y no en las
     // dos secciones a la vez cuando el usuario tiene múltiples roles.
@@ -80,6 +86,7 @@
     <link rel="stylesheet" href="~/css/marketplace/marketplace.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/reservas/reservas.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/documentos/documentos.css" asp-append-version="true" />
 
 </head>
 <body>
@@ -162,6 +169,12 @@
                                 <i class="bi bi-shop"></i>
                                 <span>Marketplace</span>
                             </a>
+
+                            <a class="habitia-nav-item @(esDocumentosAdmin ? "active" : "")"
+                               asp-area="Admin" asp-controller="Documentos" asp-action="Index">
+                                <i class="bi bi-folder-fill"></i>
+                                <span>Documentos y Asambleas</span>
+                            </a>
                         </div>
                     }
 
@@ -210,6 +223,19 @@
                                 <i class="bi bi-shop"></i>
                                 <span>Marketplace</span>
                             </a>
+
+                            <a class="habitia-nav-item @(EsActivo("Residente", "Documentos") ? "active" : "")"
+                               asp-area="Residente" asp-controller="Documentos" asp-action="Index">
+                                <i class="bi bi-folder-fill"></i>
+                                <span>Documentos</span>
+                            </a>
+
+                            <a class="habitia-nav-item @(EsActivo("Residente", "Asambleas") ? "active" : "")"
+                               asp-area="Residente" asp-controller="Asambleas" asp-action="Index">
+                                <i class="bi bi-people-fill"></i>
+                                <span>Asambleas</span>
+                            </a>
+
                         </div>
                     }
 

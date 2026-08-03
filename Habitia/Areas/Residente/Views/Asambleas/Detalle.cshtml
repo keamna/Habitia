@@ -1,0 +1,202 @@
+﻿@model Habitia.ViewModels.Asamblea.AsambleaDetalleVM
+@using Habitia.Enums
+
+@{
+    ViewData["Title"] = Model.Asamblea.TC_Titulo;
+    var a = Model.Asamblea;
+
+    var (claseEstado, textoEstado) = a.TN_Estado switch
+    {
+        EstadoAsambleaEnum.Programada => ("bg-primary", "Programada"),
+        EstadoAsambleaEnum.Realizada => ("bg-success", "Realizada"),
+        _ => ("bg-secondary", "Cancelada")
+    };
+
+    var esVirtual = a.TN_Modalidad == ModalidadAsambleaEnum.Virtual;
+
+    // Solo se puede confirmar si está programada y aún no ha ocurrido
+    var puedeConfirmar = a.TN_Estado == EstadoAsambleaEnum.Programada
+                         && a.TF_FechaHora > DateTime.Now;
+}
+
+@functions {
+    string IconoArchivo(string nombre)
+    {
+        var ext = System.IO.Path.GetExtension(nombre)?.ToLowerInvariant();
+
+        return ext switch
+        {
+            ".pdf" => "bi-file-earmark-pdf-fill text-danger",
+            ".doc" or ".docx" => "bi-file-earmark-word-fill text-primary",
+            ".xls" or ".xlsx" => "bi-file-earmark-excel-fill text-success",
+            _ => "bi-file-earmark-fill text-secondary"
+        };
+    }
+}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <h2 class="mb-0">@a.TC_Titulo</h2>
+    <span class="badge @claseEstado">@textoEstado</span>
+</div>
+
+@if (TempData["Exito"] != null)
+{
+    <div class="alert alert-success">@TempData["Exito"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="row g-4">
+
+    <!-- ===== INFORMACIÓN ===== -->
+    <div class="col-lg-7">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Información</h5>
+
+                <p class="mb-2">
+                    <i class="bi bi-calendar-event text-muted me-2"></i>
+                    @a.TF_FechaHora.ToString("dddd dd 'de' MMMM 'de' yyyy, HH:mm")
+                </p>
+
+                <p class="mb-2">
+                    <i class="bi @(esVirtual ? "bi-camera-video" : "bi-geo-alt") text-muted me-2"></i>
+                    @a.TN_Modalidad
+                </p>
+
+                @if (!string.IsNullOrWhiteSpace(a.TC_Lugar))
+                {
+                    <p class="mb-2">
+                        <i class="bi bi-pin-map text-muted me-2"></i>
+                        @if (esVirtual)
+                        {
+                            <a href="@a.TC_Lugar" target="_blank" rel="noopener">
+                                Ingresar a la reunión
+                            </a>
+                        }
+                        else
+                        {
+                            @a.TC_Lugar
+                        }
+                    </p>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(a.TC_Descripcion))
+                {
+                    <hr />
+                    <h6 class="text-muted small text-uppercase mb-2">Temas a tratar</h6>
+                    <p class="mb-0">@a.TC_Descripcion</p>
+                }
+            </div>
+        </div>
+
+        <!-- ===== DOCUMENTOS ===== -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    Documentos
+                    <span class="badge bg-light text-dark">@Model.DocumentosAsociados.Count</span>
+                </h5>
+
+                @if (!Model.DocumentosAsociados.Any())
+                {
+                    <p class="text-muted small mb-0">
+                        No hay documentos vinculados a esta asamblea.
+                    </p>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var doc in Model.DocumentosAsociados)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div class="d-flex align-items-center gap-3">
+                                    <i class="bi @IconoArchivo(doc.TC_NombreOriginal) fs-4"></i>
+                                    <div>
+                                        <div class="fw-semibold">@doc.TC_Nombre</div>
+                                        <small class="text-muted">@doc.Categoria?.TC_Nombre</small>
+                                    </div>
+                                </div>
+
+                                <a asp-controller="Documentos" asp-action="Descargar"
+                                   asp-route-id="@doc.TN_Id"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-download"></i> Descargar
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ASISTENCIA ===== -->
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Mi asistencia</h5>
+
+                @if (!puedeConfirmar)
+                {
+                    <div class="text-center text-muted py-3">
+                        <i class="bi bi-lock" style="font-size:1.8rem;"></i>
+                        <p class="mt-3 mb-0 small">
+                            @if (a.TN_Estado == EstadoAsambleaEnum.Cancelada)
+                            {
+                                <text>Esta asamblea fue cancelada.</text>
+                            }
+                            else if (a.TN_Estado == EstadoAsambleaEnum.Realizada)
+                            {
+                                <text>Esta asamblea ya se realizó.</text>
+                            }
+                            else
+                            {
+                                <text>El plazo para confirmar asistencia ya venció.</text>
+                            }
+                        </p>
+                    </div>
+                }
+                else if (Model.YoConfirme)
+                {
+                    <div class="alert alert-success d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <div class="small">
+                            Confirmaste tu asistencia a esta asamblea.
+                        </div>
+                    </div>
+
+                    <form asp-action="CancelarConfirmacion" asp-route-id="@a.TN_Id"
+                          method="post"
+                          onsubmit="return confirm('¿Cancelar tu confirmación de asistencia?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-x-circle"></i> Cancelar confirmación
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <p class="text-muted small mb-3">
+                        Confirme su asistencia para que la administración pueda
+                        estimar el quórum de la asamblea.
+                    </p>
+
+                    <form asp-action="ConfirmarAsistencia" asp-route-id="@a.TN_Id"
+                          method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-check-lg"></i> Confirmar asistencia
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+
+</div>

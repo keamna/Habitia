@@ -1,0 +1,76 @@
+﻿@model Habitia.ViewModels.Documento.DocumentoFormVM
+@using Habitia.Models.Catalogos
+
+@{
+    ViewData["Title"] = "Nuevo documento";
+    var categorias = ViewBag.Categorias as List<CategoriaDocumento> ?? new();
+}
+
+<partial name="_DocumentosTabs" />
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <h2 class="mb-0">Nuevo documento</h2>
+</div>
+
+<div class="card">
+    <div class="card-body">
+
+        <form asp-action="Crear" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Nombre" class="form-label"></label>
+                <input asp-for="Nombre" class="form-control"
+                       placeholder="Ej: Reglamento interno 2026" />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Descripcion" class="form-label"></label>
+                <textarea asp-for="Descripcion" class="form-control" rows="3"
+                          placeholder="Breve descripción del contenido (opcional)"></textarea>
+                <span asp-validation-for="Descripcion" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="IdCategoria" class="form-label"></label>
+                <select asp-for="IdCategoria" class="form-select">
+                    <option value="0">-- Seleccione una categoría --</option>
+                    @foreach (var c in categorias)
+                    {
+                        <option value="@c.TN_Id">@c.TC_Nombre</option>
+                    }
+                </select>
+                <span asp-validation-for="IdCategoria" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Archivo" class="form-label"></label>
+                <input asp-for="Archivo" type="file" class="form-control"
+                       accept=".pdf,.doc,.docx,.xls,.xlsx" />
+                <div class="form-text">
+                    Formatos permitidos: PDF, Word y Excel. Tamaño máximo: 10 MB.
+                </div>
+                <span asp-validation-for="Archivo" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-upload"></i> Cargar documento
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
