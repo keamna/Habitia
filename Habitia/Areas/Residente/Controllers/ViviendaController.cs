@@ -178,10 +178,6 @@ namespace Habitia.Areas.Residente.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ============================
-        // NUEVA LÓGICA REGISTRO
-        // ============================
-
         // GET: /Residente/Vivienda/RegistrarVivienda
         [HttpGet]
         public IActionResult RegistrarVivienda()
@@ -189,10 +185,19 @@ namespace Habitia.Areas.Residente.Controllers
             return View(new RegistrarViviendaViewModel());
         }
 
-        // AJAX: /Residente/Vivienda/ObtenerViviendasSinPropietario
+        // GET: /Residente/Vivienda/ObtenerViviendasSinPropietario
+        //
+        // Devuelve, según el tipo de vivienda elegido, solo las viviendas
+        // que NO tienen propietario (ni Activo ni Pendiente), que no están
+        // Inactiva, y donde el usuario actual todavía no tiene ninguna
+        // relación registrada (evita ofrecerle una vivienda donde ya
+        // tiene una solicitud, aunque en la práctica sea poco probable
+        // porque ahí ya habría un "propietario" bloqueando el filtro).
         [HttpGet]
         public async Task<IActionResult> ObtenerViviendasSinPropietario(TipoViviendaEnum tipo)
         {
+            var userId = _userManager.GetUserId(User);
+
             var viviendas = await _context.Viviendas
                 .Include(v => v.Usuarios)
                 .Where(v =>
@@ -201,9 +206,14 @@ namespace Habitia.Areas.Residente.Controllers
                 .ToListAsync();
 
             var resultado = viviendas
-                .Where(v => !v.Usuarios.Any(x =>
-                    x.TN_TipoRelacion == TipoRelacionEnum.Propietario &&
-                    (x.TN_Estado == EstadoUsuarioEnum.Activo || x.TN_Estado == EstadoUsuarioEnum.Pendiente)))
+                .Where(v =>
+                    !v.Usuarios.Any(x =>
+                        x.TN_TipoRelacion == TipoRelacionEnum.Propietario &&
+                        (x.TN_Estado == EstadoUsuarioEnum.Activo || x.TN_Estado == EstadoUsuarioEnum.Pendiente))
+                    &&
+                    !v.Usuarios.Any(x =>
+                        x.TC_IdUsuario == userId &&
+                        x.TN_Estado != EstadoUsuarioEnum.Rechazado))
                 .Select(v => new { id = v.TN_Id, numero = v.TC_Numero })
                 .ToList();
 
@@ -232,7 +242,8 @@ namespace Habitia.Areas.Residente.Controllers
                 return View(model);
             }
 
-            // 🔒 Protección contra doble asignación
+            // Revalidación en servidor: la vivienda debe seguir sin propietario
+            // (por si otro usuario la reclamó entre que cargó la lista y envió el formulario).
             var yaTienePropietario = vivienda.Usuarios.Any(x =>
                 x.TN_TipoRelacion == TipoRelacionEnum.Propietario &&
                 (x.TN_Estado == EstadoUsuarioEnum.Activo || x.TN_Estado == EstadoUsuarioEnum.Pendiente));
@@ -240,6 +251,18 @@ namespace Habitia.Areas.Residente.Controllers
             if (yaTienePropietario)
             {
                 ModelState.AddModelError(nameof(model.IdVivienda), "Esta vivienda ya tiene un propietario asignado.");
+                return View(model);
+            }
+
+            // El usuario no puede tener ya una relación (activa o pendiente)
+            // con esta misma vivienda.
+            var yaTieneRelacionConEsaVivienda = vivienda.Usuarios.Any(x =>
+                x.TC_IdUsuario == userId &&
+                x.TN_Estado != EstadoUsuarioEnum.Rechazado);
+
+            if (yaTieneRelacionConEsaVivienda)
+            {
+                ModelState.AddModelError(nameof(model.IdVivienda), "Ya tiene una solicitud o relación con esa vivienda.");
                 return View(model);
             }
 
