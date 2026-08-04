@@ -411,6 +411,20 @@ namespace Habitia.Data
                 new CategoriaDocumento { TN_Id = 4, TC_Nombre = "Otros", TB_Estado = true }
             );
 
+            // Seed de categorías de publicación (Marketplace)
+            builder.Entity<THBT_CAT_CategoriaPublicacion>().HasData(
+                new THBT_CAT_CategoriaPublicacion { TN_Id = 1, TC_Nombre = "Muebles y hogar", TB_Estado = true },
+                new THBT_CAT_CategoriaPublicacion { TN_Id = 2, TC_Nombre = "Electrodomésticos", TB_Estado = true },
+                new THBT_CAT_CategoriaPublicacion { TN_Id = 3, TC_Nombre = "Ropa y accesorios", TB_Estado = true },
+                new THBT_CAT_CategoriaPublicacion { TN_Id = 4, TC_Nombre = "Alimentos y bebidas", TB_Estado = true },
+                new THBT_CAT_CategoriaPublicacion { TN_Id = 5, TC_Nombre = "Servicios del hogar", TB_Estado = true },
+                new THBT_CAT_CategoriaPublicacion { TN_Id = 6, TC_Nombre = "Cuidado personal", TB_Estado = true },
+                new THBT_CAT_CategoriaPublicacion { TN_Id = 7, TC_Nombre = "Clases y tutorías", TB_Estado = true },
+                new THBT_CAT_CategoriaPublicacion { TN_Id = 8, TC_Nombre = "Mascotas", TB_Estado = true },
+                new THBT_CAT_CategoriaPublicacion { TN_Id = 9, TC_Nombre = "Tecnología", TB_Estado = true },
+                new THBT_CAT_CategoriaPublicacion { TN_Id = 10, TC_Nombre = "Otros", TB_Estado = true }
+            );
+
             // ==========================================================
             // Seed de catálogos Financiero
             // ==========================================================
