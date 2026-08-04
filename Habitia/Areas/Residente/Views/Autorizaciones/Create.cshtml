@@ -20,21 +20,43 @@
                 @Html.AntiForgeryToken()
 
                 <!-- ===================== VISITANTE ===================== -->
-                <h6 class="text-secondary mb-2">Visitante</h6>
+                <div class="mb-2">
+                    <h6 class="text-secondary mb-1">Visitante</h6>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="EsVisitanteNuevo">
+                        <label class="form-check-label" for="EsVisitanteNuevo">
+                            Es un visitante nuevo
+                        </label>
+                    </div>
+                </div>
 
                 <input type="hidden" name="IdVisitanteExistente" id="IdVisitanteExistente" />
 
-                <div class="mb-3 position-relative">
-                    <label class="form-label">Buscar visitante ya registrado</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" id="buscarVisitante" class="form-control" placeholder="Nombre o identificación..." autocomplete="off" />
-                        <button type="button" class="btn btn-outline-secondary" id="btnVisitanteNuevo">Visitante nuevo</button>
+                <!-- --- Bloque: reutilizar visitante existente --- -->
+                <div id="bloqueVisitanteExistente">
+
+                    <div id="visitanteSeleccionado" class="acc-chip mb-2 d-none">
+                        <span id="visitanteSeleccionadoNombre"></span>
+                        <button type="button" class="btn-close" onclick="limpiarVisitanteSeleccionado()"></button>
                     </div>
-                    <div id="resultadosVisitante" class="list-group position-absolute w-100 shadow-sm" style="z-index:1000; display:none;"></div>
+
+                    <div id="bloqueBusquedaVisitante">
+                        <div class="input-group acc-search mb-2">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" id="buscarVisitante" class="form-control" placeholder="Buscar entre mis visitantes anteriores..." autocomplete="off" />
+                        </div>
+
+                        <div id="listaMisVisitantes" class="acc-list mb-1">
+                            <div class="acc-loading"><i class="bi bi-arrow-repeat"></i> Cargando visitantes...</div>
+                        </div>
+                        <div class="form-text">Personas que ya han visitado antes en su nombre.</div>
+                    </div>
+
                 </div>
 
-                <div id="camposVisitanteNuevo" class="row g-3 mb-3">
+                <!-- --- Bloque: visitante nuevo --- -->
+                <div id="bloqueVisitanteNuevo" class="row g-3 d-none">
                     <div class="col-12 col-md-4">
                         <label class="form-label">Nombre completo</label>
                         <input type="text" name="NombreVisitante" id="NombreVisitante" class="form-control" />
@@ -53,27 +75,19 @@
                         <label class="form-label">Identificación</label>
                         <input type="text" name="IdentificacionVisitante" id="IdentificacionVisitante" class="form-control" />
                     </div>
-                </div>
-
-                <div id="visitanteSeleccionado" class="alert alert-info d-none">
-                    Visitante seleccionado: <strong id="visitanteSeleccionadoNombre"></strong>
-                    <button type="button" class="btn-close float-end" onclick="limpiarVisitanteSeleccionado()"></button>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Teléfono <span class="text-secondary">(opcional)</span></label>
+                        <input type="text" name="TelefonoVisitante" id="TelefonoVisitante" class="form-control" />
+                    </div>
                 </div>
 
                 <hr />
 
-                <!-- ===================== FECHAS Y MOTIVO ===================== -->
-                <div class="row g-3 mb-3">
-                    <div class="col-12 col-md-6">
-                        <label asp-for="FechaVisita" class="form-label">Fecha de la visita</label>
-                        <input asp-for="FechaVisita" type="date" class="form-control" />
-                        <span asp-validation-for="FechaVisita" class="text-danger small"></span>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label asp-for="FechaVencimiento" class="form-label">Fecha de vencimiento de la autorización</label>
-                        <input asp-for="FechaVencimiento" type="date" class="form-control" />
-                        <span asp-validation-for="FechaVencimiento" class="text-danger small"></span>
-                    </div>
+                <!-- ===================== FECHA Y MOTIVO ===================== -->
+                <div class="mb-3">
+                    <label asp-for="FechaVisita" class="form-label">Fecha de la visita</label>
+                    <input asp-for="FechaVisita" type="date" class="form-control" style="max-width: 220px;" />
+                    <span asp-validation-for="FechaVisita" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-3">
@@ -97,58 +111,100 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        const inputVisitante = document.getElementById('buscarVisitante');
-        const resultadosVisitante = document.getElementById('resultadosVisitante');
-        let timeoutVisitante;
+        let misVisitantes = [];
 
-        inputVisitante.addEventListener('input', () => {
-            clearTimeout(timeoutVisitante);
-            const termino = inputVisitante.value.trim();
-            if (termino.length < 2) { resultadosVisitante.style.display = 'none'; return; }
+        function iniciales(nombre) {
+            return nombre.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+        }
 
-            timeoutVisitante = setTimeout(async () => {
-                const resp = await fetch('@Url.Action("BuscarVisitantes")?termino=' + encodeURIComponent(termino));
-                const data = await resp.json();
-                resultadosVisitante.innerHTML = '';
+        // ---------- Toggle: visitante nuevo vs. existente ----------
+        const checkNuevo = document.getElementById('EsVisitanteNuevo');
+        const bloqueExistente = document.getElementById('bloqueVisitanteExistente');
+        const bloqueNuevo = document.getElementById('bloqueVisitanteNuevo');
 
-                if (data.length === 0) {
-                    resultadosVisitante.style.display = 'none';
-                    return;
+        checkNuevo.addEventListener('change', function () {
+            bloqueExistente.classList.toggle('d-none', this.checked);
+            bloqueNuevo.classList.toggle('d-none', !this.checked);
+            if (this.checked) limpiarVisitanteSeleccionado();
+        });
+
+        // ---------- Cargar "mis visitantes" al abrir el formulario ----------
+        async function cargarMisVisitantes() {
+            const contenedor = document.getElementById('listaMisVisitantes');
+            try {
+                const resp = await fetch('@Url.Action("MisVisitantes")');
+
+                if (!resp.ok) {
+                    throw new Error('Respuesta ' + resp.status);
                 }
 
-                data.forEach(v => {
-                    const item = document.createElement('button');
-                    item.type = 'button';
-                    item.className = 'list-group-item list-group-item-action';
-                    item.textContent = `${v.nombre} — ${v.identificacion}`;
-                    item.onclick = () => seleccionarVisitante(v);
-                    resultadosVisitante.appendChild(item);
-                });
-                resultadosVisitante.style.display = 'block';
-            }, 300);
-        });
+                misVisitantes = await resp.json();
+                renderizarListaVisitantes(misVisitantes);
+            } catch (err) {
+                console.error('Error cargando mis visitantes:', err);
+                contenedor.innerHTML = '<div class="acc-empty text-danger"><i class="bi bi-exclamation-triangle me-1"></i> No se pudo cargar la lista. Intente recargar la página.</div>';
+            }
+        }
+
+        function renderizarListaVisitantes(lista) {
+            const contenedor = document.getElementById('listaMisVisitantes');
+            contenedor.innerHTML = '';
+
+            if (lista.length === 0) {
+                contenedor.innerHTML = '<div class="acc-empty">Todavía no tiene visitantes registrados. Márquelo como nuevo abajo.</div>';
+                return;
+            }
+
+            lista.forEach(v => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'acc-list-item';
+                item.innerHTML = `
+                    <span class="acc-avatar">${iniciales(v.nombre)}</span>
+                    <span class="acc-list-item-info">
+                        <span class="acc-list-item-name">${v.nombre}</span>
+                        <span class="acc-list-item-sub">${v.identificacion}</span>
+                    </span>
+                `;
+                item.onclick = () => seleccionarVisitante(v);
+                contenedor.appendChild(item);
+            });
+        }
 
         function seleccionarVisitante(v) {
             document.getElementById('IdVisitanteExistente').value = v.id;
-            document.getElementById('visitanteSeleccionadoNombre').textContent = `${v.nombre} — ${v.identificacion}`;
+            document.getElementById('visitanteSeleccionadoNombre').innerHTML =
+                `<i class="bi bi-person-check-fill me-1"></i> <strong>${v.nombre}</strong> — ${v.identificacion}`;
             document.getElementById('visitanteSeleccionado').classList.remove('d-none');
-            document.getElementById('camposVisitanteNuevo').classList.add('d-none');
-            inputVisitante.value = '';
-            resultadosVisitante.style.display = 'none';
+            document.getElementById('bloqueBusquedaVisitante').classList.add('d-none');
         }
 
         function limpiarVisitanteSeleccionado() {
             document.getElementById('IdVisitanteExistente').value = '';
             document.getElementById('visitanteSeleccionado').classList.add('d-none');
-            document.getElementById('camposVisitanteNuevo').classList.remove('d-none');
+            document.getElementById('bloqueBusquedaVisitante').classList.remove('d-none');
         }
 
-        document.getElementById('btnVisitanteNuevo').addEventListener('click', limpiarVisitanteSeleccionado);
+        // ---------- Filtro con la lupa (sobre la lista ya cargada, sin ir al servidor) ----------
+        document.getElementById('buscarVisitante').addEventListener('input', function () {
+            const t = this.value.trim().toLowerCase();
+            const filtrados = t === ''
+                ? misVisitantes
+                : misVisitantes.filter(v => v.nombre.toLowerCase().includes(t) || v.identificacion.toLowerCase().includes(t));
+            renderizarListaVisitantes(filtrados);
+        });
 
-        document.addEventListener('click', (e) => {
-            if (!inputVisitante.contains(e.target) && !resultadosVisitante.contains(e.target)) {
-                resultadosVisitante.style.display = 'none';
+        // ---------- Validación mínima antes de enviar ----------
+        document.getElementById('formNuevaAutorizacion').addEventListener('submit', function (e) {
+            const esNuevo = checkNuevo.checked;
+            const idExistente = document.getElementById('IdVisitanteExistente').value;
+
+            if (!esNuevo && !idExistente) {
+                e.preventDefault();
+                alert('Seleccione un visitante de la lista, búsquelo, o marque "Es un visitante nuevo".');
             }
         });
+
+        cargarMisVisitantes();
     </script>
 }

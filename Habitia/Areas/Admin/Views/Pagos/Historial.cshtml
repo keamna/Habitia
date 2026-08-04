@@ -1,0 +1,60 @@
+﻿@model List<Habitia.ViewModels.Financiero.Admin.HistorialPagoViewModel>
+@{
+    ViewData["Title"] = "Historial de pagos";
+}
+<link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
+<partial name="_FinancieroTabs" />
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Historial de pagos</h4>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Volver a pagos en revisión
+    </a>
+</div>
+<div class="fin-card">
+    <div class="fin-card-body p-0">
+        <div class="table-responsive">
+            <table class="table fin-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Residente</th>
+                        <th>Tipo de cargo</th>
+                        <th>Monto</th>
+                        <th>Método</th>
+                        <th>Resultado</th>
+                        <th>Motivo rechazo</th>
+                        <th>Validado por</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="8" class="text-center text-muted py-4">No hay validaciones registradas</td></tr>
+                    }
+                    @foreach (var h in Model)
+                    {
+                        <tr>
+                            <td>@h.NombreResidente</td>
+                            <td>@h.TipoCargo</td>
+                            <td>@h.TN_MontoTotal.ToString("C")</td>
+                            <td>@h.MetodoPago</td>
+                            <td>
+                                @if (h.TB_Aprobado)
+                                {
+                                    <span class="badge badge-pagado">Aprobado</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-vencido">Rechazado</span>
+                                }
+                            </td>
+                            <td>@(h.TC_MotivoRechazo ?? "—")</td>
+                            <td>@h.NombreUsuarioCambio</td>
+                            <td>@h.TF_FechaCambio.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -24,10 +24,6 @@ namespace Habitia.ViewModels.Autorizacion
         [DataType(DataType.Date)]
         public DateTime FechaVisita { get; set; }
 
-        [Required(ErrorMessage = "Debe indicar una fecha de vencimiento")]
-        [DataType(DataType.Date)]
-        public DateTime FechaVencimiento { get; set; }
-
         [Required(ErrorMessage = "Debe indicar el motivo de la visita")]
         [MaxLength(200)]
         public string Motivo { get; set; }

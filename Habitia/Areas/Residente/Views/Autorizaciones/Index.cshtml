@@ -53,8 +53,8 @@
                         {
                             <tr>
                                 <td>@a.NombreVisitante</td>
-                                <td>@a.FechaVisita.ToString("dd/MM/yyyy")</td>
-                                <td>@a.FechaVencimiento.ToString("dd/MM/yyyy")</td>
+                                <td>@a.FechaVisita.ToString("dd/MM/yyyy hh:mm tt")</td>
+                                <td>@a.FechaVencimiento.ToString("dd/MM/yyyy hh:mm tt")</td>
                                 <td class="reserva-motivo-col">@a.Motivo</td>
                                 <td>
                                     @switch (a.Estado)
@@ -74,6 +74,13 @@
                                         case Habitia.Enums.EstadoAutorizacionEnum.Cancelada:
                                             <span class="badge text-bg-danger">Cancelada</span>
                                             break;
+                                    }
+                                    @if (a.TextoVencimiento != null)
+                                    {
+                                        <br />
+                                        <span class="badge @(a.TextoVencimiento == "Vencido" ? "text-bg-secondary" : "text-bg-warning") mt-1">
+                                            @a.TextoVencimiento
+                                        </span>
                                     }
                                 </td>
                                 <td class="text-end">

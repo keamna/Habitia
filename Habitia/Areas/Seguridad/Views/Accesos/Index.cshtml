@@ -48,10 +48,9 @@
             <table class="table table-hover align-middle mb-0" id="tablaAccesos">
                 <thead class="table-light">
                     <tr>
+                        <th style="width:40px;"></th>
                         <th>Visitante</th>
                         <th>Identificación</th>
-                        <th>Residente</th>
-                        <th>Vivienda</th>
                         <th>Motivo</th>
                         <th>Ingreso</th>
                         <th>Salida</th>
@@ -69,7 +68,7 @@
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="@(esAdmin ? 10 : 11)" class="text-center text-secondary py-4">
+                            <td colspan="@(esAdmin ? 9 : 10)" class="text-center text-secondary py-4">
                                 No hay registros de acceso.
                             </td>
                         </tr>
@@ -78,14 +77,25 @@
                     {
                         foreach (var a in Model)
                         {
+                            var collapseId = "detalle-residente-acceso-" + a.Id;
+
                             <tr data-dentro="@(a.EstaDentro ? "1" : "0")">
+                                <td>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#@collapseId"
+                                            aria-expanded="false"
+                                            aria-controls="@collapseId"
+                                            title="Ver datos del residente">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </button>
+                                </td>
                                 <td>@a.NombreVisitante</td>
                                 <td>@a.IdentificacionVisitante</td>
-                                <td>@a.NombreResidente</td>
-                                <td>@a.NumeroVivienda</td>
                                 <td class="reserva-motivo-col">@a.Motivo</td>
                                 <td>@a.FechaIngreso.ToString("dd/MM/yyyy hh:mm tt")</td>
-                                <td>@(a.FechaSalida.HasValue? a.FechaSalida.Value.ToString("dd/MM/yyyy hh:mm tt") : "—")</td>
+                                <td>@(a.FechaSalida.HasValue ? a.FechaSalida.Value.ToString("dd/MM/yyyy hh:mm tt") : "—")</td>
                                 <td>
                                     @if (a.TieneVehiculo)
                                     {
@@ -97,7 +107,7 @@
                                     }
                                 </td>
                                 <td>
-                                    @if (a.OrigenAcceso == "QR")
+                                    @if (a.OrigenAcceso == "Código")
                                     {
                                         <span class="badge text-bg-info">Con código</span>
                                     }
@@ -132,6 +142,33 @@
                                     </td>
                                 }
                             </tr>
+
+                            <tr class="collapse" id="@collapseId">
+                                <td colspan="@(esAdmin ? 9 : 10)" class="bg-light">
+                                    <div class="row g-3 py-2 px-2">
+                                        <div class="col-6 col-md-3">
+                                            <div class="text-secondary small">Residente</div>
+                                            <div>@a.NombreResidente</div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="text-secondary small">Vivienda</div>
+                                            <div>@a.NumeroVivienda</div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="text-secondary small">Correo</div>
+                                            <div>@(string.IsNullOrWhiteSpace(a.CorreoResidente) ? "—" : a.CorreoResidente)</div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="text-secondary small">Teléfono</div>
+                                            <div>@(string.IsNullOrWhiteSpace(a.TelefonoResidente) ? "—" : a.TelefonoResidente)</div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="text-secondary small">Identificación</div>
+                                            <div>@(string.IsNullOrWhiteSpace(a.IdentificacionResidente) ? "—" : a.IdentificacionResidente)</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         }
                     }
 
@@ -156,5 +193,18 @@
                 }
             });
         }
+
+        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(btn => {
+            var targetId = btn.getAttribute('data-bs-target');
+            var target = document.querySelector(targetId);
+            if (!target) return;
+
+            target.addEventListener('show.bs.collapse', () => {
+                btn.querySelector('i').classList.replace('bi-chevron-down', 'bi-chevron-up');
+            });
+            target.addEventListener('hide.bs.collapse', () => {
+                btn.querySelector('i').classList.replace('bi-chevron-up', 'bi-chevron-down');
+            });
+        });
     </script>
 }

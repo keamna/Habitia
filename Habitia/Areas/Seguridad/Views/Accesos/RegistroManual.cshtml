@@ -19,72 +19,103 @@
             <form asp-action="RegistroManual" method="post" id="formRegistroManual">
                 @Html.AntiForgeryToken()
 
-                <!-- ===================== VISITANTE ===================== -->
-                <h6 class="text-secondary mb-2">Visitante</h6>
+                <div class="row g-4">
 
-                <input type="hidden" name="IdVisitanteExistente" id="IdVisitanteExistente" />
+                    <!-- ===================== VISITANTE ===================== -->
+                    <div class="col-12 col-md-6">
 
-                <div class="mb-3 position-relative">
-                    <label class="form-label">Buscar visitante existente</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" id="buscarVisitante" class="form-control" placeholder="Nombre o identificación..." autocomplete="off" />
-                        <button type="button" class="btn btn-outline-secondary" id="btnVisitanteNuevo">Visitante nuevo</button>
+                        <div class="mb-2">
+                            <h6 class="text-secondary mb-1">Visitante</h6>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="EsVisitanteNuevo">
+                                <label class="form-check-label" for="EsVisitanteNuevo">
+                                    Es un visitante nuevo
+                                </label>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="IdVisitanteExistente" id="IdVisitanteExistente" />
+
+                        <!-- --- Bloque: reutilizar visitante existente --- -->
+                        <div id="bloqueVisitanteExistente">
+
+                            <div id="visitanteSeleccionado" class="acc-chip mb-2 d-none">
+                                <span id="visitanteSeleccionadoNombre"></span>
+                                <button type="button" class="btn-close" onclick="limpiarVisitanteSeleccionado()"></button>
+                            </div>
+
+                            <div id="bloqueBusquedaVisitante">
+                                <div class="input-group acc-search mb-2">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input type="text" id="buscarVisitante" class="form-control" placeholder="Buscar por nombre o identificación..." autocomplete="off" />
+                                </div>
+
+                                <div id="listaVisitantes" class="acc-list">
+                                    <div class="acc-loading"><i class="bi bi-arrow-repeat"></i> Cargando visitantes...</div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- --- Bloque: visitante nuevo --- -->
+                        <div id="bloqueVisitanteNuevo" class="d-none">
+                            <div class="mb-2">
+                                <label class="form-label">Nombre completo</label>
+                                <input type="text" name="NombreVisitante" id="NombreVisitante" class="form-control" />
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label">Tipo de identificación</label>
+                                    <select name="TipoIdentificacionVisitante" id="TipoIdentificacionVisitante" class="form-select">
+                                        <option value="">-- Seleccione --</option>
+                                        @foreach (var valor in Enum.GetValues(typeof(Habitia.Enums.TipoIdentificacionEnum)))
+                                        {
+                                            <option value="@((int)valor)">@valor</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Identificación</label>
+                                    <input type="text" name="IdentificacionVisitante" id="IdentificacionVisitante" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Teléfono <span class="text-secondary">(opcional)</span></label>
+                                <input type="text" name="TelefonoVisitante" id="TelefonoVisitante" class="form-control" />
+                            </div>
+                        </div>
+
                     </div>
-                    <div id="resultadosVisitante" class="list-group position-absolute w-100 shadow-sm" style="z-index:1000; display:none;"></div>
-                </div>
 
-                <div id="camposVisitanteNuevo" class="row g-3 mb-3">
-                    <div class="col-12 col-md-4">
-                        <label class="form-label">Nombre completo</label>
-                        <input type="text" name="NombreVisitante" id="NombreVisitante" class="form-control" />
+                    <!-- ===================== RESIDENTE / VIVIENDA ===================== -->
+                    <div class="col-12 col-md-6">
+
+                        <h6 class="text-secondary mb-2">Residente que autoriza o recibe la visita</h6>
+
+                        <input type="hidden" name="IdUsuario" id="IdUsuario" />
+                        <input type="hidden" name="IdVivienda" id="IdVivienda" />
+
+                        <div id="residenteSeleccionado" class="acc-chip mb-2 d-none">
+                            <span id="residenteSeleccionadoTexto"></span>
+                            <button type="button" class="btn-close" onclick="limpiarResidenteSeleccionado()"></button>
+                        </div>
+
+                        <div id="bloqueBusquedaResidente">
+                            <div class="input-group acc-search mb-2">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" id="buscarResidente" class="form-control" placeholder="Buscar por nombre, identificación o vivienda..." autocomplete="off" />
+                            </div>
+
+                            <div id="listaResidentes" class="acc-list">
+                                <div class="acc-loading"><i class="bi bi-arrow-repeat"></i> Cargando residentes...</div>
+                            </div>
+                        </div>
+
+                        <span id="residenteError" class="text-danger small d-none d-block mt-1">Debe asociar el visitante a un residente o unidad habitacional</span>
+
                     </div>
-                    <div class="col-6 col-md-3">
-                        <label class="form-label">Tipo de identificación</label>
-                        <select name="TipoIdentificacionVisitante" id="TipoIdentificacionVisitante" class="form-select">
-                            <option value="">-- Seleccione --</option>
-                            @foreach (var valor in Enum.GetValues(typeof(Habitia.Enums.TipoIdentificacionEnum)))
-                            {
-                                <option value="@((int)valor)">@valor</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <label class="form-label">Identificación</label>
-                        <input type="text" name="IdentificacionVisitante" id="IdentificacionVisitante" class="form-control" />
-                    </div>
-                    <div class="col-12 col-md-2">
-                        <label class="form-label">Teléfono</label>
-                        <input type="text" name="TelefonoVisitante" id="TelefonoVisitante" class="form-control" />
-                    </div>
-                </div>
 
-                <div id="visitanteSeleccionado" class="alert alert-info d-none">
-                    Visitante seleccionado: <strong id="visitanteSeleccionadoNombre"></strong>
-                    <button type="button" class="btn-close float-end" onclick="limpiarVisitanteSeleccionado()"></button>
-                </div>
-
-                <hr />
-
-                <!-- ===================== RESIDENTE / VIVIENDA ===================== -->
-                <h6 class="text-secondary mb-2">Residente que autoriza o recibe la visita</h6>
-
-                <input type="hidden" name="IdUsuario" id="IdUsuario" />
-                <input type="hidden" name="IdVivienda" id="IdVivienda" />
-
-                <div class="mb-3 position-relative">
-                    <label class="form-label">Buscar residente o vivienda</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" id="buscarResidente" class="form-control" placeholder="Nombre, identificación o número de vivienda..." autocomplete="off" />
-                    </div>
-                    <div id="resultadosResidente" class="list-group position-absolute w-100 shadow-sm" style="z-index:1000; display:none;"></div>
-                    <span id="residenteError" class="text-danger small d-none">Debe asociar el visitante a un residente o unidad habitacional</span>
-                </div>
-
-                <div id="residenteSeleccionado" class="alert alert-info d-none">
-                    <span id="residenteSeleccionadoTexto"></span>
-                    <button type="button" class="btn-close float-end" onclick="limpiarResidenteSeleccionado()"></button>
                 </div>
 
                 <hr />
@@ -130,103 +161,148 @@
 
 @section Scripts {
     <script>
-        // ---------- Buscar visitante ----------
-        const inputVisitante = document.getElementById('buscarVisitante');
-        const resultadosVisitante = document.getElementById('resultadosVisitante');
-        let timeoutVisitante;
+        let todosLosVisitantes = [];
+        let todosLosResidentes = [];
 
-        inputVisitante.addEventListener('input', () => {
-            clearTimeout(timeoutVisitante);
-            const termino = inputVisitante.value.trim();
-            if (termino.length < 2) { resultadosVisitante.style.display = 'none'; return; }
+        function iniciales(nombre) {
+            return nombre.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+        }
 
-            timeoutVisitante = setTimeout(async () => {
-                const resp = await fetch('@Url.Action("BuscarVisitantes")?termino=' + encodeURIComponent(termino));
-                const data = await resp.json();
-                resultadosVisitante.innerHTML = '';
+        // ---------- Cargar listados completos al abrir el formulario ----------
+        async function cargarVisitantes() {
+            const contenedor = document.getElementById('listaVisitantes');
+            try {
+                const resp = await fetch('@Url.Action("BuscarVisitantes")');
+                if (!resp.ok) throw new Error('Respuesta ' + resp.status);
+                todosLosVisitantes = await resp.json();
+                renderizarVisitantes(todosLosVisitantes);
+            } catch (err) {
+                console.error('Error cargando visitantes:', err);
+                contenedor.innerHTML = '<div class="acc-empty text-danger"><i class="bi bi-exclamation-triangle me-1"></i> No se pudo cargar la lista.</div>';
+            }
+        }
 
-                if (data.length === 0) {
-                    resultadosVisitante.style.display = 'none';
-                    return;
-                }
+        async function cargarResidentes() {
+            const contenedor = document.getElementById('listaResidentes');
+            try {
+                const resp = await fetch('@Url.Action("BuscarResidentes")');
+                if (!resp.ok) throw new Error('Respuesta ' + resp.status);
+                todosLosResidentes = await resp.json();
+                renderizarResidentes(todosLosResidentes);
+            } catch (err) {
+                console.error('Error cargando residentes:', err);
+                contenedor.innerHTML = '<div class="acc-empty text-danger"><i class="bi bi-exclamation-triangle me-1"></i> No se pudo cargar la lista.</div>';
+            }
+        }
 
-                data.forEach(v => {
-                    const item = document.createElement('button');
-                    item.type = 'button';
-                    item.className = 'list-group-item list-group-item-action';
-                    item.textContent = `${v.nombre} — ${v.identificacion}`;
-                    item.onclick = () => seleccionarVisitante(v);
-                    resultadosVisitante.appendChild(item);
-                });
-                resultadosVisitante.style.display = 'block';
-            }, 300);
-        });
+        function renderizarVisitantes(lista) {
+            const contenedor = document.getElementById('listaVisitantes');
+            contenedor.innerHTML = '';
+
+            if (lista.length === 0) {
+                contenedor.innerHTML = '<div class="acc-empty">No hay visitantes registrados.</div>';
+                return;
+            }
+
+            lista.forEach(v => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'acc-list-item';
+                item.innerHTML = `
+                    <span class="acc-avatar">${iniciales(v.nombre)}</span>
+                    <span class="acc-list-item-info">
+                        <span class="acc-list-item-name">${v.nombre}</span>
+                        <span class="acc-list-item-sub">${v.identificacion}</span>
+                    </span>
+                `;
+                item.onclick = () => seleccionarVisitante(v);
+                contenedor.appendChild(item);
+            });
+        }
+
+        function renderizarResidentes(lista) {
+            const contenedor = document.getElementById('listaResidentes');
+            contenedor.innerHTML = '';
+
+            if (lista.length === 0) {
+                contenedor.innerHTML = '<div class="acc-empty">No hay residentes registrados.</div>';
+                return;
+            }
+
+            lista.forEach(r => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'acc-list-item';
+                item.innerHTML = `
+                    <span class="acc-avatar">${iniciales(r.nombreResidente)}</span>
+                    <span class="acc-list-item-info">
+                        <span class="acc-list-item-name">${r.nombreResidente}</span>
+                        <span class="acc-list-item-sub">Vivienda ${r.numeroVivienda}</span>
+                    </span>
+                `;
+                item.onclick = () => seleccionarResidente(r);
+                contenedor.appendChild(item);
+            });
+        }
 
         function seleccionarVisitante(v) {
             document.getElementById('IdVisitanteExistente').value = v.id;
-            document.getElementById('visitanteSeleccionadoNombre').textContent = `${v.nombre} — ${v.identificacion}`;
+            document.getElementById('visitanteSeleccionadoNombre').innerHTML =
+                `<i class="bi bi-person-check-fill me-1"></i> <strong>${v.nombre}</strong> — ${v.identificacion}`;
             document.getElementById('visitanteSeleccionado').classList.remove('d-none');
-            document.getElementById('camposVisitanteNuevo').classList.add('d-none');
-            inputVisitante.value = '';
-            resultadosVisitante.style.display = 'none';
+            document.getElementById('bloqueBusquedaVisitante').classList.add('d-none');
         }
 
         function limpiarVisitanteSeleccionado() {
             document.getElementById('IdVisitanteExistente').value = '';
             document.getElementById('visitanteSeleccionado').classList.add('d-none');
-            document.getElementById('camposVisitanteNuevo').classList.remove('d-none');
+            document.getElementById('bloqueBusquedaVisitante').classList.remove('d-none');
         }
-
-        document.getElementById('btnVisitanteNuevo').addEventListener('click', limpiarVisitanteSeleccionado);
-
-        // ---------- Buscar residente / vivienda ----------
-        const inputResidente = document.getElementById('buscarResidente');
-        const resultadosResidente = document.getElementById('resultadosResidente');
-        let timeoutResidente;
-
-        inputResidente.addEventListener('input', () => {
-            clearTimeout(timeoutResidente);
-            const termino = inputResidente.value.trim();
-            if (termino.length < 2) { resultadosResidente.style.display = 'none'; return; }
-
-            timeoutResidente = setTimeout(async () => {
-                const resp = await fetch('@Url.Action("BuscarResidentes")?termino=' + encodeURIComponent(termino));
-                const data = await resp.json();
-                resultadosResidente.innerHTML = '';
-
-                if (data.length === 0) {
-                    resultadosResidente.style.display = 'none';
-                    return;
-                }
-
-                data.forEach(r => {
-                    const item = document.createElement('button');
-                    item.type = 'button';
-                    item.className = 'list-group-item list-group-item-action';
-                    item.textContent = `${r.nombreResidente} — Cédula ${r.identificacionResidente} — Vivienda ${r.numeroVivienda}`;
-                    item.onclick = () => seleccionarResidente(r);
-                    resultadosResidente.appendChild(item);
-                });
-                resultadosResidente.style.display = 'block';
-            }, 300);
-        });
 
         function seleccionarResidente(r) {
             document.getElementById('IdUsuario').value = r.idUsuario;
             document.getElementById('IdVivienda').value = r.idVivienda;
-            document.getElementById('residenteSeleccionadoTexto').textContent =
-                `${r.nombreResidente} — Vivienda ${r.numeroVivienda}`;
+            document.getElementById('residenteSeleccionadoTexto').innerHTML =
+                `<i class="bi bi-house-check-fill me-1"></i> <strong>${r.nombreResidente}</strong> — Vivienda ${r.numeroVivienda}`;
             document.getElementById('residenteSeleccionado').classList.remove('d-none');
+            document.getElementById('bloqueBusquedaResidente').classList.add('d-none');
             document.getElementById('residenteError').classList.add('d-none');
-            inputResidente.value = '';
-            resultadosResidente.style.display = 'none';
         }
 
         function limpiarResidenteSeleccionado() {
             document.getElementById('IdUsuario').value = '';
             document.getElementById('IdVivienda').value = '';
             document.getElementById('residenteSeleccionado').classList.add('d-none');
+            document.getElementById('bloqueBusquedaResidente').classList.remove('d-none');
         }
+
+        // ---------- Filtro con la lupa (sobre la lista ya cargada, sin ir al servidor) ----------
+        document.getElementById('buscarVisitante').addEventListener('input', function () {
+            const t = this.value.trim().toLowerCase();
+            const filtrados = t === ''
+                ? todosLosVisitantes
+                : todosLosVisitantes.filter(v => v.nombre.toLowerCase().includes(t) || v.identificacion.toLowerCase().includes(t));
+            renderizarVisitantes(filtrados);
+        });
+
+        document.getElementById('buscarResidente').addEventListener('input', function () {
+            const t = this.value.trim().toLowerCase();
+            const filtrados = t === ''
+                ? todosLosResidentes
+                : todosLosResidentes.filter(r =>
+                    r.nombreResidente.toLowerCase().includes(t) ||
+                    r.numeroVivienda.toLowerCase().includes(t) ||
+                    r.identificacionResidente.toLowerCase().includes(t));
+            renderizarResidentes(filtrados);
+        });
+
+        // ---------- Toggle: visitante nuevo vs. existente ----------
+        const checkNuevo = document.getElementById('EsVisitanteNuevo');
+        checkNuevo.addEventListener('change', function () {
+            document.getElementById('bloqueVisitanteExistente').classList.toggle('d-none', this.checked);
+            document.getElementById('bloqueVisitanteNuevo').classList.toggle('d-none', !this.checked);
+            if (this.checked) limpiarVisitanteSeleccionado();
+        });
 
         // ---------- Toggle de vehículo ----------
         document.getElementById('IngresaEnVehiculo').addEventListener('change', function () {
@@ -235,20 +311,22 @@
 
         // ---------- Validación mínima antes de enviar ----------
         document.getElementById('formRegistroManual').addEventListener('submit', function (e) {
+            const esNuevo = checkNuevo.checked;
+            const idVisitanteExistente = document.getElementById('IdVisitanteExistente').value;
+
+            if (!esNuevo && !idVisitanteExistente) {
+                e.preventDefault();
+                alert('Seleccione un visitante de la lista, búsquelo, o marque "Es un visitante nuevo".');
+                return;
+            }
+
             if (!document.getElementById('IdUsuario').value || !document.getElementById('IdVivienda').value) {
                 e.preventDefault();
                 document.getElementById('residenteError').classList.remove('d-none');
             }
         });
 
-        // Cerrar dropdowns al hacer click afuera
-        document.addEventListener('click', (e) => {
-            if (!inputVisitante.contains(e.target) && !resultadosVisitante.contains(e.target)) {
-                resultadosVisitante.style.display = 'none';
-            }
-            if (!inputResidente.contains(e.target) && !resultadosResidente.contains(e.target)) {
-                resultadosResidente.style.display = 'none';
-            }
-        });
+        cargarVisitantes();
+        cargarResidentes();
     </script>
 }

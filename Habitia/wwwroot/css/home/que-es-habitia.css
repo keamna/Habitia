@@ -1,6 +1,5 @@
 ﻿/* ===================================================================
-   Habitia · ¿Qué es Habitia? (intro + pilares) — estilo tech
-   Usa las variables definidas en header-hero.css
+   Habitia · ¿Qué es Habitia? (intro + pilares)
    =================================================================== */
 
 .section-eyebrow {
@@ -59,26 +58,26 @@
         margin: 0 auto;
     }
 
+/* ---------- Pilares centrados ---------- */
+
 .pillars-marquee {
-    overflow: hidden;
     width: 100%;
     padding: 4px 0;
 }
 
 .pillars-track {
-    display: flex;
-    gap: 20px;
-    width: max-content;
-    will-change: transform;
+    display: grid;
+    grid-template-columns: repeat(4, 220px);
+    justify-content: center;
+    gap: 32px;
 }
 
-/* ---------- Pilares: mismo estilo que las tarjetas de Beneficios ---------- */
+/* ---------- Tarjeta pilar: mismo estilo que Beneficios ---------- */
 
 .pillar {
-    flex-shrink: 0;
     width: 220px;
     text-align: center;
-    padding: 10px;
+    padding: 20px 15px;
 }
 
 .pillar__icon {
@@ -118,24 +117,29 @@
     color: var(--habitia-text-muted);
 }
 
-/* ---------- RESPONSIVE ---------- */
+/* ---------- Responsive ---------- */
 
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
     .intro-section {
-        padding: 64px 24px;
+        padding: 70px 30px;
     }
 
-    .pillar {
-        width: 200px;
+    .pillars-track {
+        grid-template-columns: repeat(2, 220px);
     }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 650px) {
     .intro-section {
         padding: 52px 20px;
     }
 
+    .pillars-track {
+        grid-template-columns: 1fr;
+    }
+
     .pillar {
-        width: 180px;
+        width: 280px;
+        margin: auto;
     }
 }

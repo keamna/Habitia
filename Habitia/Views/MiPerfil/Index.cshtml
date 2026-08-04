@@ -1,0 +1,117 @@
+﻿@model Habitia.ViewModels.Usuario.MiPerfilViewModel
+@{
+    ViewData["Title"] = "Mi Perfil";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Mi Perfil</h2>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<div class="row g-4">
+
+    <!-- ── Columna izquierda: info de solo lectura ── -->
+    <div class="col-md-5">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    @if (!string.IsNullOrWhiteSpace(Model.FotoPerfil))
+                    {
+                        <img src="@Model.FotoPerfil" alt="Foto de perfil"
+                             style="width:110px;height:110px;border-radius:50%;object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div style="width:110px;height:110px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;margin:0 auto;">
+                            <i class="bi bi-person-fill" style="font-size:48px;color:#999;"></i>
+                        </div>
+                    }
+                </div>
+
+                <span class="badge bg-success">@Model.Rol</span>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h6 class="text-muted mb-3">Información de identificación</h6>
+                <dl class="row mb-0">
+                    <dt class="col-6">Tipo</dt>
+                    <dd class="col-6">@Model.TipoIdentificacion</dd>
+
+                    <dt class="col-6">Número</dt>
+                    <dd class="col-6">@Model.NumeroIdentificacion</dd>
+                </dl>
+            </div>
+        </div>
+
+        @if (Model.Viviendas.Any())
+        {
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h6 class="text-muted mb-3">Vivienda asociada</h6>
+                    @foreach (var v in Model.Viviendas)
+                    {
+                        <div class="mb-2">
+                            <strong>@v.Codigo</strong>
+                            <span class="text-muted">(@v.TipoVivienda)</span>
+                            <br />
+                            <small class="text-muted">Relación: @v.TipoRelacion</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- ── Columna derecha: formulario editable ── -->
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-body p-4">
+                <h6 class="text-muted mb-4">Datos personales</h6>
+
+                <form asp-controller="MiPerfil" asp-action="Editar" asp-area="" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Nombre" class="form-label"></label>
+                            <input asp-for="Nombre" class="form-control" />
+                            <span asp-validation-for="Nombre" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Apellido" class="form-label"></label>
+                            <input asp-for="Apellido" class="form-control" />
+                            <span asp-validation-for="Apellido" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" type="email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Telefono" class="form-label"></label>
+                            <input asp-for="Telefono" class="form-control" />
+                            <span asp-validation-for="Telefono" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

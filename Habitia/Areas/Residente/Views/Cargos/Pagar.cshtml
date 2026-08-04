@@ -39,7 +39,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Seleccione el método</label>
-                        <select asp-for="TN_IdMetodoPago" asp-items="Model.MetodosPago" class="form-select" id="selectMetodo" onchange="mostrarDatosMetodo()">
+                        <select asp-for="TN_IdMetodoPago" asp-items="Model.MetodosPago" class="form-select" id="selectMetodo" onchange="mostrarDatosMetodo()" required>
                             <option value="">-- Seleccione --</option>
                         </select>
                     </div>
@@ -72,7 +72,7 @@
 
                     <div class="mb-3 mt-3">
                         <label class="form-label">Comprobante de pago</label>
-                        <input asp-for="Comprobante" type="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf" />
+                        <input asp-for="Comprobante" type="file" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required />
                     </div>
 
                     <button type="submit" class="btn" style="background-color:#336332;color:#fff;">

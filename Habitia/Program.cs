@@ -3,6 +3,7 @@ using Habitia.Data.Seed;
 using Habitia.Models;
 using Habitia.Services;
 using Habitia.Services.Interfaces;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,6 +44,12 @@ builder.Services.AddScoped<IIncidenciaService, IncidenciaService>();
 builder.Services.AddScoped<IMantenimientoService, MantenimientoService>();
 builder.Services.AddScoped<ITipoMantenimientoService, TipoMantenimientoService>();
 builder.Services.AddScoped<IReporteService, ReporteService>();
+
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(
+        Path.Combine(builder.Environment.ContentRootPath, "DataProtection-Keys")))
+    .SetApplicationName("Habitia");
 
 var app = builder.Build();
 

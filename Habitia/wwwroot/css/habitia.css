@@ -365,3 +365,15 @@ body {
         padding: 0 12px;
     }
 }
+
+.habitia-user-perfil-link {
+    font-size: 12px;
+    color: #336332;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 2px;
+}
+
+    .habitia-user-perfil-link:hover {
+        text-decoration: underline;
+    }

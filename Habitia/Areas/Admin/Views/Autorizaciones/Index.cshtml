@@ -1,7 +1,7 @@
 ﻿@model List<Habitia.ViewModels.Autorizacion.AutorizacionViewModel>
 
 @{
-    ViewData["Title"] = "Autorizaciones de Residentes";
+    ViewData["Title"] = "Autorizaciones de Visita";
 }
 
 <div class="container py-4">
@@ -25,12 +25,11 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
+                        <th style="width:40px;"></th>
                         <th>Visitante</th>
                         <th>Identificación</th>
-                        <th>Residente</th>
-                        <th>Vivienda</th>
                         <th>Fecha visita</th>
-                        <th>Vence</th>
+                        <th>Vencimiento</th>
                         <th>Motivo</th>
                         <th>Estado</th>
                         <th class="text-end"></th>
@@ -41,7 +40,7 @@
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="9" class="text-center text-secondary py-4">
+                            <td colspan="8" class="text-center text-secondary py-4">
                                 No se encontraron autorizaciones registradas.
                             </td>
                         </tr>
@@ -50,13 +49,33 @@
                     {
                         foreach (var a in Model)
                         {
+                            var collapseId = "detalle-residente-autorizacion-" + a.Id;
+
                             <tr>
+                                <td>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#@collapseId"
+                                            aria-expanded="false"
+                                            aria-controls="@collapseId"
+                                            title="Ver datos del residente">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </button>
+                                </td>
                                 <td>@a.NombreVisitante</td>
                                 <td>@a.IdentificacionVisitante</td>
-                                <td>@a.NombreResidente</td>
-                                <td>@a.NumeroVivienda</td>
                                 <td>@a.FechaVisita.ToString("dd/MM/yyyy")</td>
-                                <td>@a.FechaVencimiento.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    @a.FechaVencimiento.ToString("dd/MM/yyyy hh:mm tt")
+                                    @if (a.TextoVencimiento != null)
+                                    {
+                                        <br />
+                                        <span class="badge @(a.TextoVencimiento == "Vencido" ? "text-bg-secondary" : "text-bg-warning")">
+                                            @a.TextoVencimiento
+                                        </span>
+                                    }
+                                </td>
                                 <td class="reserva-motivo-col">@a.Motivo</td>
                                 <td>
                                     @switch (a.Estado)
@@ -91,6 +110,33 @@
                                     }
                                 </td>
                             </tr>
+
+                            <tr class="collapse" id="@collapseId">
+                                <td colspan="8" class="bg-light">
+                                    <div class="row g-3 py-2 px-2">
+                                        <div class="col-6 col-md-3">
+                                            <div class="text-secondary small">Residente</div>
+                                            <div>@a.NombreResidente</div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="text-secondary small">Vivienda</div>
+                                            <div>@a.NumeroVivienda</div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="text-secondary small">Correo</div>
+                                            <div>@(string.IsNullOrWhiteSpace(a.CorreoResidente) ? "—" : a.CorreoResidente)</div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="text-secondary small">Teléfono</div>
+                                            <div>@(string.IsNullOrWhiteSpace(a.TelefonoResidente) ? "—" : a.TelefonoResidente)</div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="text-secondary small">Identificación</div>
+                                            <div>@(string.IsNullOrWhiteSpace(a.IdentificacionResidente) ? "—" : a.IdentificacionResidente)</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         }
                     }
 
@@ -108,6 +154,19 @@
                 if (!confirm('¿Está seguro de invalidar esta autorización? El visitante no podrá usar este código para ingresar.')) {
                     e.preventDefault();
                 }
+            });
+        });
+
+        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(btn => {
+            var targetId = btn.getAttribute('data-bs-target');
+            var target = document.querySelector(targetId);
+            if (!target) return;
+
+            target.addEventListener('show.bs.collapse', () => {
+                btn.querySelector('i').classList.replace('bi-chevron-down', 'bi-chevron-up');
+            });
+            target.addEventListener('hide.bs.collapse', () => {
+                btn.querySelector('i').classList.replace('bi-chevron-up', 'bi-chevron-down');
             });
         });
     </script>

@@ -1,21 +1,22 @@
-﻿@model Habitia.ViewModels.Financiero.Admin.CargoCreateViewModel
+﻿@model Habitia.ViewModels.Financiero.Admin.CargoEditViewModel
 @{
-    ViewData["Title"] = "Crear cargo";
+    ViewData["Title"] = "Editar cargo";
 }
 <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
 <partial name="_FinancieroTabs" />
-<h4 class="mb-3">Crear cargo</h4>
+<h4 class="mb-3">Editar cargo <span class="badge badge-pendiente">@Model.EstadoActual</span></h4>
 <div class="fin-card">
     <div class="fin-card-body">
-        <form asp-action="Create" method="post">
+        <form asp-action="Edit" method="post">
             @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="TN_Id" />
             <div asp-validation-summary="All" class="alert alert-danger d-none" id="validationSummary"></div>
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">Residente</label>
                     <div class="input-group">
                         <input type="text" id="residenteDisplay" class="form-control"
-                               placeholder="Buscar por identificación o nombre..." readonly />
+                               value="@Model.ResidenteDisplay" placeholder="Buscar por identificación o nombre..." readonly />
                         <button type="button" class="btn btn-outline-secondary"
                                 data-bs-toggle="modal" data-bs-target="#modalResidentes">
                             <i class="bi bi-search"></i>
@@ -31,14 +32,19 @@
                         <option value="">-- Seleccione --</option>
                         @foreach (var t in Model.TiposCargo)
                         {
-                            <option value="@t.Value">@t.Text</option>
+                            if (t.Value == Model.TC_TipoCargoTexto)
+                            {
+                                <option value="@t.Value" selected>@t.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@t.Value">@t.Text</option>
+                            }
                         }
                         <option value="__nuevo__">+ Agregar nuevo tipo...</option>
                     </select>
                     <input type="text" asp-for="TC_TipoCargoTexto" id="tipoCargoTexto"
-                           class="form-control d-none" placeholder="Escriba el nuevo tipo de cargo"
-                           autocomplete="off" />
-                    <div class="form-text">Si el tipo no existe, selecciónelo con "+ Agregar nuevo tipo..." y escríbalo.</div>
+                           class="form-control d-none" placeholder="Escriba el nuevo tipo de cargo" autocomplete="off" />
                     <span asp-validation-for="TC_TipoCargoTexto" class="text-danger small"></span>
                 </div>
 
@@ -82,7 +88,7 @@
 
             <div class="mt-4">
                 <button type="submit" class="btn" style="background-color:#336332;color:#fff;">
-                    <i class="bi bi-save"></i> Guardar
+                    <i class="bi bi-save"></i> Guardar cambios
                 </button>
                 <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
             </div>
@@ -90,7 +96,7 @@
     </div>
 </div>
 
-<!-- Modal buscador de residentes -->
+<!-- Modal buscador de residentes (idéntico al de Create) -->
 <div class="modal fade" id="modalResidentes" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
@@ -104,33 +110,23 @@
                 <div class="table-responsive">
                     <table class="table table-hover mb-0" id="tablaResidentes">
                         <thead>
-                            <tr>
-                                <th>Identificación</th>
-                                <th>Nombre</th>
-                                <th></th>
-                            </tr>
+                            <tr><th>Identificación</th><th>Nombre</th><th></th></tr>
                         </thead>
                         <tbody>
                             @foreach (var r in Model.Residentes)
                             {
                                 <tr class="fila-residente"
-                                    data-id="@r.Id"
-                                    data-nombre="@r.Nombre"
-                                    data-identificacion="@r.Identificacion">
+                                    data-id="@r.Id" data-nombre="@r.Nombre" data-identificacion="@r.Identificacion">
                                     <td>@r.Identificacion</td>
                                     <td>@r.Nombre</td>
                                     <td class="text-end">
-                                        <button type="button" class="btn btn-sm" style="background-color:#336332;color:#fff;">
-                                            Seleccionar
-                                        </button>
+                                        <button type="button" class="btn btn-sm" style="background-color:#336332;color:#fff;">Seleccionar</button>
                                     </td>
                                 </tr>
                             }
                         </tbody>
                     </table>
-                    <div id="sinResultados" class="text-center text-muted py-3 d-none">
-                        No se encontraron residentes
-                    </div>
+                    <div id="sinResultados" class="text-center text-muted py-3 d-none">No se encontraron residentes</div>
                 </div>
             </div>
         </div>
@@ -140,7 +136,6 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // ================== Tipo de cargo ==================
         const tipoCargoSelect = document.getElementById('tipoCargoSelect');
         const tipoCargoTexto = document.getElementById('tipoCargoTexto');
 
@@ -149,110 +144,73 @@
                 tipoCargoTexto.classList.remove('d-none');
                 tipoCargoTexto.value = '';
                 tipoCargoTexto.focus();
-            } else {
+            } else if (this.value) {
                 tipoCargoTexto.classList.add('d-none');
-                tipoCargoTexto.value = this.value; // nombre existente seleccionado
+                tipoCargoTexto.value = this.value;
             }
         });
 
-        // ================== Fecha límite de pago ==================
         const inputFecha = document.getElementById('fechaVencimiento');
         const hoyStr = new Date().toISOString().split('T')[0];
         inputFecha.setAttribute('min', hoyStr);
 
-        // ================== Monto / IVA ==================
         const PORCENTAJE_IVA = 0.13;
-
-        function formatearColones(valor) {
-            return valor.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+        function formatearColones(v) { return v.toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
         function calcularTotal() {
             const base = parseFloat(document.getElementById('montoBase').value) || 0;
             const aplicaIva = document.getElementById('aplicaIva').checked;
             const ivaWrapper = document.getElementById('ivaWrapper');
-
             let iva = 0;
-            if (aplicaIva) {
-                iva = Math.round(base * PORCENTAJE_IVA * 100) / 100;
-                ivaWrapper.classList.remove('d-none');
-            } else {
-                ivaWrapper.classList.add('d-none');
-            }
-
+            if (aplicaIva) { iva = Math.round(base * PORCENTAJE_IVA * 100) / 100; ivaWrapper.classList.remove('d-none'); }
+            else { ivaWrapper.classList.add('d-none'); }
             const total = base + iva;
-
             document.getElementById('montoIvaDisplay').value = formatearColones(iva);
             document.getElementById('montoTotalDisplay').value = '₡ ' + formatearColones(total);
             document.getElementById('desgloseTotal').innerText =
                 `Base: ₡${formatearColones(base)}` + (aplicaIva ? ` + IVA: ₡${formatearColones(iva)}` : '');
         }
-
         document.getElementById('montoBase').addEventListener('input', calcularTotal);
         document.getElementById('aplicaIva').addEventListener('change', calcularTotal);
+        calcularTotal(); // ejecutar al cargar para mostrar el desglose con los valores precargados
 
-        // ================== Buscador de residentes ==================
         document.getElementById('buscadorResidente').addEventListener('input', function () {
             const filtro = this.value.trim().toLowerCase();
             const filas = document.querySelectorAll('#tablaResidentes .fila-residente');
             let visibles = 0;
-
             filas.forEach(fila => {
-                const nombre = fila.dataset.nombre.toLowerCase();
-                const identificacion = fila.dataset.identificacion.toLowerCase();
-                const coincide = nombre.includes(filtro) || identificacion.includes(filtro);
+                const coincide = fila.dataset.nombre.toLowerCase().includes(filtro) ||
+                                  fila.dataset.identificacion.toLowerCase().includes(filtro);
                 fila.classList.toggle('d-none', !coincide);
                 if (coincide) visibles++;
             });
-
             document.getElementById('sinResultados').classList.toggle('d-none', visibles !== 0);
         });
 
         document.querySelectorAll('.fila-residente').forEach(fila => {
             fila.addEventListener('click', function () {
                 document.getElementById('TC_IdResidente').value = this.dataset.id;
-                document.getElementById('residenteDisplay').value =
-                    `${this.dataset.identificacion} - ${this.dataset.nombre}`;
-
-                const modal = bootstrap.Modal.getInstance(document.getElementById('modalResidentes'));
-                modal.hide();
+                document.getElementById('residenteDisplay').value = `${this.dataset.identificacion} - ${this.dataset.nombre}`;
+                bootstrap.Modal.getInstance(document.getElementById('modalResidentes')).hide();
             });
         });
 
-        // ================== Validación al enviar ==================
         document.querySelector('form').addEventListener('submit', function (e) {
             let errores = [];
+            if (!document.getElementById('TC_IdResidente').value) errores.push('Debe seleccionar un residente.');
+            if (!tipoCargoTexto.value.trim()) errores.push('Debe seleccionar o escribir un tipo de cargo.');
 
-            // Residente
-            if (!document.getElementById('TC_IdResidente').value) {
-                errores.push('Debe seleccionar un residente.');
-            }
-
-            // Tipo de cargo
-            if (!tipoCargoTexto.value.trim()) {
-                errores.push('Debe seleccionar o escribir un tipo de cargo.');
-            }
-
-            // Monto base
             const montoBaseVal = parseFloat(document.getElementById('montoBase').value);
-            if (isNaN(montoBaseVal) || montoBaseVal <= 0) {
-                errores.push('Debe ingresar un monto base válido.');
-            }
+            if (isNaN(montoBaseVal) || montoBaseVal <= 0) errores.push('Debe ingresar un monto base válido.');
 
-            // Fecha límite de pago
             const valorFecha = inputFecha.value;
             if (!valorFecha) {
                 errores.push('Debe ingresar la fecha límite de pago.');
             } else {
-                const fechaSeleccionada = new Date(valorFecha + 'T00:00:00');
-                const hoyComparar = new Date();
-                hoyComparar.setHours(0, 0, 0, 0);
-                if (fechaSeleccionada < hoyComparar) {
-                    errores.push('La fecha límite de pago no puede ser anterior a la fecha actual.');
-                }
+                const fechaSel = new Date(valorFecha + 'T00:00:00');
+                const hoyComp = new Date(); hoyComp.setHours(0,0,0,0);
+                if (fechaSel < hoyComp) errores.push('La fecha límite de pago no puede ser anterior a la fecha actual.');
             }
-
-            // Nota: la descripción es OPCIONAL, no se valida
 
             if (errores.length > 0) {
                 e.preventDefault();

@@ -21,7 +21,6 @@ namespace Habitia.Models.Financiero
         [Required]
         public int TN_IdEstadoCargo { get; set; }
 
-        [Required]
         [MaxLength(200)]
         public string TC_Descripcion { get; set; }
 
@@ -40,6 +39,8 @@ namespace Habitia.Models.Financiero
 
         [Required]
         public DateTime TF_FechaVencimiento { get; set; }
+
+        public bool TB_AplicaIva { get; set; }
 
         [Required]
         public bool TB_Estado { get; set; }

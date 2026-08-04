@@ -1,90 +1,106 @@
-﻿@model Habitia.ViewModels.Financiero.Admin.ValidarPagoViewModel
+﻿@model Habitia.ViewModels.Financiero.Admin.PagoDetalleViewModel
 @{
-    ViewData["Title"] = "Validar pago";
-    var esImagen = Model.TC_RutaComprobante != null &&
-        (Model.TC_RutaComprobante.EndsWith(".jpg") || Model.TC_RutaComprobante.EndsWith(".jpeg") || Model.TC_RutaComprobante.EndsWith(".png"));
+    ViewData["Title"] = "Revisar pago";
 }
 <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
 <partial name="_FinancieroTabs" />
-
-<h4 class="mb-3">Validar pago</h4>
+<h4 class="mb-3">Revisar pago</h4>
 
 <div class="row g-3">
     <div class="col-md-6">
-        <div class="fin-card h-100">
-            <div class="fin-card-header"><i class="bi bi-info-circle"></i> Detalle del pago</div>
+        <div class="fin-card">
+            <div class="fin-card-header"><i class="bi bi-person"></i> Residente</div>
             <div class="fin-card-body">
-                <p><strong>Residente:</strong> @Model.NombreResidente</p>
-                <p><strong>Monto:</strong> <span class="fin-monto-total">@Model.TN_MontoTotal.ToString("C")</span></p>
-                <p><strong>Método de pago:</strong> @Model.MetodoPago</p>
-                <p><strong>Fecha de pago:</strong> @Model.TF_FechaPago.ToString("dd/MM/yyyy HH:mm")</p>
+                <p class="mb-1"><strong>Nombre:</strong> @Model.NombreResidente</p>
+                <p class="mb-1"><strong>Identificación:</strong> @Model.IdentificacionResidente</p>
+                <p class="mb-1"><strong>Correo:</strong> @Model.CorreoResidente</p>
+                <p class="mb-0"><strong>Teléfono:</strong> @(Model.TelefonoResidente ?? "No registrado")</p>
+            </div>
+        </div>
 
-                <label class="form-label mt-2">Comprobante</label>
-                <div class="fin-comprobante-preview">
-                    @if (esImagen)
-                    {
-                        <img src="@Model.TC_RutaComprobante" alt="Comprobante" />
-                    }
-                    else
-                    {
-                        <a href="@Model.TC_RutaComprobante" target="_blank" class="btn btn-outline-secondary">
-                            <i class="bi bi-file-earmark-pdf"></i> Ver comprobante (PDF)
-                        </a>
-                    }
-                </div>
+        <div class="fin-card mt-3">
+            <div class="fin-card-header"><i class="bi bi-receipt"></i> Cargo</div>
+            <div class="fin-card-body">
+                <p class="mb-1"><strong>Tipo:</strong> @Model.TipoCargo</p>
+                @if (!string.IsNullOrWhiteSpace(Model.Descripcion))
+                {
+                    <p class="mb-1"><strong>Descripción:</strong> @Model.Descripcion</p>
+                }
+                <p class="mb-1"><strong>Emitido:</strong> @Model.TF_FechaEmision.ToString("dd/MM/yyyy")</p>
+                <p class="mb-1"><strong>Vencimiento:</strong> @Model.TF_FechaVencimiento.ToString("dd/MM/yyyy")</p>
+                <table class="table table-sm mb-0 mt-2">
+                    <tr><td>Monto base</td><td class="text-end">@Model.TN_MontoBase.ToString("C")</td></tr>
+                    <tr><td>IVA</td><td class="text-end">@(Model.TB_AplicaIva ? Model.TN_MontoIva.ToString("C") : "No aplica")</td></tr>
+                    <tr class="fw-bold"><td>Total</td><td class="text-end fin-monto-total">@Model.TN_MontoTotal.ToString("C")</td></tr>
+                </table>
             </div>
         </div>
     </div>
 
     <div class="col-md-6">
-        <div class="fin-card h-100">
-            <div class="fin-card-header"><i class="bi bi-check2-square"></i> Decisión</div>
+        <div class="fin-card">
+            <div class="fin-card-header"><i class="bi bi-cash-coin"></i> Datos del pago</div>
             <div class="fin-card-body">
-                <form asp-action="Validar" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="TN_IdPago" />
-                    <input type="hidden" asp-for="TN_IdCargo" />
+                <p class="mb-1"><strong>Método:</strong> @Model.MetodoPago</p>
+                <p class="mb-3"><strong>Fecha de pago:</strong> @Model.TF_FechaPago.ToString("dd/MM/yyyy HH:mm")</p>
 
-                    @if (!ViewData.ModelState.IsValid)
-                    {
-                        <div class="alert alert-danger">
-                            @foreach (var e in ViewData.ModelState.SelectMany(m => m.Value.Errors))
-                            {
-                                <div>@e.ErrorMessage</div>
-                            }
-                        </div>
-                    }
-
-                    <div class="mb-3">
-                        <label class="form-label d-block">Resultado</label>
-                        <div class="btn-group" role="group">
-                            <input type="radio" class="btn-check" name="Aprobar" id="radioAprobar" value="true" checked onclick="mostrarMotivo(false)">
-                            <label class="btn btn-outline-success" for="radioAprobar"><i class="bi bi-check-lg"></i> Aprobar</label>
-
-                            <input type="radio" class="btn-check" name="Aprobar" id="radioRechazar" value="false" onclick="mostrarMotivo(true)">
-                            <label class="btn btn-outline-danger" for="radioRechazar"><i class="bi bi-x-lg"></i> Rechazar</label>
-                        </div>
+                <label class="form-label">Comprobante</label>
+                @{
+                    var esImagen = Model.TC_RutaComprobante.EndsWith(".jpg") || Model.TC_RutaComprobante.EndsWith(".jpeg") || Model.TC_RutaComprobante.EndsWith(".png");
+                }
+                @if (esImagen)
+                {
+                    <div class="mb-2">
+                        <img src="@Model.TC_RutaComprobante" class="img-fluid rounded border" alt="Comprobante de pago" />
                     </div>
-
-                    <div class="mb-3 d-none" id="grupoMotivo">
-                        <label class="form-label">Motivo del rechazo</label>
-                        <textarea asp-for="TC_MotivoRechazo" class="form-control" rows="3"></textarea>
-                    </div>
-
-                    <button type="submit" class="btn" style="background-color:#336332;color:#fff;">
-                        <i class="bi bi-save"></i> Procesar pago
-                    </button>
-                    <a asp-action="Revision" class="btn btn-outline-secondary">Cancelar</a>
-                </form>
+                }
+                <a href="@Model.TC_RutaComprobante" target="_blank" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-box-arrow-up-right"></i> Ver comprobante en tamaño completo
+                </a>
             </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-3">
+            <form asp-action="Aprobar" method="post" class="flex-fill">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="idPago" value="@Model.TN_IdPago" />
+                <button type="submit" class="btn w-100" style="background-color:#336332;color:#fff;"
+                        onclick="return confirm('¿Confirma que el pago es correcto y desea aprobarlo?');">
+                    <i class="bi bi-check-lg"></i> Aprobar pago
+                </button>
+            </form>
+
+            <button type="button" class="btn btn-outline-danger flex-fill" data-bs-toggle="modal" data-bs-target="#modalRechazar">
+                <i class="bi bi-x-lg"></i> Rechazar pago
+            </button>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        function mostrarMotivo(mostrar) {
-            document.getElementById('grupoMotivo').classList.toggle('d-none', !mostrar);
-        }
-    </script>
-}
+<!-- Modal Rechazar -->
+<div class="modal fade" id="modalRechazar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Rechazar" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="TN_IdPago" value="@Model.TN_IdPago" />
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle text-danger"></i> Rechazar pago</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">Motivo del rechazo</label>
+                    <textarea name="TC_MotivoRechazo" class="form-control" rows="3" required
+                              placeholder="Ej: El comprobante no coincide con el monto del cargo"></textarea>
+                    <div class="form-text">El cargo volverá a estado <strong>Pendiente</strong> y el residente verá este motivo.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-lg"></i> Confirmar rechazo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

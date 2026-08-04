@@ -6,91 +6,11 @@
 
     var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    /* ── Carrusel: Qué es Habitia (pilares) ── */
-    (function () {
-        const track = document.getElementById('pillarsTrack');
-        if (!track || prefersReducedMotion) return;
-
-        const originals = Array.from(track.querySelectorAll('.pillar'));
-        const GAP = 22;
-
-        for (let i = 0; i < 2; i++) {
-            originals.forEach(card => {
-                const clone = card.cloneNode(true);
-                clone.setAttribute('aria-hidden', 'true');
-                track.appendChild(clone);
-            });
-        }
-
-        requestAnimationFrame(() => {
-            const cardWidth = originals[0].offsetWidth + GAP;
-            const loopWidth = originals.length * cardWidth;
-
-            let scrollX = 0;
-            let paused = false;
-            const speed = 0.5;
-
-            function animate() {
-                if (!paused) {
-                    scrollX += speed;
-                    if (scrollX >= loopWidth) scrollX -= loopWidth;
-                    track.style.transform = `translateX(-${scrollX}px)`;
-                }
-                requestAnimationFrame(animate);
-            }
-
-            track.addEventListener('mouseenter', () => paused = true);
-            track.addEventListener('mouseleave', () => paused = false);
-
-            animate();
-        });
-    })();
-
-    /* ── Carrusel: Funcionalidades ── */
-    (function () {
-        const track = document.getElementById('featuresTrack');
-        if (!track || prefersReducedMotion) return;
-
-        const originals = Array.from(track.querySelectorAll('.feature-card'));
-        const GAP = 20;
-
-        for (let i = 0; i < 2; i++) {
-            originals.forEach(card => {
-                const clone = card.cloneNode(true);
-                clone.setAttribute('aria-hidden', 'true');
-                track.appendChild(clone);
-            });
-        }
-
-        requestAnimationFrame(() => {
-            const cardWidth = originals[0].offsetWidth + GAP;
-            const loopWidth = originals.length * cardWidth;
-
-            let scrollX = 0;
-            let paused = false;
-            const speed = 0.5;
-
-            function animate() {
-                if (!paused) {
-                    scrollX += speed;
-                    if (scrollX >= loopWidth) scrollX -= loopWidth;
-                    track.style.transform = `translateX(-${scrollX}px)`;
-                }
-                requestAnimationFrame(animate);
-            }
-
-            track.addEventListener('mouseenter', () => paused = true);
-            track.addEventListener('mouseleave', () => paused = false);
-
-            animate();
-        });
-    })();
-
     if (!prefersReducedMotion && "IntersectionObserver" in window) {
 
         // ---------- Revelado de tarjetas/filas al entrar en pantalla ----------
         var revealTargets = document.querySelectorAll(
-            ".directory-board__row, .flow-step, .benefit-card"
+            ".pillar, .feature-card, .directory-board__row, .flow-step, .benefit-card"
         );
 
         revealTargets.forEach(function (el, i) {
