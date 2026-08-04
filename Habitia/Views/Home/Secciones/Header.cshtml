@@ -1,0 +1,25 @@
+﻿@{
+    var estaLogueado = User.Identity?.IsAuthenticated == true;
+
+    string urlPanel = "/Account/Login";
+
+    if (estaLogueado)
+    {
+        if (User.IsInRole("Admin"))
+        {
+            urlPanel = "/Admin/Dashboard/Index";
+        }
+        else if (User.IsInRole("Residente"))
+        {
+            urlPanel = "/Residente/Home/Index";
+        }
+        else if (User.IsInRole("Seguridad"))
+        {
+            urlPanel = "/Seguridad/Home/Index";
+        }
+        else if (User.IsInRole("Mantenimiento"))
+        {
+            urlPanel = "/Mantenimiento/Home/Index";
+        }
+    }
+}
