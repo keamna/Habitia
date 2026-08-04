@@ -82,3 +82,173 @@
     object-fit: contain;
     background-color: #101010;
 }
+
+/* ============================================
+   CALENDARIO DE RESERVAS
+============================================ */
+
+.cal-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.cal-nav {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.cal-titulo {
+    font-size: 1.15rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    min-width: 190px;
+    text-align: center;
+    color: #1f3d29;
+}
+
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: #e3ece5;
+    border: 1px solid #e3ece5;
+    border-radius: .6rem;
+    overflow: hidden;
+}
+
+.cal-encabezado {
+    background: #f4f8f5;
+    padding: .55rem .4rem;
+    text-align: center;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #5c6b5c;
+}
+
+.cal-dia {
+    background: #fff;
+    min-height: 108px;
+    padding: .4rem;
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    cursor: pointer;
+    transition: background-color .14s ease;
+}
+
+    .cal-dia:hover {
+        background: #f6fbf7;
+    }
+
+    .cal-dia.otro-mes {
+        background: #fafbfa;
+    }
+
+        .cal-dia.otro-mes .cal-numero {
+            color: #c2ccc4;
+        }
+
+    .cal-dia.hoy .cal-numero {
+        background: #336332;
+        color: #fff;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cal-dia.seleccionado {
+        background: #eef6f0;
+        box-shadow: inset 0 0 0 2px #336332;
+    }
+
+.cal-numero {
+    font-size: .82rem;
+    font-weight: 600;
+    color: #3d4a3f;
+    line-height: 1.4;
+}
+
+.cal-chip {
+    font-size: .68rem;
+    line-height: 1.25;
+    padding: .18rem .35rem;
+    border-radius: .28rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-left: 3px solid transparent;
+}
+
+    .cal-chip.activa {
+        background: #e6f4ea;
+        color: #1e5b30;
+        border-left-color: #336332;
+    }
+
+    .cal-chip.finalizada {
+        background: #eef0ee;
+        color: #5c6b5c;
+        border-left-color: #9aa89c;
+    }
+
+    .cal-chip.cancelada {
+        background: #fdecec;
+        color: #9b2c2c;
+        border-left-color: #c53030;
+        text-decoration: line-through;
+    }
+
+.cal-mas {
+    font-size: .66rem;
+    color: #6b7a6d;
+    font-weight: 600;
+    padding-left: .35rem;
+}
+
+.cal-leyenda {
+    display: flex;
+    gap: 1.1rem;
+    flex-wrap: wrap;
+    font-size: .78rem;
+    color: #5c6b5c;
+    margin-top: .85rem;
+}
+
+    .cal-leyenda span {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+    }
+
+.cal-punto {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+}
+
+.cal-detalle-vacio {
+    text-align: center;
+    color: #8a968c;
+    padding: 2rem 0;
+}
+
+@media (max-width: 768px) {
+    .cal-dia {
+        min-height: 74px;
+    }
+
+    .cal-chip {
+        font-size: .6rem;
+    }
+}

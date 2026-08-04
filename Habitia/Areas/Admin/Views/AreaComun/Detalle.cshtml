@@ -11,7 +11,13 @@
 
 <div class="container py-4">
 
-    <h1 class="h3 mb-4">@Model.TC_Nombre (@Model.TC_Codigo)</h1>
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a asp-area="Admin" asp-controller="AreaComun" asp-action="Index"
+           class="btn btn-sm btn-outline-secondary" title="Volver a áreas comunes">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h1 class="h3 mb-0">@Model.TC_Nombre (@Model.TC_Codigo)</h1>
+    </div>
 
     @if (TempData["Exito"] != null)
     {
