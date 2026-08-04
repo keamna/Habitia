@@ -44,6 +44,12 @@
         .Contains(controladorActual, StringComparer.OrdinalIgnoreCase)
         && string.Equals(areaActual, "Admin", StringComparison.OrdinalIgnoreCase);
 
+    // Igual que Documentos: "Incidencias" agrupa Incidencias + Mantenimientos
+    // (Admin), navegados internamente mediante tabs (_IncidenciaTabs).
+    var esIncidenciasAdmin = new[] { "Incidencias", "Mantenimientos" }
+        .Contains(controladorActual, StringComparer.OrdinalIgnoreCase)
+        && string.Equals(areaActual, "Admin", StringComparison.OrdinalIgnoreCase);
+
     // Para que "Reservas" (que existe en varias áreas) solo se marque
     // activo dentro de la sección de área correspondiente, y no en las
     // dos secciones a la vez cuando el usuario tiene múltiples roles.
@@ -141,16 +147,10 @@
                                 <span>Control de Accesos</span>
                             </a>
 
-                            <a class="habitia-nav-item @(EsActivo("Admin", "Incidencias") ? "active" : "")"
+                            <a class="habitia-nav-item @(esIncidenciasAdmin ? "active" : "")"
                                asp-area="Admin" asp-controller="Incidencias" asp-action="Index">
                                 <i class="bi bi-exclamation-triangle-fill"></i>
                                 <span>Incidencias</span>
-                            </a>
-
-                            <a class="habitia-nav-item @(EsActivo("Admin", "Mantenimientos") ? "active" : "")"
-                               asp-area="Admin" asp-controller="Mantenimientos" asp-action="Index">
-                                <i class="bi bi-tools"></i>
-                                <span>Mantenimientos</span>
                             </a>
 
                             <a class="habitia-nav-item @(esFinancieroAdmin ? "active" : "")"
