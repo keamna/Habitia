@@ -1,0 +1,279 @@
+﻿/* =========================================================
+   ACCESOS / AUTORIZACIONES
+   Selector de visitante y residente, código de autorización.
+   Usa las mismas variables de color que el resto de Habitia.
+========================================================= */
+
+/* ---------- Buscador con lupa ---------- */
+.acc-search .input-group-text {
+    background-color: #FFFFFF;
+    border-right: none;
+    color: var(--habitia-text-gray);
+}
+
+.acc-search .form-control {
+    border-left: none;
+}
+
+    .acc-search .form-control:focus {
+        box-shadow: none;
+        border-color: var(--habitia-border);
+    }
+
+.acc-search .input-group:focus-within {
+    box-shadow: 0 0 0 3px rgba(51,99,50,0.12);
+    border-radius: 8px;
+}
+
+
+/* ---------- Lista de resultados (visitante / residente) ---------- */
+.acc-list {
+    border: 1px solid var(--habitia-border);
+    border-radius: 12px;
+    background-color: #FFFFFF;
+    /* Muestra máximo ~4 ítems (58px c/u aprox.) y scroll para el resto */
+    max-height: 232px;
+    overflow-y: auto;
+}
+
+.acc-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    border: none;
+    border-bottom: 1px solid var(--habitia-border);
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    transition: .15s ease;
+}
+
+    .acc-list-item:last-child {
+        border-bottom: none;
+    }
+
+    .acc-list-item:hover {
+        background-color: rgba(51,99,50,0.06);
+    }
+
+    .acc-list-item.selected {
+        background-color: rgba(51,99,50,0.10);
+        border-left: 3px solid var(--habitia-green-active);
+        padding-left: 11px;
+    }
+
+
+.acc-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: var(--habitia-green-active);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.acc-list-item-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+    min-width: 0;
+}
+
+.acc-list-item-name {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.acc-list-item-sub {
+    font-size: 0.78rem;
+    color: var(--habitia-text-gray);
+}
+
+.acc-empty,
+.acc-loading {
+    padding: 28px 14px;
+    text-align: center;
+    color: var(--habitia-text-gray);
+    font-size: 0.85rem;
+}
+
+    .acc-loading i {
+        display: inline-block;
+        animation: acc-spin 0.9s linear infinite;
+    }
+
+@keyframes acc-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ---------- Chip de seleccionado ---------- */
+.acc-chip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background-color: rgba(51,99,50,0.10);
+    border: 1px solid rgba(51,99,50,0.25);
+    font-size: 0.88rem;
+    color: #1a1a1a;
+}
+
+    .acc-chip .btn-close {
+        font-size: 0.7rem;
+    }
+
+
+/* ---------- Toggle "es visitante nuevo" ---------- */
+.acc-toggle-nuevo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--habitia-text-gray);
+}
+
+
+/* ---------- Código de autorización (vista Residente) ---------- */
+.acc-code-box {
+    border: 2px dashed var(--habitia-green-active);
+    border-radius: 16px;
+    background-color: rgba(51,99,50,0.05);
+    padding: 24px 20px;
+}
+
+.acc-code-text {
+    font-family: 'DM Sans', monospace;
+    letter-spacing: 3px;
+    color: var(--habitia-green-active);
+}
+
+
+/* ---------- Panel expandible de datos del residente (listados Admin/Seguridad) ---------- */
+.acc-detalle-panel {
+    background-color: var(--habitia-bg);
+    border-top: 1px solid var(--habitia-border);
+}
+
+    .acc-detalle-panel .acc-detalle-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--habitia-text-gray);
+        margin-bottom: 2px;
+    }
+
+    .acc-detalle-panel .acc-detalle-valor {
+        font-size: 0.9rem;
+        color: #1a1a1a;
+        font-weight: 500;
+    }
+
+
+@media(max-width:576px) {
+
+    .acc-list {
+        max-height: 220px;
+    }
+}
+
+/* ---------- Botones del formulario de validación de código ---------- */
+.acc-form-actions {
+    display: flex;
+    gap: 10px;
+}
+
+    .acc-form-actions .btn {
+        flex: 1;
+    }
+
+/* ---------- Checkbox "Es un visitante nuevo" con el mismo estilo que "Ingresa en vehículo" ---------- */
+#EsVisitanteNuevo + label,
+label[for="EsVisitanteNuevo"] {
+    color: var(--habitia-text-gray);
+    font-size: 0.9rem;
+}
+
+/* ---------- Toast Copiar Código ---------- */
+
+.acc-toast {
+    min-width: 320px;
+    border-radius: 14px;
+    background: var(--habitia-green-active);
+    color: #fff;
+    box-shadow: 0 10px 25px rgba(0,0,0,.18);
+}
+
+    .acc-toast .toast-body {
+        padding: 14px 18px;
+    }
+
+    .acc-toast i {
+        color: #fff;
+    }
+
+    .acc-toast strong {
+        font-size: .95rem;
+    }
+
+    .acc-toast small {
+        opacity: .9;
+    }
+
+    .acc-toast.show {
+        animation: accToastSlide .35s ease;
+    }
+
+@keyframes accToastSlide {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ---------- Botón verde Habitia ---------- */
+
+.acc-btn-green {
+    background-color: var(--habitia-green-active);
+    border-color: var(--habitia-green-active);
+    color: #fff;
+    transition: .2s ease;
+}
+
+    .acc-btn-green:hover {
+        background-color: #2b552a;
+        border-color: #2b552a;
+        color: #fff;
+    }
+
+    .acc-btn-green:focus,
+    .acc-btn-green:active {
+        background-color: #2b552a !important;
+        border-color: #2b552a !important;
+        color: #fff !important;
+        box-shadow: 0 0 0 .25rem rgba(51, 99, 50, .25);
+    }

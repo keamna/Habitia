@@ -87,6 +87,7 @@
     <link rel="stylesheet" href="~/css/reservas/reservas.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/documentos/documentos.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/accesos/accesos.css" asp-append-version="true" />
 
 </head>
 <body>
@@ -282,31 +283,31 @@
             <div class="habitia-sidebar-footer">
                 <div class="habitia-user">
 
-                    <div class="habitia-user-avatar mk-avatar-sidebar">
+                <div class="habitia-user-avatar mk-avatar-sidebar">
 
-                        @if (!string.IsNullOrWhiteSpace(fotoPerfil))
-                        {
-                            <img src="@fotoPerfil" alt="Foto de perfil" />
-                        }
-                        else
-                        {
-                            <i class="bi bi-person-fill"></i>
-                        }
+                @if (!string.IsNullOrWhiteSpace(fotoPerfil))
+                {
+                    <img src="@fotoPerfil" alt="Foto de perfil" />
+                }
+                else
+                {
+                    <i class="bi bi-person-fill"></i>
+                }
 
-                        @if (User.IsInRole("Residente"))
-                        {
-                            <label class="mk-avatar-editar" title="Cambiar foto de perfil">
-                                <i class="bi bi-camera-fill"></i>
-                                <input type="file" id="inputFotoSidebar"
-                                       accept=".jpg,.jpeg,.png,.webp" hidden />
-                            </label>
-                        }
+                <label class="mk-avatar-editar" title="Cambiar foto de perfil">
+                    <i class="bi bi-camera-fill"></i>
+                    <input type="file" id="inputFotoSidebar"
+                           accept=".jpg,.jpeg,.png,.webp" hidden />
+                </label>
 
-                    </div>
+            </div>
 
                     <div>
                         <div class="habitia-user-name">@nombreUsuario</div>
                         <div class="habitia-user-role">@rolActual</div>
+                        <a asp-area="" asp-controller="MiPerfil" asp-action="Index" class="habitia-user-perfil-link">
+                            Mi perfil
+                        </a>
                     </div>
                 </div>
 

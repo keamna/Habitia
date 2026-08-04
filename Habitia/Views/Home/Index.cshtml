@@ -1,4 +1,29 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var estaLogueado = User.Identity?.IsAuthenticated == true;
+
+    string urlPanel = "/Account/Login";
+
+    if (estaLogueado)
+    {
+        if (User.IsInRole("Admin"))
+        {
+            urlPanel = "/Admin/Dashboard/Index";
+        }
+        else if (User.IsInRole("Residente"))
+        {
+            urlPanel = "/Residente/Home/Index";
+        }
+        else if (User.IsInRole("Seguridad"))
+        {
+            urlPanel = "/Seguridad/Home/Index";
+        }
+        else if (User.IsInRole("Mantenimiento"))
+        {
+            urlPanel = "/Mantenimiento/Home/Index";
+        }
+    }
+}
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -25,8 +50,15 @@
     </nav>
 
     <div class="public-header__auth">
-        <a href="/Account/Login" class="public-header__login">Iniciar sesión</a>
-        <a href="/Account/Register" class="btn-registrarse">Registrarse</a>
+        @if (estaLogueado)
+        {
+            <a href="@urlPanel" class="btn-registrarse">Panel</a>
+        }
+        else
+        {
+            <a href="/Account/Login" class="public-header__login">Iniciar sesión</a>
+            <a href="/Account/Register" class="btn-registrarse">Registrarse</a>
+        }
     </div>
 </header>
 

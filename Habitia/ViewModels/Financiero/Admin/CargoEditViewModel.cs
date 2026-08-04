@@ -3,10 +3,13 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Habitia.ViewModels.Financiero.Admin
 {
-    public class CargoCreateViewModel : IValidatableObject
+    public class CargoEditViewModel : IValidatableObject
     {
+        public int TN_Id { get; set; }
+
         [Required(ErrorMessage = "Debe seleccionar un residente")]
         public string TC_IdResidente { get; set; }
+        public string ResidenteDisplay { get; set; } // para mostrar en el buscador al cargar
 
         [Required(ErrorMessage = "Debe indicar el tipo de cargo")]
         public string TC_TipoCargoTexto { get; set; }
@@ -20,8 +23,9 @@ namespace Habitia.ViewModels.Financiero.Admin
         [DataType(DataType.Date)]
         public DateTime? TF_FechaVencimiento { get; set; }
 
-        // Descripción es OPCIONAL
         public string? TC_Descripcion { get; set; }
+
+        public string EstadoActual { get; set; } // solo informativo
 
         public List<SelectListItem> TiposCargo { get; set; } = new();
         public List<ResidenteBusquedaViewModel> Residentes { get; set; } = new();
@@ -48,12 +52,5 @@ namespace Habitia.ViewModels.Financiero.Admin
                     new[] { nameof(TF_FechaVencimiento) });
             }
         }
-    }
-
-    public class ResidenteBusquedaViewModel
-    {
-        public string Id { get; set; }
-        public string Nombre { get; set; }
-        public string Identificacion { get; set; }
     }
 }

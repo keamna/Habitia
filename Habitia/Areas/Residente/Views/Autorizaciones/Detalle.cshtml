@@ -16,10 +16,36 @@
     <div class="card shadow-sm text-center mb-4">
         <div class="card-body">
 
-            <div id="qrcode" class="d-flex justify-content-center mb-3"></div>
+            <div class="acc-code-box mb-3">
+                <p class="text-secondary small mb-2">Código de autorización</p>
+
+                <div class="d-flex justify-content-center align-items-center gap-2">
+                    <span id="codigoAutorizacion" class="fs-2 fw-bold acc-code-text">
+                        @Model.Codigo
+                    </span>
+
+                    <button type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            onclick="copiarCodigo(this)"
+                            title="Copiar código">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+            </div>
+
+            @if (Model.TextoVencimiento != null)
+            {
+                <div class="alert @(Model.TextoVencimiento == "Vencido" ? "alert-secondary" : "alert-warning") py-2 mb-2" role="alert">
+                    <i class="bi bi-clock-history me-1"></i>
+                    @Model.TextoVencimiento
+                    <span class="d-block small mt-1">
+                        Válido hasta @Model.FechaVencimiento.ToString("dd/MM/yyyy hh:mm tt")
+                    </span>
+                </div>
+            }
 
             <p class="text-secondary small mb-0">
-                Muestre este código al personal de seguridad al momento del ingreso.
+                Comparta este código con su visitante. El personal de seguridad lo validará al momento del ingreso.
             </p>
 
         </div>
@@ -28,27 +54,34 @@
     <div class="card shadow-sm">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <strong>Información de la visita</strong>
+
             @switch (Model.Estado)
             {
                 case Habitia.Enums.EstadoAutorizacionEnum.Pendiente:
                     <span class="badge text-bg-warning">Pendiente</span>
                     break;
+
                 case Habitia.Enums.EstadoAutorizacionEnum.Activa:
                     <span class="badge text-bg-success">Activa</span>
                     break;
+
                 case Habitia.Enums.EstadoAutorizacionEnum.Finalizada:
                     <span class="badge text-bg-secondary">Finalizada</span>
                     break;
+
                 case Habitia.Enums.EstadoAutorizacionEnum.Expirada:
                     <span class="badge text-bg-dark">Expirada</span>
                     break;
+
                 case Habitia.Enums.EstadoAutorizacionEnum.Cancelada:
                     <span class="badge text-bg-danger">Cancelada</span>
                     break;
             }
         </div>
+
         <div class="card-body">
             <dl class="row mb-0">
+
                 <dt class="col-5">Visitante</dt>
                 <dd class="col-7">@Model.NombreVisitante</dd>
 
@@ -56,33 +89,84 @@
                 <dd class="col-7">@Model.IdentificacionVisitante</dd>
 
                 <dt class="col-5">Fecha de visita</dt>
-                <dd class="col-7">@Model.FechaVisita.ToString("dd/MM/yyyy")</dd>
+                <dd class="col-7">@Model.FechaVisita.ToString("dd/MM/yyyy hh:mm tt")</dd>
 
                 <dt class="col-5">Vence</dt>
-                <dd class="col-7">@Model.FechaVencimiento.ToString("dd/MM/yyyy")</dd>
+                <dd class="col-7">@Model.FechaVencimiento.ToString("dd/MM/yyyy hh:mm tt")</dd>
 
                 <dt class="col-5">Motivo</dt>
                 <dd class="col-7">@Model.Motivo</dd>
 
                 <dt class="col-5">Registrada el</dt>
                 <dd class="col-7">@Model.FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</dd>
+
             </dl>
         </div>
     </div>
 
-    <div class="d-flex justify-content-end mt-3">
-        <a asp-action="Index" class="btn btn-outline-secondary">Volver al historial</a>
+        <div class="d-flex justify-content-end mt-4 pt-2">
+    <a asp-action="Index" class="btn acc-btn-green">
+        <i class="bi bi-arrow-left me-1"></i>
+        Volver al historial
+    </a>
+</div>
     </div>
 
 </div>
 
-@section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script>
-        new QRCode(document.getElementById("qrcode"), {
-            text: "@Model.Codigo",
-            width: 220,
-            height: 220
-        });
-    </script>
+<!-- Toast -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index:1080">
+    <div id="toastCopiado"
+         class="toast acc-toast border-0"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true">
+
+        <div class="toast-body d-flex align-items-center">
+            <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+
+            <div>
+                <strong>¡Código copiado!</strong><br />
+                <small>El código fue copiado al portapapeles.</small>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts{
+<script>
+
+    function copiarCodigo(boton) {
+
+        const codigo = document.getElementById("codigoAutorizacion").innerText.trim();
+
+        navigator.clipboard.writeText(codigo)
+            .then(() => {
+
+                const iconoOriginal = boton.innerHTML;
+
+                boton.innerHTML =
+                    '<i class="bi bi-check-lg text-success"></i>';
+
+                setTimeout(() => {
+                    boton.innerHTML = iconoOriginal;
+                }, 1500);
+
+                const toast = new bootstrap.Toast(
+                    document.getElementById("toastCopiado"),
+                    {
+                        delay: 2500
+                    });
+
+                toast.show();
+
+            })
+            .catch(() => {
+                alert("No fue posible copiar el código.");
+            });
+
+    }
+
+</script>
 }

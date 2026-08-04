@@ -54,8 +54,7 @@ namespace Habitia.Areas.Residente.Controllers
         {
             var vm = new AutorizacionFormVM
             {
-                FechaVisita = DateTime.Today,
-                FechaVencimiento = DateTime.Today.AddDays(1)
+                FechaVisita = DateTime.Today
             };
 
             return View(vm);
@@ -77,13 +76,6 @@ namespace Habitia.Areas.Residente.Controllers
             if (!ModelState.IsValid)
             {
                 TempData["Error"] = "Debe completar todos los campos requeridos";
-                return View(vm);
-            }
-
-            if (vm.FechaVencimiento < vm.FechaVisita)
-            {
-                ModelState.AddModelError(nameof(vm.FechaVencimiento), "La fecha de vencimiento no es válida");
-                TempData["Error"] = "La fecha de vencimiento no es válida";
                 return View(vm);
             }
 
@@ -140,6 +132,8 @@ namespace Habitia.Areas.Residente.Controllers
 
             var codigo = await AccesoHelper.GenerarCodigoUnicoAsync(_context);
 
+            var ahora = DateTime.Now;
+
             var autorizacion = new Autorizacion
             {
                 TN_IdVisitante = idVisitante,
@@ -147,9 +141,9 @@ namespace Habitia.Areas.Residente.Controllers
                 TN_IdVivienda = viviendaUsuario.TN_IdVivienda,
                 TC_Codigo = codigo,
                 TF_FechaVisita = vm.FechaVisita,
-                TF_FechaVencimiento = vm.FechaVencimiento,
+                TF_FechaVencimiento = ahora.AddHours(6),
                 TC_Motivo = vm.Motivo,
-                TF_FechaRegistro = DateTime.Now,
+                TF_FechaRegistro = ahora,
                 TN_Estado = EstadoAutorizacionEnum.Pendiente
             };
 
@@ -178,6 +172,27 @@ namespace Habitia.Areas.Residente.Controllers
             var vm = AccesoHelper.MapAutorizacionToVM(autorizacion, mostrarDatosResidente: false, puedeInvalidar: false);
 
             return View(vm);
+        }
+
+        // ================= Mis visitantes (para el listado inicial del formulario) =================
+        [HttpGet]
+        public async Task<IActionResult> MisVisitantes()
+        {
+            var userId = _userManager.GetUserId(User);
+
+            var resultado = await _context.Autorizaciones
+                .Where(a => a.TC_IdUsuario == userId && a.Visitante.TB_Estado)
+                .Select(a => new
+                {
+                    id = a.Visitante.TN_Id,
+                    nombre = a.Visitante.TC_Nombre,
+                    identificacion = a.Visitante.TC_Identificacion
+                })
+                .Distinct()
+                .OrderBy(v => v.nombre)
+                .ToListAsync();
+
+            return Json(resultado);
         }
     }
 }

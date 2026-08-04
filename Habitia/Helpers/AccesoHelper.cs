@@ -1,5 +1,6 @@
 ﻿using Habitia.Data;
 using Habitia.Enums;
+using Habitia.Models;
 using Habitia.Models.Acceso;
 using Habitia.ViewModels.Acceso;
 using Habitia.ViewModels.Autorizacion;
@@ -11,7 +12,7 @@ namespace Habitia.Helpers
     // y AccesosController (Seguridad/Admin).
     public static class AccesoHelper
     {
-        // Genera un código único para el QR. Reintenta por si acaso choca (extremadamente improbable).
+        // Genera un código único de autorización. Reintenta por si acaso choca (extremadamente improbable).
         public static async Task<string> GenerarCodigoUnicoAsync(ApplicationDbContext context)
         {
             string codigo;
@@ -50,17 +51,15 @@ namespace Habitia.Helpers
         // Cada resultado ya trae el par listo (IdUsuario + IdVivienda) para el registro manual (US-04, punto 2).
         public static async Task<List<object>> BuscarResidentesAsync(ApplicationDbContext context, string termino)
         {
-            if (string.IsNullOrWhiteSpace(termino) || termino.Length < 2)
-                return new List<object>();
-
-            var t = termino.Trim().ToLower();
+            var t = (termino ?? "").Trim().ToLower();
 
             var query =
                 from vu in context.ViviendaUsuarios
                 join u in context.Users on vu.TC_IdUsuario equals u.Id
                 join v in context.Viviendas on vu.TN_IdVivienda equals v.TN_Id
                 where vu.TB_ViveAhi
-                    && ((u.TC_Nombre + " " + u.TC_Apellido).ToLower().Contains(t)
+                    && (t == "" ||
+                        (u.TC_Nombre + " " + u.TC_Apellido).ToLower().Contains(t)
                         || v.TC_Numero.ToLower().Contains(t)
                         || u.TC_Identificacion.ToLower().Contains(t))
                 select new
@@ -74,25 +73,41 @@ namespace Habitia.Helpers
 
             var resultados = await query
                 .OrderBy(r => r.numeroVivienda)
-                .Take(10)
+                .Take(200)
                 .ToListAsync();
 
             return resultados.Cast<object>().ToList();
         }
 
+        // Visitantes que ya han ingresado antes a visitar a este residente (manual o con código),
+        // para mostrarlos como listado directo, sin que tenga que escribir nada (US-05, punto 2).
+        public static async Task<List<object>> ObtenerVisitantesDelResidenteAsync(ApplicationDbContext context, string idUsuario)
+        {
+            return await context.Accesos
+                .Where(a => a.TC_IdUsuario == idUsuario && a.Visitante.TB_Estado)
+                .Select(a => new
+                {
+                    id = a.Visitante.TN_Id,
+                    nombre = a.Visitante.TC_Nombre,
+                    identificacion = a.Visitante.TC_Identificacion,
+                    telefono = a.Visitante.TC_Telefono
+                })
+                .Distinct()
+                .OrderBy(v => v.nombre)
+                .Cast<object>()
+                .ToListAsync();
+        }
+
         // Búsqueda de visitantes activos por nombre o identificación, para reutilizar datos (US-05, punto 2).
         public static async Task<List<object>> BuscarVisitantesAsync(ApplicationDbContext context, string termino)
         {
-            if (string.IsNullOrWhiteSpace(termino) || termino.Length < 2)
-                return new List<object>();
-
-            var t = termino.Trim().ToLower();
+            var t = (termino ?? "").Trim().ToLower();
 
             return await context.Visitantes
                 .Where(v => v.TB_Estado &&
-                    (v.TC_Nombre.ToLower().Contains(t) || v.TC_Identificacion.ToLower().Contains(t)))
+                    (t == "" || v.TC_Nombre.ToLower().Contains(t) || v.TC_Identificacion.ToLower().Contains(t)))
                 .OrderBy(v => v.TC_Nombre)
-                .Take(10)
+                .Take(200)
                 .Select(v => new
                 {
                     id = v.TN_Id,
@@ -112,15 +127,18 @@ namespace Habitia.Helpers
                 Id = a.TN_Id,
                 NombreVisitante = a.Visitante.TC_Nombre,
                 IdentificacionVisitante = a.Visitante.TC_Identificacion,
-                NombreResidente = $"{a.Usuario.TC_Nombre} {a.Usuario.TC_Apellido}",
-                NumeroVivienda = a.Vivienda.TC_Numero,
                 Motivo = a.TC_Motivo,
                 FechaIngreso = a.TF_FechaIngreso,
                 FechaSalida = a.TF_FechaSalida,
-                OrigenAcceso = a.TN_IdAutorizacion.HasValue ? "QR" : "Manual",
+                OrigenAcceso = a.TN_IdAutorizacion.HasValue ? "Código" : "Manual",
                 PlacaVehiculo = a.Vehiculo?.TC_Placa,
                 TipoVehiculo = a.Vehiculo?.TC_Tipo,
-                ObservacionesVehiculo = a.Vehiculo?.TC_Observaciones
+                ObservacionesVehiculo = a.Vehiculo?.TC_Observaciones,
+                NombreResidente = $"{a.Usuario.TC_Nombre} {a.Usuario.TC_Apellido}",
+                NumeroVivienda = a.Vivienda.TC_Numero,
+                CorreoResidente = a.Usuario.Email,
+                TelefonoResidente = a.Usuario.TC_Telefono,
+                IdentificacionResidente = a.Usuario.TC_Identificacion
             };
         }
 
@@ -144,7 +162,10 @@ namespace Habitia.Helpers
                 Estado = a.TN_Estado,
                 PuedeInvalidar = puedeInvalidar && a.TN_Estado == EstadoAutorizacionEnum.Pendiente,
                 NombreResidente = mostrarDatosResidente ? $"{a.Usuario.TC_Nombre} {a.Usuario.TC_Apellido}" : null,
-                NumeroVivienda = mostrarDatosResidente ? a.Vivienda.TC_Numero : null
+                NumeroVivienda = mostrarDatosResidente ? a.Vivienda.TC_Numero : null,
+                CorreoResidente = mostrarDatosResidente ? a.Usuario.Email : null,
+                TelefonoResidente = mostrarDatosResidente ? a.Usuario.TC_Telefono : null,
+                IdentificacionResidente = mostrarDatosResidente ? a.Usuario.TC_Identificacion : null
             };
         }
     }

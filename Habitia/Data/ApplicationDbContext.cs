@@ -417,7 +417,8 @@ namespace Habitia.Data
             builder.Entity<THBT_CAT_EstadoCargo>().HasData(
                 new THBT_CAT_EstadoCargo { TN_Id = 1, TC_Nombre = "Pendiente" },
                 new THBT_CAT_EstadoCargo { TN_Id = 2, TC_Nombre = "En revisión" },
-                new THBT_CAT_EstadoCargo { TN_Id = 3, TC_Nombre = "Pagado" }
+                new THBT_CAT_EstadoCargo { TN_Id = 3, TC_Nombre = "Pagado" },
+                new THBT_CAT_EstadoCargo { TN_Id = 4, TC_Nombre = "Vencido" }
             );
 
             builder.Entity<THBT_CAT_MetodoPago>().HasData(

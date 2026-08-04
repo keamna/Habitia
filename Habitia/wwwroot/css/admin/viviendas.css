@@ -231,8 +231,8 @@
     padding: 0 16px;
     border: 1.5px solid #336332;
     border-radius: 10px;
-    background: #FFFFFF;
-    color: #336332;
+    background: #336332;
+    color: #FFFFFF;
     font-size: 13px;
     font-weight: 600;
     text-decoration: none;
@@ -240,11 +240,13 @@
 }
 
     .btn-registrar-vivienda:hover {
-        background: #F2FDF2;
-        color: #275126;
+        background: #275126;
+        border-color: #275126;
+        color: #FFFFFF;
     }
 
 .mi-vivienda-card {
+    background: #FFFFFF;
     border: 1.5px solid #E5E7EB;
     border-radius: 14px;
     overflow: hidden;
@@ -367,10 +369,10 @@
     justify-content: center;
     gap: 6px;
     height: 38px;
-    border: 1.5px solid #E5E7EB;
+    border: 1.5px solid #336332;
     border-radius: 10px;
-    background: #FFFFFF;
-    color: #101010;
+    background: #336332;
+    color: #FFFFFF;
     font-size: 13px;
     font-weight: 600;
     text-decoration: none;
@@ -378,9 +380,9 @@
 }
 
     .btn-editar-cupo:hover {
-        background: #F9FAFB;
-        border-color: #336332;
-        color: #336332;
+        background: #275126;
+        border-color: #275126;
+        color: #FFFFFF;
     }
 
 .mi-vivienda-vacio {
