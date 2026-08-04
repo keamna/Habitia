@@ -54,9 +54,9 @@ namespace Habitia.ViewModels.Marketplace
         public string? HoraFinAmPm { get; set; } = "AM";
 
 
+        [Required(ErrorMessage = "El contacto es obligatorio")]
         [MaxLength(100)]
-        public string? Contacto { get; set; }
-
+        public string Contacto { get; set; }
 
         public List<IFormFile>? Imagenes { get; set; }
 
