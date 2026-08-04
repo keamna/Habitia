@@ -241,3 +241,61 @@
             border-bottom-color: var(--habitia-green-active);
             background: none;
         }
+
+/* =========================
+   TABS: Incidencias / Mantenimientos
+   Mismo lenguaje visual que .ac-tabs / .habitia-nav-item
+========================= */
+
+.incidencia-tabs {
+    display: flex;
+    gap: 6px;
+    background-color: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 12px;
+    padding: 6px;
+    width: fit-content;
+}
+
+.incidencia-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 9px;
+    color: var(--habitia-text-gray);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: .2s ease;
+}
+
+    .incidencia-tab i {
+        font-size: 0.95rem;
+    }
+
+    .incidencia-tab:hover {
+        background-color: rgba(51,99,50,0.08);
+        color: var(--habitia-green-active);
+        text-decoration: none;
+    }
+
+    .incidencia-tab.active {
+        background-color: var(--habitia-green-active);
+        color: #FFFFFF;
+    }
+
+        .incidencia-tab.active i {
+            color: #FFFFFF;
+        }
+
+@media (max-width: 500px) {
+    .incidencia-tabs {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .incidencia-tab span {
+        display: none;
+    }
+}
