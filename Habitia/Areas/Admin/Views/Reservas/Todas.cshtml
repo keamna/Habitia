@@ -1,8 +1,37 @@
 ﻿@model List<Habitia.ViewModels.Reserva.ReservaViewModel>
+@using System.Text.Json
 
 @{
     ViewData["Title"] = "Todas las Reservas";
     var esAdmin = ViewBag.EsAdmin as bool? ?? false;
+
+    // Datos que consume el calendario del lado del navegador
+    var datosCalendario = Model.Select(r => new
+    {
+        id = r.Id,
+        area = r.NombreAreaComun,
+        residente = r.NombreResidente,
+        vivienda = r.NumeroVivienda,
+        fecha = r.FechaHorario.ToString("yyyy-MM-dd"),
+        horaInicio = DateTime.Today.Add(r.HoraInicio)
+            .ToString("hh:mm tt", System.Globalization.CultureInfo.GetCultureInfo("en-US")),
+        horaFin = DateTime.Today.Add(r.HoraFin)
+            .ToString("hh:mm tt", System.Globalization.CultureInfo.GetCultureInfo("en-US")),
+        motivo = r.Motivo,
+        personas = r.Cantidad,
+        estado = r.Estado.ToString(),
+        telefono = r.TelefonoResidente,
+        correo = r.CorreoResidente,
+        puedeCancelar = r.PuedeCancelar
+    }).ToList();
+
+    var jsonCalendario = JsonSerializer.Serialize(datosCalendario);
+
+    // Áreas comunes presentes en las reservas, para el filtro
+    var areas = Model.Select(r => r.NombreAreaComun)
+                     .Distinct()
+                     .OrderBy(a => a)
+                     .ToList();
 }
 
 <div class="container py-4">
@@ -12,7 +41,18 @@
         <partial name="_AreaComunTabs" />
     }
 
-    <h1 class="h3 mb-4">Reservas</h1>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <h1 class="h3 mb-0">Reservas</h1>
+
+        <div class="btn-group" role="group" aria-label="Modo de visualización">
+            <button type="button" class="btn btn-outline-success active" id="btnVistaCalendario">
+                <i class="bi bi-calendar3"></i> Calendario
+            </button>
+            <button type="button" class="btn btn-outline-success" id="btnVistaLista">
+                <i class="bi bi-list-ul"></i> Lista
+            </button>
+        </div>
+    </div>
 
     @if (TempData["Exito"] != null)
     {
@@ -24,146 +64,443 @@
         <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
     }
 
-    <div class="card shadow-sm">
-        <div class="card-header bg-white">
-            <strong>Listado completo de reservas</strong>
+    <!-- ==================== VISTA CALENDARIO ==================== -->
+    <div id="vistaCalendario">
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+
+                <div class="cal-toolbar">
+                    <div class="cal-nav">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="calAnterior"
+                                title="Mes anterior">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+
+                        <span class="cal-titulo" id="calTitulo"></span>
+
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="calSiguiente"
+                                title="Mes siguiente">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+
+                        <button type="button" class="btn btn-sm btn-outline-success ms-2" id="calHoy">
+                            Hoy
+                        </button>
+                    </div>
+
+                    <div style="min-width:230px;">
+                        <select class="form-select form-select-sm" id="calFiltroArea">
+                            <option value="">Todas las áreas comunes</option>
+                            @foreach (var area in areas)
+                            {
+                                <option value="@area">@area</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="cal-grid" id="calGrid"></div>
+
+                <div class="cal-leyenda">
+                    <span><i class="cal-punto" style="background:#336332"></i> Activa</span>
+                    <span><i class="cal-punto" style="background:#9aa89c"></i> Finalizada</span>
+                    <span><i class="cal-punto" style="background:#c53030"></i> Cancelada</span>
+                </div>
+
+            </div>
         </div>
 
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th style="width:40px;"></th>
-                        <th>Área</th>
-                        <th>Residente</th>
-                        <th>Vivienda</th>
-                        <th>Fecha</th>
-                        <th>Hora</th>
-                        <th>Motivo</th>
-                        <th>Personas</th>
-                        <th>Estado</th>
-                        @if (esAdmin)
-                        {
-                            <th class="text-end"></th>
-                        }
-                    </tr>
-                </thead>
-                <tbody>
+        <!-- Detalle del día seleccionado -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <strong id="calDetalleTitulo">Seleccione un día del calendario</strong>
+            </div>
+            <div class="card-body" id="calDetalle">
+                <div class="cal-detalle-vacio">
+                    <i class="bi bi-calendar-week" style="font-size:2rem;"></i>
+                    <p class="mt-3 mb-0">Haga clic en cualquier día para ver sus reservas.</p>
+                </div>
+            </div>
+        </div>
 
-                    @if (!Model.Any())
-                    {
+    </div>
+
+    <!-- ==================== VISTA LISTA ==================== -->
+    <div id="vistaLista" style="display:none;">
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <strong>Listado completo de reservas</strong>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <td colspan="@(esAdmin ? 10 : 9)" class="text-center text-secondary py-4">
-                                No hay reservas registradas.
-                            </td>
+                            <th style="width:40px;"></th>
+                            <th>Área</th>
+                            <th>Residente</th>
+                            <th>Vivienda</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Motivo</th>
+                            <th>Personas</th>
+                            <th>Estado</th>
+                            @if (esAdmin)
+                            {
+                                <th class="text-end"></th>
+                            }
                         </tr>
-                    }
-                    else
-                    {
-                        foreach (var r in Model)
+                    </thead>
+                    <tbody>
+
+                        @if (!Model.Any())
                         {
-                            var collapseId = "detalle-residente-" + r.Id;
-
                             <tr>
-                                <td>
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-secondary"
-                                            data-bs-toggle="collapse"
-                                            data-bs-target="#@collapseId"
-                                            aria-expanded="false"
-                                            aria-controls="@collapseId"
-                                            title="Ver datos del residente">
-                                        <i class="bi bi-chevron-down"></i>
-                                    </button>
+                                <td colspan="@(esAdmin ? 10 : 9)" class="text-center text-secondary py-4">
+                                    No hay reservas registradas.
                                 </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var r in Model)
+                            {
+                                var collapseId = "detalle-residente-" + r.Id;
 
-                                <td>@r.NombreAreaComun</td>
-                                <td>@r.NombreResidente</td>
-                                <td>@r.NumeroVivienda</td>
-                                <td>@r.FechaHorario.ToString("dd/MM/yyyy")</td>
-                                <td>
-                                    @DateTime.Today.Add(r.HoraInicio).ToString("hh:mm tt") -
-                                    @DateTime.Today.Add(r.HoraFin).ToString("hh:mm tt")
-                                </td>
-                                <td class="reserva-motivo-col">@r.Motivo</td>
-                                <td>@r.Cantidad</td>
-                                <td>
-                                    @switch (r.Estado)
-                                    {
-                                        case Habitia.Enums.EstadoReservaEnum.Activa:
-                                            <span class="badge text-bg-success">Activa</span>
-                                            break;
-                                        case Habitia.Enums.EstadoReservaEnum.Finalizada:
-                                            <span class="badge text-bg-secondary">Finalizada</span>
-                                            break;
-                                        case Habitia.Enums.EstadoReservaEnum.Cancelada:
-                                            <span class="badge text-bg-danger">Cancelada</span>
-                                            break;
-                                    }
-                                </td>
-                                @if (esAdmin)
-                                {
-                                    <td class="text-end">
-                                        @if (r.PuedeCancelar)
+                                <tr>
+                                    <td>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-secondary"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#@collapseId"
+                                                aria-expanded="false"
+                                                aria-controls="@collapseId"
+                                                title="Ver datos del residente">
+                                            <i class="bi bi-chevron-down"></i>
+                                        </button>
+                                    </td>
+
+                                    <td>@r.NombreAreaComun</td>
+                                    <td>@r.NombreResidente</td>
+                                    <td>@r.NumeroVivienda</td>
+                                    <td>@r.FechaHorario.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        @DateTime.Today.Add(r.HoraInicio).ToString("hh:mm tt") -
+                                        @DateTime.Today.Add(r.HoraFin).ToString("hh:mm tt")
+                                    </td>
+                                    <td class="reserva-motivo-col">@r.Motivo</td>
+                                    <td>@r.Cantidad</td>
+                                    <td>
+                                        @switch (r.Estado)
                                         {
-                                            <form asp-controller="Reservas"
-                                                  asp-action="CancelarAdmin"
-                                                  method="post"
-                                                  class="form-cancelar-reserva d-inline">
-
-                                                @Html.AntiForgeryToken()
-
-                                                <input type="hidden" name="id" value="@r.Id" />
-
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                    Cancelar
-                                                </button>
-                                            </form>
+                                            case Habitia.Enums.EstadoReservaEnum.Activa:
+                                                <span class="badge text-bg-success">Activa</span>
+                                                break;
+                                            case Habitia.Enums.EstadoReservaEnum.Finalizada:
+                                                <span class="badge text-bg-secondary">Finalizada</span>
+                                                break;
+                                            case Habitia.Enums.EstadoReservaEnum.Cancelada:
+                                                <span class="badge text-bg-danger">Cancelada</span>
+                                                break;
                                         }
                                     </td>
-                                }
-                            </tr>
+                                    @if (esAdmin)
+                                    {
+                                        <td class="text-end">
+                                            @if (r.PuedeCancelar)
+                                            {
+                                                <form asp-controller="Reservas"
+                                                      asp-action="CancelarAdmin"
+                                                      method="post"
+                                                      class="form-cancelar-reserva d-inline">
 
-                            <tr class="collapse" id="@collapseId">
-                                <td colspan="@(esAdmin ? 10 : 9)" class="bg-light">
-                                    <div class="row g-3 py-2 px-2">
-                                        <div class="col-6 col-md-3">
-                                            <div class="text-secondary small">Correo</div>
-                                            <div>@(string.IsNullOrWhiteSpace(r.CorreoResidente) ? "—" : r.CorreoResidente)</div>
+                                                    @Html.AntiForgeryToken()
+
+                                                    <input type="hidden" name="id" value="@r.Id" />
+
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        Cancelar
+                                                    </button>
+                                                </form>
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+
+                                <tr class="collapse" id="@collapseId">
+                                    <td colspan="@(esAdmin ? 10 : 9)" class="bg-light">
+                                        <div class="row g-3 py-2 px-2">
+                                            <div class="col-6 col-md-3">
+                                                <div class="text-secondary small">Correo</div>
+                                                <div>@(string.IsNullOrWhiteSpace(r.CorreoResidente) ? "—" : r.CorreoResidente)</div>
+                                            </div>
+                                            <div class="col-6 col-md-3">
+                                                <div class="text-secondary small">Teléfono</div>
+                                                <div>@(string.IsNullOrWhiteSpace(r.TelefonoResidente) ? "—" : r.TelefonoResidente)</div>
+                                            </div>
+                                            <div class="col-6 col-md-3">
+                                                <div class="text-secondary small">Identificación</div>
+                                                <div>@(string.IsNullOrWhiteSpace(r.IdentificacionResidente) ? "—" : r.IdentificacionResidente)</div>
+                                            </div>
+                                            <div class="col-6 col-md-3">
+                                                <div class="text-secondary small">Tipo de vivienda</div>
+                                                <div>@(string.IsNullOrWhiteSpace(r.TipoVivienda) ? "—" : r.TipoVivienda)</div>
+                                            </div>
                                         </div>
-                                        <div class="col-6 col-md-3">
-                                            <div class="text-secondary small">Teléfono</div>
-                                            <div>@(string.IsNullOrWhiteSpace(r.TelefonoResidente) ? "—" : r.TelefonoResidente)</div>
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <div class="text-secondary small">Identificación</div>
-                                            <div>@(string.IsNullOrWhiteSpace(r.IdentificacionResidente) ? "—" : r.IdentificacionResidente)</div>
-                                        </div>
-                                        <div class="col-6 col-md-3">
-                                            <div class="text-secondary small">Tipo de vivienda</div>
-                                            <div>@(string.IsNullOrWhiteSpace(r.TipoVivienda) ? "—" : r.TipoVivienda)</div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
+                                    </td>
+                                </tr>
+                            }
                         }
-                    }
 
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
+
     </div>
 
 </div>
 
 @section Scripts {
     <script>
-        // Gira el ícono de la flecha al expandir/contraer cada fila de detalle
-        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(btn => {
-            var targetId = btn.getAttribute('data-bs-target');
-            var target = document.querySelector(targetId);
-            if (!target) return;
+        // ===== Datos =====
+        const RESERVAS = @Html.Raw(jsonCalendario);
+        const ES_ADMIN = @(esAdmin ? "true" : "false");
+        const TOKEN = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
 
+        const MESES = ['enero','febrero','marzo','abril','mayo','junio',
+                       'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+        const DIAS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+        let hoy = new Date();
+        let anio = hoy.getFullYear();
+        let mes = hoy.getMonth();
+        let diaSeleccionado = null;
+        let filtroArea = '';
+
+        // ===== Utilidades =====
+        function aISO(y, m, d) {
+            return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        }
+
+        function reservasDe(iso) {
+            return RESERVAS.filter(r =>
+                r.fecha === iso && (filtroArea === '' || r.area === filtroArea));
+        }
+
+        function claseEstado(estado) {
+            if (estado === 'Activa') return 'activa';
+            if (estado === 'Finalizada') return 'finalizada';
+            return 'cancelada';
+        }
+
+        function badgeEstado(estado) {
+            if (estado === 'Activa') return '<span class="badge text-bg-success">Activa</span>';
+            if (estado === 'Finalizada') return '<span class="badge text-bg-secondary">Finalizada</span>';
+            return '<span class="badge text-bg-danger">Cancelada</span>';
+        }
+
+        function escapar(t) {
+            if (t === null || t === undefined) return '';
+            return String(t)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function bajarAlDetalle() {
+            document.getElementById('calDetalleTitulo')
+                .scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // ===== Render del calendario =====
+        function render() {
+            document.getElementById('calTitulo').textContent = MESES[mes] + ' ' + anio;
+
+            const grid = document.getElementById('calGrid');
+            grid.innerHTML = '';
+
+            DIAS.forEach(d => {
+                const c = document.createElement('div');
+                c.className = 'cal-encabezado';
+                c.textContent = d;
+                grid.appendChild(c);
+            });
+
+            // Lunes como primer día de la semana
+            const primerDia = new Date(anio, mes, 1).getDay();
+            const offset = (primerDia + 6) % 7;
+            const diasMes = new Date(anio, mes + 1, 0).getDate();
+            const diasMesAnterior = new Date(anio, mes, 0).getDate();
+
+            const ahora = new Date();
+            const isoHoy = aISO(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+
+            const celdas = [];
+
+            for (let i = offset - 1; i >= 0; i--) {
+                celdas.push({
+                    dia: diasMesAnterior - i,
+                    otroMes: true,
+                    y: mes === 0 ? anio - 1 : anio,
+                    m: mes === 0 ? 11 : mes - 1
+                });
+            }
+
+            for (let d = 1; d <= diasMes; d++) {
+                celdas.push({ dia: d, otroMes: false, y: anio, m: mes });
+            }
+
+            while (celdas.length % 7 !== 0) {
+                const d = celdas.length - offset - diasMes + 1;
+                celdas.push({
+                    dia: d,
+                    otroMes: true,
+                    y: mes === 11 ? anio + 1 : anio,
+                    m: mes === 11 ? 0 : mes + 1
+                });
+            }
+
+            celdas.forEach(c => {
+                const iso = aISO(c.y, c.m, c.dia);
+                const items = reservasDe(iso);
+
+                const div = document.createElement('div');
+                div.className = 'cal-dia' + (c.otroMes ? ' otro-mes' : '');
+                if (iso === isoHoy) div.classList.add('hoy');
+                if (iso === diaSeleccionado) div.classList.add('seleccionado');
+                div.dataset.iso = iso;
+
+                let html = '<div class="cal-numero">' + c.dia + '</div>';
+
+                items.slice(0, 3).forEach(r => {
+                    html += '<div class="cal-chip ' + claseEstado(r.estado) + '" title="'
+                          + escapar(r.area + ' · ' + r.residente) + '">'
+                          + r.horaInicio + ' ' + escapar(r.area) + '</div>';
+                });
+
+                if (items.length > 3) {
+                    html += '<div class="cal-mas">+' + (items.length - 3) + ' más</div>';
+                }
+
+                div.innerHTML = html;
+                div.addEventListener('click', () => seleccionarDia(iso));
+                grid.appendChild(div);
+            });
+        }
+
+        // ===== Detalle del día =====
+        function seleccionarDia(iso) {
+            diaSeleccionado = iso;
+            render();
+
+            const partes = iso.split('-');
+            const fechaTexto = partes[2] + ' de ' + MESES[parseInt(partes[1]) - 1] + ' de ' + partes[0];
+            document.getElementById('calDetalleTitulo').textContent = 'Reservas del ' + fechaTexto;
+
+            const items = reservasDe(iso);
+            const cont = document.getElementById('calDetalle');
+
+            if (items.length === 0) {
+                cont.innerHTML = '<div class="cal-detalle-vacio">'
+                    + '<i class="bi bi-calendar-x" style="font-size:2rem;"></i>'
+                    + '<p class="mt-3 mb-0">No hay reservas para este día.</p></div>';
+
+                bajarAlDetalle();
+                return;
+            }
+
+            let html = '<div class="table-responsive"><table class="table align-middle mb-0">'
+                + '<thead class="table-light"><tr>'
+                + '<th>Hora</th><th>Área</th><th>Residente</th><th>Vivienda</th>'
+                + '<th>Contacto</th><th>Motivo</th><th>Personas</th><th>Estado</th>'
+                + (ES_ADMIN ? '<th class="text-end"></th>' : '')
+                + '</tr></thead><tbody>';
+
+            items.sort((a, b) => a.horaInicio.localeCompare(b.horaInicio));
+
+            items.forEach(r => {
+                html += '<tr>'
+                    + '<td class="text-nowrap">' + r.horaInicio + ' - ' + r.horaFin + '</td>'
+                    + '<td>' + escapar(r.area) + '</td>'
+                    + '<td class="fw-semibold">' + escapar(r.residente) + '</td>'
+                    + '<td>' + escapar(r.vivienda) + '</td>'
+                    + '<td class="small">'
+                        + (r.correo ? escapar(r.correo) + '<br>' : '')
+                        + (r.telefono ? '<span class="text-secondary">' + escapar(r.telefono) + '</span>' : '')
+                    + '</td>'
+                    + '<td class="reserva-motivo-col">' + escapar(r.motivo) + '</td>'
+                    + '<td>' + r.personas + '</td>'
+                    + '<td>' + badgeEstado(r.estado) + '</td>';
+
+                if (ES_ADMIN) {
+                    html += '<td class="text-end">';
+                    if (r.puedeCancelar) {
+                        html += '<form method="post" action="/Admin/Reservas/CancelarAdmin" '
+                              + 'class="form-cancelar-reserva d-inline">'
+                              + '<input type="hidden" name="__RequestVerificationToken" value="' + TOKEN + '" />'
+                              + '<input type="hidden" name="id" value="' + r.id + '" />'
+                              + '<button type="submit" class="btn btn-sm btn-outline-danger">Cancelar</button>'
+                              + '</form>';
+                    }
+                    html += '</td>';
+                }
+
+                html += '</tr>';
+            });
+
+            html += '</tbody></table></div>';
+            cont.innerHTML = html;
+
+            cont.querySelectorAll('.form-cancelar-reserva').forEach(f => {
+                f.addEventListener('submit', e => {
+                    if (!confirm('¿Está seguro de cancelar esta reserva?')) e.preventDefault();
+                });
+            });
+
+            bajarAlDetalle();
+        }
+
+        // ===== Eventos =====
+        document.getElementById('calAnterior').addEventListener('click', () => {
+            mes--; if (mes < 0) { mes = 11; anio--; } render();
+        });
+
+        document.getElementById('calSiguiente').addEventListener('click', () => {
+            mes++; if (mes > 11) { mes = 0; anio++; } render();
+        });
+
+        document.getElementById('calHoy').addEventListener('click', () => {
+            const n = new Date();
+            anio = n.getFullYear(); mes = n.getMonth();
+            seleccionarDia(aISO(anio, mes, n.getDate()));
+        });
+
+        document.getElementById('calFiltroArea').addEventListener('change', e => {
+            filtroArea = e.target.value;
+            render();
+            if (diaSeleccionado) seleccionarDia(diaSeleccionado);
+        });
+
+        document.getElementById('btnVistaCalendario').addEventListener('click', () => {
+            document.getElementById('vistaCalendario').style.display = '';
+            document.getElementById('vistaLista').style.display = 'none';
+            document.getElementById('btnVistaCalendario').classList.add('active');
+            document.getElementById('btnVistaLista').classList.remove('active');
+        });
+
+        document.getElementById('btnVistaLista').addEventListener('click', () => {
+            document.getElementById('vistaCalendario').style.display = 'none';
+            document.getElementById('vistaLista').style.display = '';
+            document.getElementById('btnVistaLista').classList.add('active');
+            document.getElementById('btnVistaCalendario').classList.remove('active');
+        });
+
+        // Detalle de residente en la vista de lista
+        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(btn => {
+            const target = document.querySelector(btn.getAttribute('data-bs-target'));
+            if (!target) return;
             target.addEventListener('show.bs.collapse', () => {
                 btn.querySelector('i').classList.replace('bi-chevron-down', 'bi-chevron-up');
             });
@@ -172,13 +509,13 @@
             });
         });
 
-        document.querySelectorAll('.form-cancelar-reserva')
-            .forEach(form => {
-                form.addEventListener('submit', e => {
-                    if (!confirm('¿Está seguro de cancelar esta reserva?')) {
-                        e.preventDefault();
-                    }
-                });
+        document.querySelectorAll('#vistaLista .form-cancelar-reserva').forEach(form => {
+            form.addEventListener('submit', e => {
+                if (!confirm('¿Está seguro de cancelar esta reserva?')) e.preventDefault();
             });
+        });
+
+        // ===== Inicio =====
+        render();
     </script>
 }

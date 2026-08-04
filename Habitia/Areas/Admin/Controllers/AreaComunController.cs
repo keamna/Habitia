@@ -65,7 +65,6 @@ namespace Habitia.Areas.Admin.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.Tipos = new SelectList(_context.TiposArea, "Id", "Nombre", vm.IdTipo);
-                return View(vm);
             }
 
 
@@ -114,7 +113,7 @@ namespace Habitia.Areas.Admin.Controllers
 
 
 
-            ViewBag.Tipos = new SelectList(_context.TiposArea, "Id", "TC_Nombre", area.TN_IdTipo);
+            ViewBag.Tipos = new SelectList(_context.TiposArea, "Id", "Nombre", area.TN_IdTipo);
 
 
 
