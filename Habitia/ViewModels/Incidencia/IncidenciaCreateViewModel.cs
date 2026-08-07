@@ -17,8 +17,8 @@ namespace Habitia.ViewModels.Incidencias
         [Display(Name = "Descripción")]
         public string Descripcion { get; set; }
 
-        [Required(ErrorMessage = "Debe indicar el tipo de ubicación.")]
-        [Display(Name = "Tipo de ubicación")]
+        // Ya no lo elige el usuario: el servicio lo calcula a partir de Responsabilidad
+        // (Privado -> Vivienda, Comun -> AreaComun, Mixto -> Mixto).
         public TipoIncidenciaEnum Tipo { get; set; }
 
         [Display(Name = "Vivienda")]
@@ -27,10 +27,9 @@ namespace Habitia.ViewModels.Incidencias
         [Display(Name = "Área común")]
         public int? IdAreaComun { get; set; }
 
-        // Ahora se elige al reportar, no lo clasifica el Admin después
         [Required(ErrorMessage = "Debe indicar el tipo de responsabilidad.")]
         [Display(Name = "Tipo de responsabilidad")]
-        public ResponsabilidadEnum Responsabilidad { get; set; }
+        public ResponsabilidadEnum? Responsabilidad { get; set; }
 
         [Display(Name = "Evidencia (imagen)")]
         public IFormFile? Evidencia { get; set; }
@@ -41,25 +40,46 @@ namespace Habitia.ViewModels.Incidencias
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (Tipo == TipoIncidenciaEnum.Vivienda && IdVivienda == null)
+            switch (Responsabilidad)
             {
-                yield return new ValidationResult(
-                    "Debe completar todos los campos obligatorios.",
-                    new[] { nameof(IdVivienda) });
-            }
+                case ResponsabilidadEnum.Privado:
+                    if (IdVivienda == null)
+                    {
+                        yield return new ValidationResult(
+                            "Debe seleccionar la vivienda.",
+                            new[] { nameof(IdVivienda) });
+                    }
+                    break;
 
-            if (Tipo == TipoIncidenciaEnum.AreaComun && IdAreaComun == null)
-            {
-                yield return new ValidationResult(
-                    "Debe completar todos los campos obligatorios.",
-                    new[] { nameof(IdAreaComun) });
+                case ResponsabilidadEnum.Comun:
+                    if (IdAreaComun == null)
+                    {
+                        yield return new ValidationResult(
+                            "Debe seleccionar el área común.",
+                            new[] { nameof(IdAreaComun) });
+                    }
+                    break;
+
+                case ResponsabilidadEnum.Mixto:
+                    if (IdVivienda == null)
+                    {
+                        yield return new ValidationResult(
+                            "Debe seleccionar la vivienda.",
+                            new[] { nameof(IdVivienda) });
+                    }
+                    if (IdAreaComun == null)
+                    {
+                        yield return new ValidationResult(
+                            "Debe seleccionar el área común.",
+                            new[] { nameof(IdAreaComun) });
+                    }
+                    break;
             }
 
             if (Evidencia != null)
             {
                 var extensionesPermitidas = new[] { ".jpg", ".jpeg", ".png" };
                 var extension = Path.GetExtension(Evidencia.FileName).ToLowerInvariant();
-
                 if (!extensionesPermitidas.Contains(extension))
                 {
                     yield return new ValidationResult(

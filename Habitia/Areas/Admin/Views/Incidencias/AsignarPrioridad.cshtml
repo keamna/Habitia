@@ -3,45 +3,85 @@
     ViewData["Title"] = "Asignar Prioridad";
 }
 
-<h2>Asignar Prioridad</h2>
+<div class="prioridad-wrapper">
+    <a asp-action="Index" class="detalle-volver mb-2 d-inline-flex">
+        <i class="bi bi-arrow-left"></i> Volver a incidencias
+    </a>
+    <h2 class="mb-3">Asignar Prioridad</h2>
 
-<div class="card mb-3">
-    <div class="card-body">
-        <h5 class="card-title">@Model.Titulo</h5>
-        <p class="card-text">@Model.Descripcion</p>
-        <p class="text-muted mb-1">
+    <div class="incidencia-contexto mb-4">
+        <h5 class="card-title mb-1">@Model.Titulo</h5>
+        <p class="mb-2">@Model.Descripcion</p>
+        <p class="text-muted mb-2" style="font-size: 12.5px;">
             Reportado por <strong>@Model.NombreUsuarioReporta</strong>
             el @Model.FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")
         </p>
-        <p class="mb-0">
-            <span class="badge bg-secondary">@Model.Responsabilidad</span>
-        </p>
+        <span class="pill-responsabilidad @(Model.Responsabilidad switch {
+            Habitia.Enums.ResponsabilidadEnum.Privado => "pill-privado",
+            Habitia.Enums.ResponsabilidadEnum.Comun => "pill-comun",
+            Habitia.Enums.ResponsabilidadEnum.Mixto => "pill-mixto",
+            _ => "pill-sin-clasificar"
+        })">
+            @Model.Responsabilidad
+        </span>
     </div>
+
+    <form asp-action="AsignarPrioridad" method="post" class="incidencia-form-card">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="Titulo" />
+        <input type="hidden" asp-for="Descripcion" />
+        <input type="hidden" asp-for="NombreUsuarioReporta" />
+        <input type="hidden" asp-for="FechaRegistro" />
+        <input type="hidden" asp-for="Responsabilidad" />
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+        <label class="form-label d-block mb-2">¿Qué tan urgente es esta incidencia?</label>
+
+        <div class="prioridad-cards mb-2">
+            <label class="prioridad-card" data-nivel="baja">
+                <input type="radio" asp-for="Prioridad" value="Baja" />
+                <div class="prioridad-icon"><i class="bi bi-arrow-down-circle"></i></div>
+                <strong>Baja</strong>
+                <span>Puede esperar</span>
+            </label>
+
+            <label class="prioridad-card" data-nivel="media">
+                <input type="radio" asp-for="Prioridad" value="Media" />
+                <div class="prioridad-icon"><i class="bi bi-dash-circle"></i></div>
+                <strong>Media</strong>
+                <span>Atender pronto</span>
+            </label>
+
+            <label class="prioridad-card" data-nivel="alta">
+                <input type="radio" asp-for="Prioridad" value="Alta" />
+                <div class="prioridad-icon"><i class="bi bi-exclamation-circle"></i></div>
+                <strong>Alta</strong>
+                <span>Requiere atención inmediata</span>
+            </label>
+        </div>
+        <span asp-validation-for="Prioridad" class="text-danger d-block mb-3"></span>
+
+        <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-primary">Asignar Prioridad</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
 </div>
-
-<form asp-action="AsignarPrioridad" method="post">
-    <input type="hidden" asp-for="Id" />
-    <input type="hidden" asp-for="Titulo" />
-    <input type="hidden" asp-for="Descripcion" />
-    <input type="hidden" asp-for="NombreUsuarioReporta" />
-    <input type="hidden" asp-for="FechaRegistro" />
-    <input type="hidden" asp-for="Responsabilidad" />
-
-    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-
-    <div class="mb-3">
-        <label asp-for="Prioridad" class="form-label"></label>
-        <select asp-for="Prioridad" class="form-select"
-                asp-items="Html.GetEnumSelectList<Habitia.Enums.PrioridadEnum>()">
-            <option value="">-- Seleccione --</option>
-        </select>
-        <span asp-validation-for="Prioridad" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Asignar Prioridad</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-</form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function actualizarSeleccionPrioridad() {
+            document.querySelectorAll('.prioridad-card').forEach(card => {
+                card.classList.toggle('selected', card.querySelector('input').checked);
+            });
+        }
+
+        document.querySelectorAll('.prioridad-card input').forEach(input => {
+            input.addEventListener('change', actualizarSeleccionPrioridad);
+        });
+
+        document.addEventListener('DOMContentLoaded', actualizarSeleccionPrioridad);
+    </script>
 }

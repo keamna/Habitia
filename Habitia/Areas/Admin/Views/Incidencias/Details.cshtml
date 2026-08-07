@@ -1,11 +1,34 @@
 ﻿@model Habitia.Models.Incidencia
 @{
     ViewData["Title"] = "Detalle de Incidencia";
+
+    string ClasePillResponsabilidad(Habitia.Enums.ResponsabilidadEnum r) => r switch
+    {
+        Habitia.Enums.ResponsabilidadEnum.Privado => "pill-privado",
+        Habitia.Enums.ResponsabilidadEnum.Comun => "pill-comun",
+        Habitia.Enums.ResponsabilidadEnum.Mixto => "pill-mixto",
+        _ => "pill-sin-clasificar"
+    };
+
+    string ClaseBadgePrioridad(Habitia.Enums.PrioridadEnum p) => p switch
+    {
+        Habitia.Enums.PrioridadEnum.Alta => "badge-prioridad-alta",
+        Habitia.Enums.PrioridadEnum.Media => "badge-prioridad-media",
+        Habitia.Enums.PrioridadEnum.Baja => "badge-prioridad-baja",
+        _ => "badge-prioridad-baja"
+    };
+
+    var pasos = new[] { Habitia.Enums.EstadoIncidenciaEnum.Pendiente, Habitia.Enums.EstadoIncidenciaEnum.EnProceso, Habitia.Enums.EstadoIncidenciaEnum.Resuelta };
+    var indiceActual = Array.IndexOf(pasos, Model.TN_Estado);
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Detalle de Incidencia</h2>
-    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+<div class="detalle-header d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a asp-action="Index" class="detalle-volver">
+            <i class="bi bi-arrow-left"></i> Volver a incidencias
+        </a>
+        <h2 class="mb-0 mt-1">Detalle de Incidencia</h2>
+    </div>
 </div>
 
 @if (TempData["Success"] != null)
@@ -17,166 +40,217 @@
     <div class="alert alert-danger">@TempData["Error"]</div>
 }
 
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-            <h5 class="card-title mb-0">@Model.TC_Titulo</h5>
-            <span class="badge @(Model.TN_Estado switch {
-                Habitia.Enums.EstadoIncidenciaEnum.Pendiente => "bg-warning text-dark",
-                Habitia.Enums.EstadoIncidenciaEnum.EnProceso => "bg-info text-dark",
-                Habitia.Enums.EstadoIncidenciaEnum.Resuelta => "bg-success",
-                _ => "bg-secondary"
-            })">
-                @Model.TN_Estado
-            </span>
-        </div>
+<div class="detalle-layout">
 
-        <p class="card-text">@Model.TC_Descripcion</p>
+    <div>
+        <div class="incidencia-contexto mb-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                <h5 class="mb-0">@Model.TC_Titulo</h5>
+            </div>
 
-        <dl class="row mb-0">
-            <dt class="col-sm-3">Reportado por</dt>
-            <dd class="col-sm-9">@Model.Usuario?.UserName</dd>
+            <p class="mb-2">@Model.TC_Descripcion</p>
 
-            <dt class="col-sm-3">Fecha de registro</dt>
-            <dd class="col-sm-9">@Model.TF_FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</dd>
-
-            <dt class="col-sm-3">Ubicación</dt>
-            <dd class="col-sm-9">
-                @if (Model.TN_Tipo == Habitia.Enums.TipoIncidenciaEnum.Vivienda)
+            @* ── Línea de tiempo de estado ── *@
+            <div class="estado-timeline">
+                @for (int i = 0; i < pasos.Length; i++)
                 {
-                    <text>Vivienda: @(Model.Vivienda?.TC_Numero ?? "N/D")</text>
+                    var clase = i < indiceActual ? "completado" : (i == indiceActual ? "actual" : "");
+                    <div class="estado-timeline-step @clase">
+                        <div class="linea"></div>
+                        <div class="dot"></div>
+                        <div class="label">@pasos[i]</div>
+                    </div>
                 }
-                else
-                {
-                    <text>Área común: @(Model.AreaComun?.TC_Nombre ?? "N/D")</text>
-                }
-            </dd>
+            </div>
 
-            <dt class="col-sm-3">Responsabilidad</dt>
-            <dd class="col-sm-9">
-                <span class="badge bg-secondary">@Model.TN_Responsabilidad</span>
-            </dd>
+            <div class="incidencia-meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">Reportado por</span>
+                    <span class="meta-valor">@(Model.Usuario != null ? $"{Model.Usuario.TC_Nombre} {Model.Usuario.TC_Apellido}" : "N/D")</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Identificación</span>
+                    <span class="meta-valor">@(Model.Usuario?.TC_Identificacion ?? "N/D")</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Teléfono</span>
+                    <span class="meta-valor">@(Model.Usuario?.TC_Telefono ?? "N/D")</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Correo</span>
+                    <span class="meta-valor">@(Model.Usuario?.Email ?? "N/D")</span>
+                </div>
 
-            <dt class="col-sm-3">Prioridad</dt>
-            <dd class="col-sm-9">
-                @if (Model.TN_Prioridad.HasValue)
-                {
-                    <span class="badge @(Model.TN_Prioridad switch {
-                        Habitia.Enums.PrioridadEnum.Alta => "bg-danger",
-                        Habitia.Enums.PrioridadEnum.Media => "bg-warning text-dark",
-                        Habitia.Enums.PrioridadEnum.Baja => "bg-secondary",
-                        _ => "bg-secondary"
-                    })">
-                        @Model.TN_Prioridad
+                <div class="meta-item">
+                    <span class="meta-label">Fecha de registro</span>
+                    <span class="meta-valor">@Model.TF_FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-label">Responsabilidad</span>
+                    <span class="pill-responsabilidad @ClasePillResponsabilidad(Model.TN_Responsabilidad)">
+                        @Model.TN_Responsabilidad
                     </span>
-                }
-                else
+                </div>
+
+                @if (Model.TF_FechaResolucion.HasValue)
                 {
-                    <span class="text-muted">Sin asignar</span>
-                    <a asp-action="AsignarPrioridad" asp-route-id="@Model.TN_Id" class="btn btn-sm btn-warning ms-2">
-                        Asignar prioridad
-                    </a>
+                    <div class="meta-item">
+                        <span class="meta-label">Fecha de resolución</span>
+                        <span class="meta-valor">@Model.TF_FechaResolucion.Value.ToString("dd/MM/yyyy hh:mm tt")</span>
+                    </div>
                 }
-            </dd>
+            </div>
 
-            @if (!string.IsNullOrEmpty(Model.TC_ImagenUrl))
-            {
-                <dt class="col-sm-3">Evidencia</dt>
-                <dd class="col-sm-9">
-                    <a href="@Model.TC_ImagenUrl" target="_blank">
-                        <img src="@Model.TC_ImagenUrl" alt="Evidencia" class="img-thumbnail" style="max-width: 220px;" />
-                    </a>
-                </dd>
-            }
-
-            @if (Model.TF_FechaResolucion.HasValue)
-            {
-                <dt class="col-sm-3">Fecha de resolución</dt>
-                <dd class="col-sm-9">@Model.TF_FechaResolucion.Value.ToString("dd/MM/yyyy hh:mm tt")</dd>
-            }
-        </dl>
-    </div>
-</div>
-
-@* ── Tarea de mantenimiento embebida ── *@
-@if (Model.Mantenimiento != null)
-{
-    var m = Model.Mantenimiento;
-
-    <div class="card mb-4 border-primary">
-        <div class="card-header bg-primary bg-opacity-10 d-flex justify-content-between align-items-center">
-            <strong>Tarea de Mantenimiento</strong>
-            <span class="badge @(m.TN_Estado switch {
-                Habitia.Enums.EstadoMantenimientoEnum.Programado => "bg-secondary",
-                Habitia.Enums.EstadoMantenimientoEnum.EnProceso => "bg-info text-dark",
-                Habitia.Enums.EstadoMantenimientoEnum.Completado => "bg-success",
-                Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "bg-danger",
-                _ => "bg-secondary"
-            })">
-                @m.TN_Estado
-            </span>
+            <div class="ubicacion-detalle mt-3">
+                <span class="meta-label d-block mb-2">Ubicación</span>
+                <div class="ubicacion-chips">
+                    @if (Model.TN_Tipo == Habitia.Enums.TipoIncidenciaEnum.Vivienda || Model.TN_Tipo == Habitia.Enums.TipoIncidenciaEnum.Mixto)
+                    {
+                        <span class="ubicacion-chip">
+                            <i class="bi bi-house-door"></i> Vivienda: @(Model.Vivienda?.TC_Numero ?? "N/D")
+                        </span>
+                    }
+                    @if (Model.TN_Tipo == Habitia.Enums.TipoIncidenciaEnum.AreaComun || Model.TN_Tipo == Habitia.Enums.TipoIncidenciaEnum.Mixto)
+                    {
+                        <span class="ubicacion-chip">
+                            <i class="bi bi-buildings"></i> Área común: @(Model.AreaComun?.TC_Nombre ?? "N/D")
+                        </span>
+                    }
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <dl class="row mb-0">
-                <dt class="col-sm-3">Descripción</dt>
-                <dd class="col-sm-9">@m.TC_Descripcion</dd>
 
-                <dt class="col-sm-3">Tipo de mantenimiento</dt>
-                <dd class="col-sm-9">@m.Tipo?.TC_Nombre</dd>
+        @* ── Tarea de mantenimiento embebida ── *@
+        @if (Model.Mantenimiento != null)
+        {
+            var m = Model.Mantenimiento;
 
-                <dt class="col-sm-3">Personal asignado</dt>
-                <dd class="col-sm-9">@m.PersonalAsignado?.UserName</dd>
+            <div class="incidencia-contexto mantenimiento-embebido mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0"><i class="bi bi-tools me-2"></i>Tarea de Mantenimiento</h5>
+                    <span class="badge-estado @(m.TN_Estado switch {
+                        Habitia.Enums.EstadoMantenimientoEnum.Programado => "badge-estado-default",
+                        Habitia.Enums.EstadoMantenimientoEnum.EnProceso => "badge-estado-proceso",
+                        Habitia.Enums.EstadoMantenimientoEnum.Completado => "badge-estado-resuelta",
+                        Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "badge-estado-cancelado",
+                        _ => "badge-estado-default"
+                    })">
+                        @m.TN_Estado
+                    </span>
+                </div>
 
-                <dt class="col-sm-3">Fecha de creación</dt>
-                <dd class="col-sm-9">@m.TF_FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</dd>
+                <div class="incidencia-meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-label">Tipo de mantenimiento</span>
+                        <span class="meta-valor">@(m.Tipo?.TC_Nombre ?? "N/D")</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Personal asignado</span>
+                        <span class="meta-valor">@(m.PersonalAsignado != null ? $"{m.PersonalAsignado.TC_Nombre} {m.PersonalAsignado.TC_Apellido}" : "N/D")</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Identificación</span>
+                        <span class="meta-valor">@(m.PersonalAsignado?.TC_Identificacion ?? "N/D")</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Teléfono</span>
+                        <span class="meta-valor">@(m.PersonalAsignado?.TC_Telefono ?? "N/D")</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Correo</span>
+                        <span class="meta-valor">@(m.PersonalAsignado?.Email ?? "N/D")</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Fecha de creación</span>
+                        <span class="meta-valor">@m.TF_FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</span>
+                    </div>
+                    @if (m.TF_FechaFin.HasValue)
+                    {
+                        <div class="meta-item">
+                            <span class="meta-label">Fecha de finalización</span>
+                            <span class="meta-valor">@m.TF_FechaFin.Value.ToString("dd/MM/yyyy hh:mm tt")</span>
+                        </div>
+                    }
+                </div>
 
-                @if (m.TF_FechaFin.HasValue)
-                {
-                    <dt class="col-sm-3">Fecha de finalización</dt>
-                    <dd class="col-sm-9">@m.TF_FechaFin.Value.ToString("dd/MM/yyyy hh:mm tt")</dd>
-                }
+                <p class="mt-3 mb-2">@m.TC_Descripcion</p>
 
                 @if (!string.IsNullOrEmpty(m.TC_Observaciones))
                 {
-                    <dt class="col-sm-3">Observaciones</dt>
-                    <dd class="col-sm-9">@m.TC_Observaciones</dd>
+                    <div class="mt-2">
+                        <span class="meta-label d-block mb-1">Observaciones</span>
+                        <p class="mb-0">@m.TC_Observaciones</p>
+                    </div>
                 }
-            </dl>
 
-            <a asp-controller="Mantenimientos" asp-action="Details" asp-route-id="@m.TN_Id" class="btn btn-sm btn-outline-primary mt-2">
-                Ver tarea completa
-            </a>
-        </div>
-    </div>
-}
-else if (Model.TN_Responsabilidad != Habitia.Enums.ResponsabilidadEnum.Privado
-          && Model.TN_Estado != Habitia.Enums.EstadoIncidenciaEnum.Resuelta)
-{
-    <div class="card mb-4">
-        <div class="card-body text-center">
-            <p class="text-muted mb-3">Esta incidencia aún no tiene una tarea de mantenimiento asociada.</p>
-            <a asp-controller="Mantenimientos" asp-action="Create" asp-route-idIncidencia="@Model.TN_Id" class="btn btn-primary">
-                Generar tarea de mantenimiento
-            </a>
-        </div>
-    </div>
-}
+                <a asp-controller="Mantenimientos" asp-action="Details" asp-route-id="@m.TN_Id" class="btn btn-sm btn-outline-primary mt-3">
+                    Ver tarea completa
+                </a>
+            </div>
+        }
+        else if (Model.TN_Responsabilidad != Habitia.Enums.ResponsabilidadEnum.Privado
+                  && Model.TN_Estado != Habitia.Enums.EstadoIncidenciaEnum.Resuelta)
+        {
+            <div class="incidencia-contexto mb-4 text-center">
+                <p class="text-muted mb-3">Esta incidencia aún no tiene una tarea de mantenimiento asociada.</p>
+                <a asp-controller="Mantenimientos" asp-action="Create" asp-route-idIncidencia="@Model.TN_Id" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Generar tarea de mantenimiento
+                </a>
+            </div>
+        }
 
-@* ── Cierre manual de incidencias Privadas ── *@
-@if (Model.TN_Responsabilidad == Habitia.Enums.ResponsabilidadEnum.Privado
-     && Model.TN_Estado != Habitia.Enums.EstadoIncidenciaEnum.Resuelta)
-{
-    <div class="card mb-4">
-        <div class="card-body d-flex justify-content-between align-items-center">
-            <p class="text-muted mb-0">
-                Esta incidencia es de responsabilidad Privada. El administrador puede marcarla como resuelta
-                si el residente no lo ha hecho.
-            </p>
-            <form asp-action="MarcarComoResuelta" asp-route-id="@Model.TN_Id" method="post">
-                <button type="submit" class="btn btn-success" onclick="return confirm('¿Confirma que esta incidencia ya fue resuelta?');">
-                    Marcar como resuelta
-                </button>
-            </form>
+        @* ── Cierre manual de incidencias Privadas ── *@
+        @if (Model.TN_Responsabilidad == Habitia.Enums.ResponsabilidadEnum.Privado
+             && Model.TN_Estado != Habitia.Enums.EstadoIncidenciaEnum.Resuelta)
+        {
+            <div class="incidencia-contexto mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <p class="text-muted mb-0">
+                    Esta incidencia es de responsabilidad <strong>Privada</strong>. El administrador puede marcarla como resuelta
+                    si el residente no lo ha hecho.
+                </p>
+                <form asp-action="MarcarComoResuelta" asp-route-id="@Model.TN_Id" method="post">
+                    <button type="submit" class="btn btn-success" onclick="return confirm('¿Confirma que esta incidencia ya fue resuelta?');">
+                        <i class="bi bi-check-lg"></i> Marcar como resuelta
+                    </button>
+                </form>
+            </div>
+        }
+    </div>
+
+    <div>
+        <div class="detalle-sidebar-card">
+            <div class="detalle-sidebar-titulo">Prioridad</div>
+            @if (Model.TN_Prioridad.HasValue)
+            {
+                <span class="badge-prioridad @ClaseBadgePrioridad(Model.TN_Prioridad.Value)">
+                    @Model.TN_Prioridad
+                </span>
+            }
+            else
+            {
+                <p class="text-muted small mb-2">Esta incidencia todavía no tiene prioridad asignada.</p>
+                <a asp-action="AsignarPrioridad" asp-route-id="@Model.TN_Id" class="btn btn-sm btn-warning w-100">
+                    Asignar prioridad
+                </a>
+            }
+        </div>
+
+        <div class="detalle-sidebar-card">
+            <div class="detalle-sidebar-titulo">Evidencia</div>
+            @if (!string.IsNullOrEmpty(Model.TC_ImagenUrl))
+            {
+                <a href="@Model.TC_ImagenUrl" target="_blank">
+                    <img src="@Model.TC_ImagenUrl" alt="Evidencia" class="evidencia-preview" />
+                </a>
+            }
+            else
+            {
+                <div class="evidencia-vacia">
+                    <i class="bi bi-image"></i> No se adjuntó evidencia.
+                </div>
+            }
         </div>
     </div>
-}
+
+</div>

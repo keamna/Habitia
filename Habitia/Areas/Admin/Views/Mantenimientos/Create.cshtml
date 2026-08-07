@@ -3,13 +3,10 @@
     ViewData["Title"] = "Crear Tarea de Mantenimiento";
     var incidenciaFija = Model.IdIncidencia != 0 && Model.IncidenciasElegibles == null;
 }
-
 <partial name="_MantenimientoTabs" />
 <h2>Crear Tarea de Mantenimiento</h2>
-
 <form asp-action="Create" method="post" class="incidencia-form">
     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-
     @if (incidenciaFija)
     {
         <input type="hidden" asp-for="IdIncidencia" />
@@ -30,17 +27,15 @@
             </div>
         </div>
     }
-
     <div class="mb-3">
         <label asp-for="Descripcion" class="form-label"></label>
         <input asp-for="Descripcion" class="form-control" />
         <span asp-validation-for="Descripcion" class="text-danger"></span>
     </div>
-
     <div class="row">
         <div class="col-md-6 mb-3">
             <label asp-for="IdTipoMantenimiento" class="form-label"></label>
-            <select asp-for="IdTipoMantenimiento" class="form-select" asp-items="Model.TiposMantenimiento">
+            <select asp-for="IdTipoMantenimiento" class="form-select" id="selectTipoMantenimiento" asp-items="Model.TiposMantenimiento">
                 <option value="">-- Seleccione un tipo existente --</option>
             </select>
             <span asp-validation-for="IdTipoMantenimiento" class="text-danger"></span>
@@ -52,24 +47,72 @@
             <div class="form-text">Complete este campo solo si el tipo no existe en la lista.</div>
         </div>
     </div>
-
     <div class="mb-3">
         <label asp-for="IdPersonalAsignado" class="form-label"></label>
-        <select asp-for="IdPersonalAsignado" class="form-select" asp-items="Model.PersonalMantenimiento">
+        <select asp-for="IdPersonalAsignado" class="form-select" id="selectPersonalAsignado" asp-items="Model.PersonalMantenimiento">
             <option value="">-- Seleccione personal de mantenimiento --</option>
         </select>
         <span asp-validation-for="IdPersonalAsignado" class="text-danger"></span>
+        <div class="form-text" id="avisoPersonalSinFiltrar">
+            Al seleccionar un tipo existente, esta lista se filtrará solo al personal habilitado para atenderlo.
+        </div>
+        <div class="form-text text-warning" id="avisoSinPersonal" style="display:none;">
+            No hay personal activo configurado para este tipo de mantenimiento.
+        </div>
     </div>
-
     <div class="alert alert-secondary">
         <i class="bi bi-clock"></i>
         La fecha y hora de creación de la tarea se registrará automáticamente al momento de guardar.
     </div>
-
     <button type="submit" class="btn btn-primary">Asignar Tarea</button>
     <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
 </form>
-
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const selectTipo = document.getElementById('selectTipoMantenimiento');
+        const selectPersonal = document.getElementById('selectPersonalAsignado');
+        const avisoPersonalSinFiltrar = document.getElementById('avisoPersonalSinFiltrar');
+        const avisoSinPersonal = document.getElementById('avisoSinPersonal');
+
+        async function filtrarPersonalPorTipo() {
+            const idTipo = selectTipo.value;
+
+            // Si no hay tipo existente seleccionado (vacío, o se está creando uno nuevo),
+            // no filtramos: se deja la lista completa de personal activo.
+            if (!idTipo) {
+                avisoPersonalSinFiltrar.style.display = 'block';
+                avisoSinPersonal.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Admin/Mantenimientos/PersonalPorTipo?idTipo=${idTipo}`);
+                const personal = await response.json();
+
+                const valorActual = selectPersonal.value;
+                selectPersonal.innerHTML = '<option value="">-- Seleccione personal de mantenimiento --</option>';
+
+                personal.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    option.textContent = p.nombre;
+                    selectPersonal.appendChild(option);
+                });
+
+                // Conserva la selección previa si sigue siendo válida
+                if (personal.some(p => p.id === valorActual)) {
+                    selectPersonal.value = valorActual;
+                }
+
+                avisoPersonalSinFiltrar.style.display = 'none';
+                avisoSinPersonal.style.display = personal.length === 0 ? 'block' : 'none';
+
+            } catch (error) {
+                console.error('No se pudo filtrar el personal por tipo:', error);
+            }
+        }
+
+        selectTipo.addEventListener('change', filtrarPersonalPorTipo);
+    </script>
 }

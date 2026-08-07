@@ -10,5 +10,6 @@ namespace Habitia.Services.Interfaces
         Task<Mantenimiento?> ObtenerPorIdAsync(int id);
         Task ActualizarEstadoAsync(MantenimientoEstadoUpdateViewModel model, string idPersonalQueActualiza);
         Task<List<Mantenimiento>> ObtenerTodosAsync();
+        Task<List<ApplicationUser>> ObtenerPersonalActivoPorTipoAsync(int idTipo);
     }
 }

@@ -16,16 +16,29 @@ namespace Habitia.Services
             _context = context;
         }
 
-        // Usado por Residente, Seguridad y Admin — mismo flujo para los tres roles.
         public async Task<Incidencia> CrearAsync(IncidenciaCreateViewModel model, string idUsuario, string? imagenUrl)
         {
+            var responsabilidad = model.Responsabilidad!.Value;
+
+            var tipo = responsabilidad switch
+            {
+                ResponsabilidadEnum.Privado => TipoIncidenciaEnum.Vivienda,
+                ResponsabilidadEnum.Comun => TipoIncidenciaEnum.AreaComun,
+                ResponsabilidadEnum.Mixto => TipoIncidenciaEnum.Mixto,
+                _ => throw new InvalidOperationException("Tipo de responsabilidad no válido.")
+            };
+
             var incidencia = new Incidencia
             {
                 TC_IdUsuario = idUsuario,
-                TN_Tipo = model.Tipo,
-                TN_IdVivienda = model.Tipo == TipoIncidenciaEnum.Vivienda ? model.IdVivienda : null,
-                TN_IdAreaComun = model.Tipo == TipoIncidenciaEnum.AreaComun ? model.IdAreaComun : null,
-                TN_Responsabilidad = model.Responsabilidad,
+                TN_Tipo = tipo,
+                TN_IdVivienda = responsabilidad is ResponsabilidadEnum.Privado or ResponsabilidadEnum.Mixto
+                    ? model.IdVivienda
+                    : null,
+                TN_IdAreaComun = responsabilidad is ResponsabilidadEnum.Comun or ResponsabilidadEnum.Mixto
+                    ? model.IdAreaComun
+                    : null,
+                TN_Responsabilidad = responsabilidad,
                 TC_Titulo = model.Titulo.Trim(),
                 TC_Descripcion = model.Descripcion.Trim(),
                 TC_ImagenUrl = imagenUrl,
@@ -47,6 +60,8 @@ namespace Habitia.Services
                 .Include(i => i.AreaComun)
                 .Include(i => i.Mantenimiento)
                     .ThenInclude(m => m!.Tipo)
+                .Include(i => i.Mantenimiento)
+                    .ThenInclude(m => m!.PersonalAsignado)
                 .AsQueryable();
 
             if (filtro != null)
@@ -68,7 +83,9 @@ namespace Habitia.Services
                 .OrderByDescending(i => i.TF_FechaRegistro)
                 .ToListAsync();
 
-            return incidencias.Select(MapearAListItem).ToList();
+            var tiposPorPersonal = await ObtenerTiposPorPersonalAsync(incidencias);
+
+            return incidencias.Select(i => MapearAListItem(i, tiposPorPersonal)).ToList();
         }
 
         public async Task<List<IncidenciaListItemViewModel>> ObtenerPorUsuarioAsync(string idUsuario)
@@ -79,11 +96,15 @@ namespace Habitia.Services
                 .Include(i => i.AreaComun)
                 .Include(i => i.Mantenimiento)
                     .ThenInclude(m => m!.Tipo)
+                .Include(i => i.Mantenimiento)
+                    .ThenInclude(m => m!.PersonalAsignado)
                 .Where(i => i.TC_IdUsuario == idUsuario)
                 .OrderByDescending(i => i.TF_FechaRegistro)
                 .ToListAsync();
 
-            return incidencias.Select(MapearAListItem).ToList();
+            var tiposPorPersonal = await ObtenerTiposPorPersonalAsync(incidencias);
+
+            return incidencias.Select(i => MapearAListItem(i, tiposPorPersonal)).ToList();
         }
 
         public async Task<Incidencia?> ObtenerPorIdAsync(int id)
@@ -99,8 +120,6 @@ namespace Habitia.Services
                 .FirstOrDefaultAsync(i => i.TN_Id == id);
         }
 
-        // Reemplaza a "ClasificarAsync": ya no se elige el tipo de responsabilidad
-        // aquí (eso se define al crear la incidencia), solo se asigna la prioridad.
         public async Task AsignarPrioridadAsync(IncidenciaPrioridadViewModel model)
         {
             var incidencia = await _context.Incidencias.FirstOrDefaultAsync(i => i.TN_Id == model.Id);
@@ -128,7 +147,6 @@ namespace Habitia.Services
             return await _context.Mantenimientos.AnyAsync(m => m.TN_IdIncidencia == idIncidencia);
         }
 
-        // Cierre de incidencia Privada: puede hacerlo el residente propietario o el Admin.
         public async Task MarcarComoResueltaAsync(int idIncidencia, string idUsuarioQueResuelve, bool esAdmin)
         {
             var incidencia = await _context.Incidencias.FirstOrDefaultAsync(i => i.TN_Id == idIncidencia);
@@ -164,24 +182,74 @@ namespace Habitia.Services
                 .ToListAsync();
         }
 
-        private static IncidenciaListItemViewModel MapearAListItem(Incidencia i)
+        // Construye un diccionario "idPersonal -> nombres de tipos de mantenimiento que maneja"
+        // solo para el personal que aparece asignado en el lote de incidencias dado.
+        private async Task<Dictionary<string, List<string>>> ObtenerTiposPorPersonalAsync(List<Incidencia> incidencias)
         {
+            var idsPersonal = incidencias
+                .Where(i => i.Mantenimiento != null)
+                .Select(i => i.Mantenimiento!.TC_IdPersonalAsignado)
+                .Distinct()
+                .ToList();
+
+            if (!idsPersonal.Any())
+                return new Dictionary<string, List<string>>();
+
+            var asignaciones = await _context.PersonalTipoMantenimiento
+                .Where(x => idsPersonal.Contains(x.TC_IdPersonal))
+                .ToListAsync();
+
+            var tiposIds = asignaciones.Select(a => a.TN_IdTipo).Distinct().ToList();
+
+            var tipos = await _context.TiposMantenimiento
+                .Where(t => tiposIds.Contains(t.TN_Id))
+                .ToDictionaryAsync(t => t.TN_Id, t => t.TC_Nombre);
+
+            return asignaciones
+                .GroupBy(a => a.TC_IdPersonal)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(a => tipos.GetValueOrDefault(a.TN_IdTipo, "N/D")).ToList());
+        }
+
+        private static IncidenciaListItemViewModel MapearAListItem(Incidencia i, Dictionary<string, List<string>> tiposPorPersonal)
+        {
+            var reportante = i.Usuario;
+            var personal = i.Mantenimiento?.PersonalAsignado;
+
             return new IncidenciaListItemViewModel
             {
                 Id = i.TN_Id,
                 Titulo = i.TC_Titulo,
-                Ubicacion = i.TN_Tipo == TipoIncidenciaEnum.Vivienda
-                    ? $"Vivienda: {i.Vivienda?.TC_Numero ?? "N/D"}"
-                    : $"Área común: {i.AreaComun?.TC_Nombre ?? "N/D"}",
+                Ubicacion = i.TN_Tipo switch
+                {
+                    TipoIncidenciaEnum.Vivienda => $"Vivienda: {i.Vivienda?.TC_Numero ?? "N/D"}",
+                    TipoIncidenciaEnum.AreaComun => $"Área común: {i.AreaComun?.TC_Nombre ?? "N/D"}",
+                    TipoIncidenciaEnum.Mixto => $"Vivienda: {i.Vivienda?.TC_Numero ?? "N/D"} · Área común: {i.AreaComun?.TC_Nombre ?? "N/D"}",
+                    _ => "N/D"
+                },
                 Estado = i.TN_Estado,
                 Responsabilidad = i.TN_Responsabilidad,
                 Prioridad = i.TN_Prioridad,
                 FechaRegistro = i.TF_FechaRegistro,
-                NombreUsuarioReporta = i.Usuario?.UserName ?? "N/D",
+
+                ReportanteNombreCompleto = reportante != null ? $"{reportante.TC_Nombre} {reportante.TC_Apellido}" : "N/D",
+                ReportanteIdentificacion = reportante?.TC_Identificacion,
+                ReportanteTelefono = reportante?.TC_Telefono,
+                ReportanteCorreo = reportante?.Email,
+
                 TieneMantenimientoAsociado = i.Mantenimiento != null,
                 MantenimientoTipoNombre = i.Mantenimiento?.Tipo?.TC_Nombre,
                 MantenimientoEstado = i.Mantenimiento?.TN_Estado,
-                MantenimientoId = i.Mantenimiento?.TN_Id
+                MantenimientoId = i.Mantenimiento?.TN_Id,
+
+                PersonalAsignadoNombreCompleto = personal != null ? $"{personal.TC_Nombre} {personal.TC_Apellido}" : null,
+                PersonalAsignadoIdentificacion = personal?.TC_Identificacion,
+                PersonalAsignadoTelefono = personal?.TC_Telefono,
+                PersonalAsignadoCorreo = personal?.Email,
+                PersonalAsignadoTipos = personal != null
+                    ? tiposPorPersonal.GetValueOrDefault(personal.Id, new List<string>())
+                    : new List<string>()
             };
         }
     }

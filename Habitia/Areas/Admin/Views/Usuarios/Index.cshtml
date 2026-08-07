@@ -29,13 +29,6 @@
         </a>
     </div>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert-exito">
-            <i class="bi bi-check-circle"></i> @TempData["Success"]
-        </div>
-    }
-
     <div class="tabla-card">
 
         <div class="tabla-header">
@@ -67,6 +60,17 @@
                     <option value="Seguridad">Seguridad</option>
                     <option value="Mantenimiento">Mantenimiento</option>
                 </select>
+
+                <select class="select-filtro" id="filtroTipoMantenimientoUsuario" style="display:none;">
+                    <option value="">Todos los tipos de mantenimiento</option>
+                    @if (ViewBag.TiposMantenimiento != null)
+                    {
+                        foreach (var tipo in (List<SelectListItem>)ViewBag.TiposMantenimiento)
+                        {
+                            <option value="@tipo.Value">@tipo.Text</option>
+                        }
+                    }
+                </select>
             </div>
         </div>
 
@@ -89,7 +93,8 @@
                         <tr data-estado="@item.Estado"
                             data-roles="@string.Join(",", item.Roles).ToLower()"
                             data-nombre="@item.NombreCompleto.ToLower()"
-                            data-identificacion="@item.NumeroIdentificacion.ToLower()">
+                            data-identificacion="@item.NumeroIdentificacion.ToLower()"
+                            data-tipos-mantenimiento="@string.Join(",", item.TiposMantenimientoIds)">
 
                             <td>
                                 <div class="usuario-celda">
@@ -127,13 +132,22 @@
                             </td>
 
                             <td>
-                                <div class="roles-lista">
-                                    @foreach (var rol in item.Roles)
+                            <div class="roles-lista">
+                                @foreach (var rol in item.Roles)
+                                {
+                                    <span class="badge badge-rol">@rol</span>
+                                }
+                            </div>
+                            @if (item.Roles.Contains("Mantenimiento") && item.TiposMantenimientoNombres.Any())
+                            {
+                                <div class="tipos-mantenimiento-lista mt-1">
+                                    @foreach (var tipo in item.TiposMantenimientoNombres)
                                     {
-                                        <span class="badge badge-rol">@rol</span>
+                                        <span class="badge-tipo-mantenimiento">@tipo</span>
                                     }
                                 </div>
-                            </td>
+                            }
+                        </td>
 
                             <td>
                                 @if (item.Viviendas.Any())
@@ -150,9 +164,6 @@
                                                 }
                                             </div>
 
-                                            @* Aprobar/Rechazar se hacen por vivienda, ya que un usuario
-                                               puede tener solicitudes pendientes en más de una (solo
-                                               si es propietario en cada una). *@
                                             @if (vivienda.Estado == "Pendiente")
                                             {
                                                 <div class="vivienda-acciones">
@@ -186,26 +197,28 @@
                                         <div class="dropdown-menu-fila">
                                             @if (!item.Roles.Contains("Residente"))
                                             {
-                                                <a href="#" onclick='abrirRoles(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.Roles)))'>
+                                                <a href="#" onclick='abrirRoles(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.Roles)), @Html.Raw(Json.Serialize(item.TiposMantenimientoIds)))'>
                                                     Cambiar rol
                                                 </a>
                                             }
 
                                             @if (item.Estado == "Activo")
                                             {
-                                                <a href="#" class="text-warning" onclick="suspenderUsuario('@item.Id')">
+                                                <a href="#" class="text-warning"
+                                                   onclick='event.preventDefault(); abrirSuspenderUsuario(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.NombreCompleto)))'>
                                                     Suspender
                                                 </a>
                                             }
                                             else if (item.Estado == "Suspendido")
                                             {
-                                                <a href="#" class="text-success" onclick="reactivarUsuario('@item.Id')">
+                                                <a href="#" class="text-success"
+                                                   onclick='event.preventDefault(); abrirReactivarUsuario(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.NombreCompleto)))'>
                                                     Reactivar
                                                 </a>
                                             }
 
                                             <a href="#" class="text-danger btn-eliminar-usuario"
-                                               onclick='abrirEliminar(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.NombreCompleto)))'>
+                                               onclick='event.preventDefault(); abrirEliminar(@Html.Raw(Json.Serialize(item.Id)), @Html.Raw(Json.Serialize(item.NombreCompleto)))'>
                                                 Eliminar
                                             </a>
                                         </div>
@@ -226,7 +239,49 @@
     </div>
 </div>
 
-<!-- MODAL ROLES (radio: un solo rol, solo Seguridad/Mantenimiento) -->
+<!-- FORMULARIOS OCULTOS: SUSPENDER / REACTIVAR -->
+<form id="formSuspender" asp-action="Suspender" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" id="suspenderUsuarioId" />
+</form>
+
+<form id="formReactivar" asp-action="Reactivar" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" id="reactivarUsuarioId" />
+</form>
+
+<!-- TOASTS: ÉXITO / ERROR (arriba a la derecha, igual que "Código copiado") -->
+<div id="toastsUsuarioContainer" class="position-fixed top-0 end-0 p-3" style="z-index:1080">
+
+    @if (TempData["Success"] != null)
+    {
+        <div id="toastUsuarioExito" class="toast usuario-toast border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-body d-flex align-items-center">
+                <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>¡Listo!</strong><br />
+                    <small>@TempData["Success"]</small>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div id="toastUsuarioError" class="toast usuario-toast-error border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-body d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>Ocurrió un problema</strong><br />
+                    <small>@TempData["Error"]</small>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+<!-- MODAL ROLES -->
 <div id="modalRoles" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-titulo">Cambiar rol</div>
@@ -236,13 +291,29 @@
 
         <div id="rolesContainer" class="roles-opciones">
             <label class="rol-opcion">
-                <input type="radio" name="rolUsuario" value="Seguridad" />
+                <input type="radio" name="rolUsuario" value="Seguridad" class="input-rol-modal" />
                 Seguridad
             </label>
             <label class="rol-opcion">
-                <input type="radio" name="rolUsuario" value="Mantenimiento" />
+                <input type="radio" name="rolUsuario" value="Mantenimiento" class="input-rol-modal" />
                 Mantenimiento
             </label>
+        </div>
+
+        <div id="tiposMantenimientoModalContainer" style="display:none; margin-bottom:16px;">
+            <label class="d-block mb-2" style="font-size:13px; font-weight:600; color:#101010;">Tipos de mantenimiento</label>
+            <div id="tiposMantenimientoModalOpciones" class="roles-opciones">
+                @if (ViewBag.TiposMantenimiento != null)
+                {
+                    foreach (var tipo in (List<SelectListItem>)ViewBag.TiposMantenimiento)
+                    {
+                        <label class="rol-opcion">
+                            <input type="checkbox" name="tipoMantenimientoModal" value="@tipo.Value" />
+                            @tipo.Text
+                        </label>
+                    }
+                }
+            </div>
         </div>
 
         <div id="rolesError" class="roles-error" style="display:none;">
@@ -256,35 +327,275 @@
     </div>
 </div>
 
-<!-- MODAL ELIMINAR USUARIO -->
-<div id="modalEliminar" class="modal-overlay">
-    <div class="modal-card">
-        <div class="modal-icon modal-icon-danger">
-            <i class="bi bi-exclamation-triangle"></i>
-        </div>
+<!-- MODAL SUSPENDER USUARIO (Bootstrap) -->
+<div class="modal fade" id="modalSuspenderUsuario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+            <div class="modal-body text-center">
+                <div class="modal-icon-warning mx-auto mb-3">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
 
-        <div class="modal-titulo">Eliminar usuario</div>
+                <h5 class="mb-2">Suspender usuario</h5>
+                <p class="text-muted mb-3">
+                    ¿Desea suspender a <strong id="suspenderUsuarioNombre"></strong>?
+                    <br />
+                    No podrá iniciar sesión hasta que sea reactivado.
+                </p>
 
-        <div class="modal-desc">
-            ¿Estás seguro de que querés eliminar a
-            <strong id="eliminarUsuarioNombre"></strong>?
-            <br />
-            Esta acción no se puede deshacer.
-        </div>
-
-        <input type="hidden" id="eliminarUsuarioId" />
-
-        <div id="eliminarError" class="roles-error" style="display:none;">
-            No se pudo eliminar el usuario.
-        </div>
-
-        <div class="modal-footer">
-            <button class="btn-modal-cancelar" onclick="cerrarModalEliminar()">Cancelar</button>
-            <button class="btn-modal-eliminar" id="btnConfirmarEliminar" onclick="confirmarEliminarUsuario()">Eliminar</button>
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-warning" onclick="confirmarSuspenderUsuario()">Suspender</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
+<!-- MODAL REACTIVAR USUARIO (Bootstrap) -->
+<div class="modal fade" id="modalReactivarUsuario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+            <div class="modal-body text-center">
+                <div class="modal-icon-success mx-auto mb-3">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </div>
+
+                <h5 class="mb-2">Reactivar usuario</h5>
+                <p class="text-muted mb-3">
+                    ¿Desea reactivar a <strong id="reactivarUsuarioNombre"></strong>?
+                    <br />
+                    Podrá iniciar sesión nuevamente.
+                </p>
+
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-success" onclick="confirmarReactivarUsuario()">Reactivar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ELIMINAR USUARIO (Bootstrap) -->
+<div class="modal fade" id="modalEliminarUsuario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+            <div class="modal-body text-center">
+                <div class="modal-icon-danger mx-auto mb-3">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+
+                <h5 class="mb-2">Eliminar usuario</h5>
+                <p class="text-muted mb-3">
+                    ¿Estás seguro de que querés eliminar a <strong id="eliminarUsuarioNombre"></strong>?
+                    <br />
+                    Esta acción no se puede deshacer.
+                </p>
+
+                <div class="alert alert-danger text-start" id="eliminarError" style="display:none;"></div>
+
+                <input type="hidden" id="eliminarUsuarioId" />
+
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-danger" id="btnConfirmarEliminar" onclick="confirmarEliminarUsuario()">
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        // ==========================
+        // TOAST DINÁMICO (para acciones vía fetch/AJAX que recargan la página,
+        // como Eliminar, donde no hay TempData del servidor disponible)
+        // ==========================
+
+        function mostrarToastUsuario(mensaje, tipo) {
+
+            const contenedor = document.getElementById("toastsUsuarioContainer");
+            if (!contenedor) return;
+
+            const esError = tipo === "error";
+            const claseToast = esError ? "usuario-toast-error" : "usuario-toast";
+            const icono = esError ? "bi-exclamation-triangle-fill" : "bi-check-circle-fill";
+            const titulo = esError ? "Ocurrió un problema" : "¡Listo!";
+
+            const toastEl = document.createElement("div");
+            toastEl.className = `toast ${claseToast} border-0`;
+            toastEl.setAttribute("role", "alert");
+            toastEl.setAttribute("aria-live", "assertive");
+            toastEl.setAttribute("aria-atomic", "true");
+            toastEl.innerHTML = `
+                <div class="toast-body d-flex align-items-center">
+                    <i class="bi ${icono} fs-4 me-3"></i>
+                    <div>
+                        <strong>${titulo}</strong><br />
+                        <small>${mensaje}</small>
+                    </div>
+                </div>
+            `;
+
+            contenedor.appendChild(toastEl);
+
+            const instancia = new bootstrap.Toast(toastEl, { delay: esError ? 4000 : 3000 });
+            instancia.show();
+
+            toastEl.addEventListener("hidden.bs.toast", () => toastEl.remove());
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // ==========================
+            // TOASTS DEL SERVIDOR (TempData: Crear, Suspender, Reactivar)
+            // ==========================
+
+            const toastExito = document.getElementById("toastUsuarioExito");
+            if (toastExito) {
+                new bootstrap.Toast(toastExito, { delay: 3000 }).show();
+            }
+
+            const toastError = document.getElementById("toastUsuarioError");
+            if (toastError) {
+                new bootstrap.Toast(toastError, { delay: 4000 }).show();
+            }
+
+            // ==========================
+            // TOAST PENDIENTE EN SESSIONSTORAGE (acciones AJAX: Eliminar, Roles, Aprobar/Rechazar)
+            // ==========================
+
+            const mensajePendiente = sessionStorage.getItem("usuarioToastMensaje");
+            if (mensajePendiente) {
+                sessionStorage.removeItem("usuarioToastMensaje");
+                mostrarToastUsuario(mensajePendiente, "exito");
+            }
+
+            // ==========================
+            // MENU DE ACCIONES POR FILA
+            // ==========================
+
+            const botones = document.querySelectorAll(".btn-menu-fila");
+
+            botones.forEach(btn => {
+                btn.addEventListener("click", function (e) {
+                    e.stopPropagation();
+
+                    document.querySelectorAll(".dropdown-menu-fila").forEach(menu => {
+                        menu.style.display = "none";
+                    });
+
+                    const menu = this.nextElementSibling;
+                    if (menu) {
+                        menu.style.display = "block";
+                    }
+                });
+            });
+
+            document.addEventListener("click", function () {
+                document.querySelectorAll(".dropdown-menu-fila").forEach(menu => {
+                    menu.style.display = "none";
+                });
+            });
+
+            // ==========================
+            // FILTROS: BUSCAR / ESTADO / ROL / TIPO DE MANTENIMIENTO
+            // ==========================
+
+            const inputBuscar = document.getElementById("inputBuscarUsuario");
+            const filtroEstado = document.getElementById("filtroEstadoUsuario");
+            const filtroRol = document.getElementById("filtroRolUsuario");
+            const filtroTipoMantenimiento = document.getElementById("filtroTipoMantenimientoUsuario");
+            const filas = document.querySelectorAll("#usuariosTbody tr");
+            const emptyState = document.getElementById("tablaEmptyState");
+
+            function filtrarUsuarios() {
+
+                const texto = (inputBuscar?.value || "").trim().toLowerCase();
+                const estado = filtroEstado?.value || "";
+                const rol = (filtroRol?.value || "").toLowerCase();
+                const tipoMantenimiento = filtroTipoMantenimiento?.value || "";
+
+                let visibles = 0;
+
+                filas.forEach(fila => {
+
+                    const nombre = fila.dataset.nombre || "";
+                    const identificacion = fila.dataset.identificacion || "";
+                    const estadoFila = fila.dataset.estado || "";
+                    const rolesFila = fila.dataset.roles || "";
+                    const tiposMantenimientoFila = fila.dataset.tiposMantenimiento || "";
+
+                    const coincideTexto =
+                        texto === "" ||
+                        nombre.includes(texto) ||
+                        identificacion.includes(texto);
+
+                    const coincideEstado =
+                        estado === "" ||
+                        estadoFila === estado;
+
+                    const coincideRol =
+                        rol === "" ||
+                        rolesFila.split(",").includes(rol);
+
+                    // Solo exige coincidencia de tipo de mantenimiento si el filtro de rol
+                    // está en "Mantenimiento" y además se eligió un tipo específico.
+                    const coincideTipoMantenimiento =
+                        rol !== "mantenimiento" ||
+                        tipoMantenimiento === "" ||
+                        tiposMantenimientoFila.split(",").includes(tipoMantenimiento);
+
+                    const mostrar = coincideTexto && coincideEstado && coincideRol && coincideTipoMantenimiento;
+
+                    fila.style.display = mostrar ? "" : "none";
+
+                    if (mostrar) visibles++;
+
+                });
+
+                if (emptyState) {
+                    emptyState.style.display = visibles === 0 ? "block" : "none";
+                }
+            }
+
+            inputBuscar?.addEventListener("input", filtrarUsuarios);
+            filtroEstado?.addEventListener("change", filtrarUsuarios);
+
+            filtroRol?.addEventListener("change", function () {
+
+                const esMantenimiento = this.value === "Mantenimiento";
+
+                if (filtroTipoMantenimiento) {
+                    filtroTipoMantenimiento.style.display = esMantenimiento ? "" : "none";
+
+                    if (!esMantenimiento) {
+                        filtroTipoMantenimiento.value = "";
+                    }
+                }
+
+                filtrarUsuarios();
+            });
+
+            filtroTipoMantenimiento?.addEventListener("change", filtrarUsuarios);
+
+            // ==========================
+            // TOGGLE TIPOS DE MANTENIMIENTO EN MODAL ROLES
+            // ==========================
+
+            document.querySelectorAll(".input-rol-modal").forEach(function (radio) {
+                radio.addEventListener("change", function () {
+                    document.getElementById("tiposMantenimientoModalContainer").style.display =
+                        this.value === "Mantenimiento" ? "block" : "none";
+                });
+            });
+
+        });
+    </script>
+
     <script src="~/js/admin/usuarios.js"></script>
 }

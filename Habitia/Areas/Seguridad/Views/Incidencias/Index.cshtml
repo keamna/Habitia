@@ -1,10 +1,33 @@
 ﻿@model List<Habitia.ViewModels.Incidencias.IncidenciaListItemViewModel>
 @{
     ViewData["Title"] = "Gestión de Incidencias";
-    var filtro = ViewBag.Filtro as Habitia.ViewModels.Incidencias.IncidenciaFiltroViewModel;
+
+    string ClaseBadgeEstado(Habitia.Enums.EstadoIncidenciaEnum e) => e switch
+    {
+        Habitia.Enums.EstadoIncidenciaEnum.Pendiente => "badge-estado-pendiente",
+        Habitia.Enums.EstadoIncidenciaEnum.EnProceso => "badge-estado-proceso",
+        Habitia.Enums.EstadoIncidenciaEnum.Resuelta => "badge-estado-resuelta",
+        _ => "badge-estado-default"
+    };
+
+    string ClasePillResponsabilidad(Habitia.Enums.ResponsabilidadEnum? r) => r switch
+    {
+        Habitia.Enums.ResponsabilidadEnum.Privado => "pill-privado",
+        Habitia.Enums.ResponsabilidadEnum.Comun => "pill-comun",
+        Habitia.Enums.ResponsabilidadEnum.Mixto => "pill-mixto",
+        _ => "pill-sin-clasificar"
+    };
 }
 
-<h2>Gestión de Incidencias</h2>
+<div class="index-header">
+    <div>
+        <h2>Gestión de Incidencias</h2>
+        <p>Incidencias que has reportado como personal de seguridad.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Reportar Incidencia
+    </a>
+</div>
 
 @if (TempData["Success"] != null)
 {
@@ -15,88 +38,61 @@
     <div class="alert alert-danger">@TempData["Error"]</div>
 }
 
-<form asp-action="Index" method="get" class="row g-2 mb-3">
-    <div class="col-md-2">
-        <select name="Estado" class="form-select" asp-items="Html.GetEnumSelectList<Habitia.Enums.EstadoIncidenciaEnum>()">
-            <option value="">Todos los estados</option>
-        </select>
-    </div>
-    <div class="col-md-2">
-        <select name="Responsabilidad" class="form-select" asp-items="Html.GetEnumSelectList<Habitia.Enums.ResponsabilidadEnum>()">
-            <option value="">Toda responsabilidad</option>
-        </select>
-    </div>
-    <div class="col-md-2">
-        <input type="date" name="FechaDesde" class="form-control" value="@filtro?.FechaDesde?.ToString("yyyy-MM-dd")" />
-    </div>
-    <div class="col-md-2">
-        <input type="date" name="FechaHasta" class="form-control" value="@filtro?.FechaHasta?.ToString("yyyy-MM-dd")" />
-    </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-outline-primary w-100">Filtrar</button>
-    </div>
-    <div class="col-md-2">
-        <a asp-action="Index" class="btn btn-outline-secondary w-100">Limpiar</a>
-    </div>
-</form>
-
-@if (!Model.Any())
-{
-    <div class="alert alert-info">No se encontraron incidencias con los filtros seleccionados.</div>
-}
-else
-{
-    <table class="table table-hover align-middle">
-        <thead>
-            <tr>
-                <th>Título</th>
-                <th>Reportado por</th>
-                <th>Ubicación</th>
-                <th>Fecha</th>
-                <th>Estado</th>
-                <th>Responsabilidad</th>
-                <th>Mantenimiento</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
+<div class="tabla-incidencias-card">
+    @if (!Model.Any())
+    {
+        <div class="tabla-empty-incidencias">
+            <i class="bi bi-inbox"></i>
+            Aún no ha reportado ninguna incidencia.
+        </div>
+    }
+    else
+    {
+        <table class="tabla-incidencias">
+            <thead>
                 <tr>
-                    <td>@item.Titulo</td>
-                    <td>@item.NombreUsuarioReporta</td>
-                    <td>@item.Ubicacion</td>
-                    <td>@item.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>
-                        <span class="badge @(item.Estado switch {
-                            Habitia.Enums.EstadoIncidenciaEnum.Pendiente => "bg-warning text-dark",
-                            Habitia.Enums.EstadoIncidenciaEnum.EnProceso => "bg-info text-dark",
-                            Habitia.Enums.EstadoIncidenciaEnum.Resuelta => "bg-success",
-                            _ => "bg-secondary"
-                        })">
-                            @item.Estado
-                        </span>
-                    </td>
-                    <td>@(item.Responsabilidad?.ToString() ?? "Sin clasificar")</td>
-                    <td>
-                        @if (item.TieneMantenimientoAsociado)
-                        {
-                            <span class="badge bg-secondary">Asociado</span>
-                        }
-                        else
-                        {
-                            <span class="text-muted">—</span>
-                        }
-                    </td>
-                    <td>
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Ver</a>
-                        @if (item.Responsabilidad == null)
-                        {
-                            <a asp-action="Clasificar" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Clasificar</a>
-                        }
-                    </td>
+                    <th>Título</th>
+                    <th>Ubicación</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Responsabilidad</th>
+                    <th>Mantenimiento</th>
+                    <th></th>
                 </tr>
-            }
-        </tbody>
-    </table>
-}
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="fila-incidencia">
+                        <td class="titulo-incidencia-celda">@item.Titulo</td>
+                        <td class="ubicacion-celda">@item.Ubicacion</td>
+                        <td class="fecha-celda">@item.FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</td>
+                        <td>
+                            <span class="badge-estado @ClaseBadgeEstado(item.Estado)">@item.Estado</span>
+                        </td>
+                        <td>
+                            <span class="pill-responsabilidad @ClasePillResponsabilidad(item.Responsabilidad)">
+                                @(item.Responsabilidad?.ToString() ?? "N/D")
+                            </span>
+                        </td>
+                        <td>
+                            @if (item.TieneMantenimientoAsociado)
+                            {
+                                <span class="mantenimiento-chip">
+                                    <i class="bi bi-tools"></i> @item.MantenimientoTipoNombre (@item.MantenimientoEstado)
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn-fila-ver">Ver</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

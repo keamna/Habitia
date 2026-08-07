@@ -106,6 +106,23 @@ namespace Habitia.Areas.Admin.Controllers
             return View(mantenimiento);
         }
 
+        // GET: /Admin/Mantenimientos/PersonalPorTipo?idTipo=3
+        // Devuelve el personal ACTIVO configurado para atender ese tipo de mantenimiento.
+        // Usado por el JS de Create.cshtml para filtrar el <select> dinámicamente.
+        [HttpGet]
+        public async Task<IActionResult> PersonalPorTipo(int idTipo)
+        {
+            var personal = await _mantenimientoService.ObtenerPersonalActivoPorTipoAsync(idTipo);
+
+            var resultado = personal.Select(u => new
+            {
+                id = u.Id,
+                nombre = u.UserName
+            });
+
+            return Json(resultado);
+        }
+
         private async Task CargarListasAsync(MantenimientoCreateViewModel model, bool incidenciaFija)
         {
             var tipos = await _tipoMantenimientoService.ObtenerActivosAsync();
@@ -115,8 +132,10 @@ namespace Habitia.Areas.Admin.Controllers
                 Text = t.TC_Nombre
             }).ToList();
 
+            // Carga inicial completa (personal activo); el JS la reemplaza al elegir un tipo existente.
             var personalMantenimiento = await _userManager.GetUsersInRoleAsync("Mantenimiento");
             model.PersonalMantenimiento = personalMantenimiento
+                .Where(u => u.TN_Estado == EstadoUsuarioEnum.Activo)
                 .OrderBy(u => u.UserName)
                 .Select(u => new SelectListItem
                 {
@@ -124,7 +143,6 @@ namespace Habitia.Areas.Admin.Controllers
                     Text = u.UserName
                 }).ToList();
 
-            // Solo se carga el selector de incidencias cuando NO viene fija desde Clasificar
             if (!incidenciaFija)
             {
                 var elegibles = await _incidenciaService.ObtenerElegiblesParaMantenimientoAsync();

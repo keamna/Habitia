@@ -45,8 +45,6 @@ namespace Habitia.Models
 
         [ForeignKey(nameof(TN_IdTipo))]
         public TipoMantenimiento Tipo { get; set; }
-
-        [ForeignKey(nameof(TN_IdAreaComun))]
         public AreaComun? AreaComun { get; set; }
 
         [ForeignKey(nameof(TC_IdPersonalAsignado))]

@@ -1,775 +1,249 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
-
-
-    // ==========================
-    // MENU DE ACCIONES POR FILA
-    // ==========================
-
-
-    const botones =
-        document.querySelectorAll('.btn-menu-fila');
-
-
-    botones.forEach(btn => {
-
-
-        btn.addEventListener('click', function (e) {
-
-            e.stopPropagation();
-
-
-            document
-                .querySelectorAll('.dropdown-menu-fila')
-                .forEach(menu => {
-
-                    menu.style.display = "none";
-
-                });
-
-
-
-            const menu =
-                this.nextElementSibling;
-
-
-            if (menu) {
-                menu.style.display = "block";
-            }
-
-
-        });
-
-
-    });
-
-
-
-
-
-    document.addEventListener('click', function () {
-
-
-        document
-            .querySelectorAll('.dropdown-menu-fila')
-            .forEach(menu => {
-
-                menu.style.display = "none";
-
-            });
-
-
-    });
-
-
-
-    // ==========================
-    // FILTROS: BUSCAR / ESTADO / ROL
-    // ==========================
-
-    const inputBuscar = document.getElementById('inputBuscarUsuario');
-    const filtroEstado = document.getElementById('filtroEstadoUsuario');
-    const filtroRol = document.getElementById('filtroRolUsuario');
-    const filas = document.querySelectorAll('#usuariosTbody tr');
-    const emptyState = document.getElementById('tablaEmptyState');
-
-    function filtrarUsuarios() {
-
-        const texto = (inputBuscar?.value || "").trim().toLowerCase();
-        const estado = filtroEstado?.value || "";
-        const rol = (filtroRol?.value || "").toLowerCase();
-
-        let visibles = 0;
-
-        filas.forEach(fila => {
-
-            const nombre = fila.dataset.nombre || "";
-            const identificacion = fila.dataset.identificacion || "";
-            const estadoFila = fila.dataset.estado || "";
-            const rolesFila = fila.dataset.roles || "";
-
-            const coincideTexto =
-                texto === "" ||
-                nombre.includes(texto) ||
-                identificacion.includes(texto);
-
-            const coincideEstado =
-                estado === "" ||
-                estadoFila === estado;
-
-            const coincideRol =
-                rol === "" ||
-                rolesFila.split(",").includes(rol);
-
-            const mostrar = coincideTexto && coincideEstado && coincideRol;
-
-            fila.style.display = mostrar ? "" : "none";
-
-            if (mostrar) visibles++;
-
-        });
-
-        if (emptyState) {
-            emptyState.style.display = visibles === 0 ? "block" : "none";
-        }
-    }
-
-    if (inputBuscar) {
-        inputBuscar.addEventListener('input', filtrarUsuarios);
-    }
-
-    if (filtroEstado) {
-        filtroEstado.addEventListener('change', filtrarUsuarios);
-    }
-
-    if (filtroRol) {
-        filtroRol.addEventListener('change', filtrarUsuarios);
-    }
-
-
-});
-
-
-
-
-
-
-
-
-
-// =================================
+﻿// =================================
 // ABRIR MODAL ROLES
 // =================================
 
+function abrirRoles(id, rolesActuales, tiposMantenimientoActuales) {
 
-function abrirRoles(id, rolesActuales) {
+    document.getElementById("rolesUsuarioId").value = id;
 
-
-    document.getElementById(
-        "rolesUsuarioId"
-    ).value = id;
-
-
-
-
-    document
-        .querySelectorAll(
-            '#rolesContainer input'
-        )
-        .forEach(check => {
-
-            check.checked = false;
-
-        });
-
-
-
-
-
+    document.querySelectorAll('#rolesContainer input').forEach(check => {
+        check.checked = false;
+    });
 
     rolesActuales.forEach(rol => {
-
-
-        const check =
-            document.querySelector(
-                `#rolesContainer input[value="${rol}"]`
-            );
-
-
-
+        const check = document.querySelector(`#rolesContainer input[value="${rol}"]`);
         if (check) {
             check.checked = true;
         }
-
-
-
     });
 
+    // Precarga y muestra/oculta la sección de tipos de mantenimiento
+    const tieneMantenimiento = rolesActuales.includes('Mantenimiento');
+    const contenedorTipos = document.getElementById("tiposMantenimientoModalContainer");
+    contenedorTipos.style.display = tieneMantenimiento ? "block" : "none";
 
+    document.querySelectorAll('input[name="tipoMantenimientoModal"]').forEach(check => {
+        check.checked = false;
+    });
 
+    const tiposActuales = tiposMantenimientoActuales || [];
+    tiposActuales.forEach(idTipo => {
+        const check = document.querySelector(`input[name="tipoMantenimientoModal"][value="${idTipo}"]`);
+        if (check) {
+            check.checked = true;
+        }
+    });
 
-
-    document
-        .getElementById(
-            "modalRoles"
-        )
-        .classList.add("visible");
-
-
-
+    document.getElementById("rolesError").style.display = "none";
+    document.getElementById("modalRoles").classList.add("visible");
 }
-
-
-
-
-
-
-
 
 
 // =================================
 // CERRAR MODAL ROLES
 // =================================
 
-
 function cerrarModalRoles() {
-
-
-    document
-        .getElementById(
-            "modalRoles"
-        )
-        .classList.remove("visible");
-
-
+    document.getElementById("modalRoles").classList.remove("visible");
 }
-
-
-
-
-
-
-
 
 
 // =================================
 // GUARDAR ROLES
 // =================================
 
-
 async function guardarRoles() {
 
+    const id = document.getElementById("rolesUsuarioId").value;
+    const rolSeleccionado = document.querySelector('#rolesContainer input:checked');
 
-    const id =
-        document.getElementById(
-            "rolesUsuarioId"
-        ).value;
+    if (!rolSeleccionado) {
+        document.getElementById("rolesError").textContent = "Debe seleccionar un rol.";
+        document.getElementById("rolesError").style.display = "block";
+        return;
+    }
 
+    const rol = rolSeleccionado.value;
+    const tiposMantenimientoIds = [];
 
+    if (rol === "Mantenimiento") {
 
-
-
-    const roles = [];
-
-
-
-    document
-        .querySelectorAll(
-            '#rolesContainer input:checked'
-        )
-        .forEach(check => {
-
-
-            roles.push(
-                check.value
-            );
-
-
+        document.querySelectorAll('input[name="tipoMantenimientoModal"]:checked').forEach(check => {
+            tiposMantenimientoIds.push(parseInt(check.value));
         });
 
-
-
-
-
-
-    if (roles.length === 0) {
-
-
-        document
-            .getElementById(
-                "rolesError"
-            )
-            .style.display = "block";
-
-
-        return;
-
+        if (tiposMantenimientoIds.length === 0) {
+            document.getElementById("rolesError").textContent = "Debe asignar al menos un tipo de mantenimiento.";
+            document.getElementById("rolesError").style.display = "block";
+            return;
+        }
     }
 
+    document.getElementById("rolesError").style.display = "none";
 
+    const response = await fetch('/Admin/Usuarios/EditarRoles', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: id, rol: rol, tiposMantenimientoIds: tiposMantenimientoIds })
+    });
 
-
-
-
-    document
-        .getElementById(
-            "rolesError"
-        )
-        .style.display = "none";
-
-
-
-
-
-
-
-
-    const response =
-        await fetch(
-            '/Admin/Usuarios/EditarRoles',
-            {
-
-                method: "POST",
-
-                headers:
-                {
-                    "Content-Type":
-                        "application/json"
-                },
-
-
-                body:
-                    JSON.stringify(
-                        {
-                            id: id,
-                            roles: roles
-                        })
-
-            });
-
-
-
-
-
-
-    const result =
-        await response.json();
-
-
-
-
+    const result = await response.json();
 
     if (result.success) {
-
+        sessionStorage.setItem("usuarioToastMensaje", "Roles actualizados correctamente.");
         location.reload();
-
+    } else {
+        document.getElementById("rolesError").textContent = result.message ?? "No se pudieron guardar los roles.";
+        document.getElementById("rolesError").style.display = "block";
     }
-    else {
-
-        alert(
-            result.message ??
-            "No se pudieron guardar los roles."
-        );
-
-    }
-
-
-
 }
-
-
-
-
-
-
-
 
 
 // =================================
 // APROBAR USUARIO
 // =================================
-//
-// idVivienda es obligatorio: identifica CUÁL solicitud pendiente se está
-// aprobando, ya que un mismo usuario puede tener relaciones en más de una
-// vivienda (por ejemplo, ya es propietario activo en una y tiene una
-// solicitud pendiente en otra).
-
 
 async function aprobarUsuario(id, idVivienda) {
 
+    const confirmar = confirm("¿Desea aprobar este usuario?");
+    if (!confirmar) return;
 
-    const confirmar =
-        confirm(
-            "¿Desea aprobar este usuario?"
-        );
+    const response = await fetch('/Admin/Usuarios/Aprobar', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: id, idVivienda: idVivienda })
+    });
 
-
-
-    if (!confirmar)
-        return;
-
-
-
-
-
-
-    const response =
-        await fetch(
-            '/Admin/Usuarios/Aprobar',
-            {
-
-
-                method: "POST",
-
-
-                headers:
-                {
-                    "Content-Type":
-                        "application/json"
-                },
-
-
-                body:
-                    JSON.stringify(
-                        {
-                            id: id,
-                            idVivienda: idVivienda
-                        })
-
-
-            });
-
-
-
-
-
-
-
-
-    const result =
-        await response.json();
-
-
-
-
-
+    const result = await response.json();
 
     if (result.success) {
-
-        alert(
-            "Usuario aprobado correctamente."
-        );
-
-
+        sessionStorage.setItem("usuarioToastMensaje", "Usuario aprobado correctamente.");
         location.reload();
-
+    } else {
+        alert(result.message ?? "Error al aprobar usuario.");
     }
-    else {
-
-        alert(
-            result.message ??
-            "Error al aprobar usuario."
-        );
-
-    }
-
-
-
 }
-
-
-
-
-
-
-
 
 
 // =================================
 // RECHAZAR USUARIO
 // =================================
-//
-// idVivienda: mismo motivo que en aprobarUsuario, identifica la solicitud
-// pendiente exacta que se está rechazando.
-
 
 async function rechazarUsuario(id, idVivienda) {
 
+    const confirmar = confirm("¿Desea rechazar este usuario?");
+    if (!confirmar) return;
 
-    const confirmar =
-        confirm(
-            "¿Desea rechazar este usuario?"
-        );
+    const response = await fetch('/Admin/Usuarios/Rechazar', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: id, idVivienda: idVivienda })
+    });
 
-
-
-    if (!confirmar)
-        return;
-
-
-
-
-
-
-
-    const response =
-        await fetch(
-            '/Admin/Usuarios/Rechazar',
-            {
-
-
-                method: "POST",
-
-
-                headers:
-                {
-                    "Content-Type":
-                        "application/json"
-                },
-
-
-                body:
-                    JSON.stringify(
-                        {
-                            id: id,
-                            idVivienda: idVivienda
-                        })
-
-
-            });
-
-
-
-
-
-
-
-
-
-    const result =
-        await response.json();
-
-
-
-
-
+    const result = await response.json();
 
     if (result.success) {
-
-        alert(
-            "Usuario rechazado correctamente."
-        );
-
-
+        sessionStorage.setItem("usuarioToastMensaje", "Usuario rechazado correctamente.");
         location.reload();
-
+    } else {
+        alert(result.message ?? "Error al rechazar usuario.");
     }
-    else {
-
-        alert(
-            result.message ??
-            "Error al rechazar usuario."
-        );
-
-    }
-
-
-
 }
 
 
+// =================================
+// SUSPENDER USUARIO (Bootstrap Modal)
+// =================================
 
+let modalSuspenderInstance = null;
 
+function abrirSuspenderUsuario(id, nombre) {
+    document.getElementById("suspenderUsuarioId").value = id;
+    document.getElementById("suspenderUsuarioNombre").textContent = nombre;
 
+    const modalEl = document.getElementById("modalSuspenderUsuario");
+    modalSuspenderInstance = new bootstrap.Modal(modalEl);
+    modalSuspenderInstance.show();
+}
 
-
+function confirmarSuspenderUsuario() {
+    document.getElementById("formSuspender").submit();
+}
 
 
 // =================================
-// ABRIR MODAL ELIMINAR
+// REACTIVAR USUARIO (Bootstrap Modal)
 // =================================
 
+let modalReactivarInstance = null;
+
+function abrirReactivarUsuario(id, nombre) {
+    document.getElementById("reactivarUsuarioId").value = id;
+    document.getElementById("reactivarUsuarioNombre").textContent = nombre;
+
+    const modalEl = document.getElementById("modalReactivarUsuario");
+    modalReactivarInstance = new bootstrap.Modal(modalEl);
+    modalReactivarInstance.show();
+}
+
+function confirmarReactivarUsuario() {
+    document.getElementById("formReactivar").submit();
+}
+
+
+// =================================
+// ELIMINAR USUARIO (Bootstrap Modal)
+// =================================
+
+let modalEliminarUsuarioInstance = null;
 
 function abrirEliminar(id, nombre) {
 
+    document.getElementById("eliminarUsuarioId").value = id;
+    document.getElementById("eliminarUsuarioNombre").textContent = nombre;
 
-    document.getElementById(
-        "eliminarUsuarioId"
-    ).value = id;
+    const errorBox = document.getElementById("eliminarError");
+    errorBox.style.display = "none";
+    errorBox.textContent = "";
 
+    document.getElementById("btnConfirmarEliminar").disabled = false;
 
-
-
-    document.getElementById(
-        "eliminarUsuarioNombre"
-    ).textContent = nombre;
-
-
-
-
-    document
-        .getElementById(
-            "eliminarError"
-        )
-        .style.display = "none";
-
-
-
-    const modalEliminar =
-        document.getElementById(
-            "modalEliminar"
-        );
-
-    modalEliminar.classList.add("visible");
-    modalEliminar.style.display = "flex";
-
-
-
+    const modalEl = document.getElementById("modalEliminarUsuario");
+    modalEliminarUsuarioInstance = new bootstrap.Modal(modalEl);
+    modalEliminarUsuarioInstance.show();
 }
-
-
-
-
-
-
-
-
-
-// =================================
-// CERRAR MODAL ELIMINAR
-// =================================
-
-
-function cerrarModalEliminar() {
-
-
-    const modalEliminar =
-        document.getElementById(
-            "modalEliminar"
-        );
-
-    modalEliminar.classList.remove("visible");
-    modalEliminar.style.display = "none";
-
-
-
-
-    document.getElementById(
-        "eliminarUsuarioId"
-    ).value = "";
-
-
-}
-
-
-
-
-
-
-
-
-
-// =================================
-// CONFIRMAR ELIMINAR USUARIO
-// =================================
-
 
 async function confirmarEliminarUsuario() {
 
+    const id = document.getElementById("eliminarUsuarioId").value;
+    if (id === "") return;
 
-    const id =
-        document.getElementById(
-            "eliminarUsuarioId"
-        ).value;
-
-
-
-    if (id === "")
-        return;
-
-
-
-
-
-
-    const boton =
-        document.getElementById(
-            "btnConfirmarEliminar"
-        );
-
-
-
+    const boton = document.getElementById("btnConfirmarEliminar");
     boton.disabled = true;
 
+    const errorBox = document.getElementById("eliminarError");
+    errorBox.style.display = "none";
 
+    try {
+        const response = await fetch('/Admin/Usuarios/Eliminar', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: id })
+        });
 
+        const result = await response.json();
 
-    document
-        .getElementById(
-            "eliminarError"
-        )
-        .style.display = "none";
-
-
-
-
-
-
-
-
-    const response =
-        await fetch(
-            '/Admin/Usuarios/Eliminar',
-            {
-
-
-                method: "POST",
-
-
-                headers:
-                {
-                    "Content-Type":
-                        "application/json"
-                },
-
-
-                body:
-                    JSON.stringify(
-                        {
-                            id: id
-                        })
-
-
-            });
-
-
-
-
-
-
-
-
-    const result =
-        await response.json();
-
-
-
-
-
-
-    if (result.success) {
-
-        alert(
-            "Usuario eliminado correctamente."
-        );
-
-        location.reload();
-
-    }
-    else {
-
-
-        document
-            .getElementById(
-                "eliminarError"
-            )
-            .textContent =
-            result.message ??
-            "No se pudo eliminar el usuario.";
-
-
-
-        document
-            .getElementById(
-                "eliminarError"
-            )
-            .style.display = "block";
-
-
-
+        if (result.success) {
+            sessionStorage.setItem("usuarioToastMensaje", "Usuario eliminado correctamente.");
+            location.reload();
+        } else {
+            errorBox.textContent = result.message ?? "No se pudo eliminar el usuario.";
+            errorBox.style.display = "block";
+            boton.disabled = false;
+        }
+    } catch (error) {
+        errorBox.textContent = "No fue posible completar la operación. Intente nuevamente.";
+        errorBox.style.display = "block";
         boton.disabled = false;
-
     }
-
-
-
 }

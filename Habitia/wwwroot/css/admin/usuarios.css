@@ -893,3 +893,190 @@
         padding: 22px;
     }
 }
+
+.tipos-mantenimiento-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.badge-tipo-mantenimiento {
+    display: inline-block;
+    background-color: #EAF3E9;
+    color: #274a26;
+    border-radius: 20px;
+    padding: 2px 9px;
+    font-size: 10.5px;
+    font-weight: 600;
+}
+
+.fila-detalle-bloque {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 220px;
+}
+
+.fila-detalle-persona-titulo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-weight: 700;
+    color: var(--habitia-green-deep);
+    margin-bottom: 2px;
+}
+
+/* =========================
+   ÍCONO DEL MODAL (uso genérico, ej. modal-card custom)
+========================= */
+
+.modal-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px auto;
+}
+
+
+/* =========================
+   ÍCONO MODAL - PELIGRO (Eliminar)
+========================= */
+
+.modal-icon-danger {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FEE2E2;
+}
+
+    .modal-icon-danger i {
+        font-size: 26px;
+        color: #DC2626;
+    }
+
+
+/* =========================
+   ÍCONO MODAL - ADVERTENCIA (Suspender)
+========================= */
+
+.modal-icon-warning {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FEF3C7;
+}
+
+    .modal-icon-warning i {
+        font-size: 26px;
+        color: #92400E;
+    }
+
+
+/* =========================
+   ÍCONO MODAL - ÉXITO (Reactivar)
+========================= */
+
+.modal-icon-success {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #E8F5E8;
+}
+
+    .modal-icon-success i {
+        font-size: 26px;
+        color: #336332;
+    }
+
+/* =========================
+   TOAST ÉXITO (usuarios)
+========================= */
+
+.usuario-toast {
+    min-width: 320px;
+    border-radius: 14px;
+    background: #336332;
+    color: #fff;
+    box-shadow: 0 10px 25px rgba(0,0,0,.18);
+}
+
+    .usuario-toast .toast-body {
+        padding: 14px 18px;
+    }
+
+    .usuario-toast i {
+        color: #fff;
+    }
+
+    .usuario-toast strong {
+        font-size: .95rem;
+    }
+
+    .usuario-toast small {
+        opacity: .9;
+    }
+
+    .usuario-toast.show {
+        animation: usuarioToastSlide .35s ease;
+    }
+
+
+/* =========================
+   TOAST ERROR (usuarios)
+========================= */
+
+.usuario-toast-error {
+    min-width: 320px;
+    border-radius: 14px;
+    background: #DC2626;
+    color: #fff;
+    box-shadow: 0 10px 25px rgba(0,0,0,.18);
+}
+
+    .usuario-toast-error .toast-body {
+        padding: 14px 18px;
+    }
+
+    .usuario-toast-error i {
+        color: #fff;
+    }
+
+    .usuario-toast-error strong {
+        font-size: .95rem;
+    }
+
+    .usuario-toast-error small {
+        opacity: .9;
+    }
+
+    .usuario-toast-error.show {
+        animation: usuarioToastSlide .35s ease;
+    }
+
+
+@keyframes usuarioToastSlide {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
