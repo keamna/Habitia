@@ -133,3 +133,22 @@
         border-color: #ECECEC;
         box-shadow: 0 -2px 0 #336332 inset;
     }
+
+/* Badges faltantes */
+.badge-vencido {
+    background-color: #F8D7DA;
+    color: #842029;
+}
+
+.badge-rechazado {
+    background-color: #F8D7DA;
+    color: #842029;
+}
+
+/* Fila de resumen para tarjetas de métrica */
+.fin-metrica-label {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #848484;
+}

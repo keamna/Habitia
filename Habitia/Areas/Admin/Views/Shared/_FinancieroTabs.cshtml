@@ -1,17 +1,15 @@
 ﻿@* /Areas/Admin/Views/Shared/_FinancieroTabs.cshtml *@
 @{
     var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
-
     bool EsTabActivo(string controlador) =>
         string.Equals(controladorActual, controlador, StringComparison.OrdinalIgnoreCase);
 }
 <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
-
 <div class="fin-tabs mb-4">
     <a class="fin-tab @(EsTabActivo("Cargos") ? "active" : "")" asp-controller="Cargos" asp-action="Index">
         <i class="bi bi-receipt"></i> Cargos
     </a>
-    <a class="fin-tab @(EsTabActivo("Pagos") ? "active" : "")" asp-controller="Pagos" asp-action="Revision">
+    <a class="fin-tab @(EsTabActivo("Pagos") ? "active" : "")" asp-controller="Pagos" asp-action="Index">
         <i class="bi bi-cash-coin"></i> Pagos
     </a>
     <a class="fin-tab @(EsTabActivo("Recargos") ? "active" : "")" asp-controller="Recargos" asp-action="Index">

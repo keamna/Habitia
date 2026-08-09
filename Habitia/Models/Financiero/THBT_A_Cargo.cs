@@ -22,7 +22,7 @@ namespace Habitia.Models.Financiero
         public int TN_IdEstadoCargo { get; set; }
 
         [MaxLength(200)]
-        public string TC_Descripcion { get; set; }
+        public string? TC_Descripcion { get; set; }
 
         [Required]
         public decimal TN_MontoBase { get; set; }
