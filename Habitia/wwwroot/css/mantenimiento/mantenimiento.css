@@ -1,0 +1,124 @@
+﻿/* =========================================================
+   MÓDULO: MANTENIMIENTO
+========================================================= */
+
+:root {
+    --habitia-green-deep: #274a26;
+    --habitia-green-soft: #EAF3E9;
+    --shadow-card: 0 1px 2px rgba(16, 16, 16, 0.04), 0 4px 16px rgba(16, 16, 16, 0.06);
+    --shadow-card-hover: 0 2px 4px rgba(16, 16, 16, 0.05), 0 10px 28px rgba(16, 16, 16, 0.09);
+    --ease-out: cubic-bezier(.16, 1, .3, 1);
+}
+
+/* =========================
+   TARJETA DE TAREA (Mantenimiento/Tareas)
+========================= */
+
+.tarea-card {
+    background: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+    .tarea-card .tarea-titulo {
+        font-weight: 700;
+        font-size: 14px;
+        color: #101010;
+        margin-bottom: 4px;
+    }
+
+    .tarea-card .tarea-meta {
+        font-size: 12.5px;
+        color: var(--habitia-text-gray);
+    }
+
+@media (max-width: 700px) {
+    .tarea-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* =========================
+   TABS: Tareas / Personal / Tipos de Mantenimiento
+   Mismo lenguaje "pill" que .incidencia-tabs (ver incidencias.css)
+========================= */
+
+.mantenimiento-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    background-color: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 12px;
+    padding: 6px;
+    width: fit-content;
+    box-shadow: var(--shadow-card);
+}
+
+    .mantenimiento-tabs .nav-item {
+        margin: 0;
+    }
+
+    .mantenimiento-tabs .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        border-radius: 9px;
+        padding: 9px 16px;
+        margin-right: 0;
+        color: var(--habitia-text-gray);
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: background-color .2s var(--ease-out), color .2s var(--ease-out);
+    }
+
+        .mantenimiento-tabs .nav-link i {
+            margin-right: 0;
+            font-size: 0.95rem;
+        }
+
+        .mantenimiento-tabs .nav-link:hover {
+            background-color: rgba(51, 99, 50, 0.08);
+            color: var(--habitia-green-active);
+            border-color: transparent;
+        }
+
+        .mantenimiento-tabs .nav-link.active {
+            background-color: var(--habitia-green-active);
+            color: #FFFFFF;
+        }
+
+            .mantenimiento-tabs .nav-link.active i {
+                color: #FFFFFF;
+            }
+
+@media (max-width: 500px) {
+    .mantenimiento-tabs {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+        .mantenimiento-tabs .nav-link span {
+            display: none;
+        }
+}
+
+/* =========================
+   BLOQUE EMBEBIDO DE MANTENIMIENTO
+   (usado dentro de Incidencias/Details.cshtml para resaltar
+   la sección de la tarea de mantenimiento asociada)
+========================= */
+
+.mantenimiento-embebido {
+    border-left: 3px solid var(--habitia-green-active);
+    border-radius: 0 16px 16px 0;
+}

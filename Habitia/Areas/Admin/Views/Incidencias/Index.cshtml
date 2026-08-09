@@ -96,14 +96,14 @@
             <thead>
                 <tr>
                     <th class="col-expandir"></th>
-                    <th>Título</th>
-                    <th>Reportado por</th>
-                    <th>Ubicación</th>
-                    <th>Fecha</th>
-                    <th>Estado</th>
-                    <th>Responsabilidad</th>
-                    <th>Prioridad</th>
-                    <th>Mantenimiento</th>
+                    <th class="col-titulo">Título</th>
+                    <th class="col-reportado">Reportado por</th>
+                    <th class="col-ubicacion">Ubicación</th>
+                    <th class="col-fecha">Fecha</th>
+                    <th class="col-estado">Estado</th>
+                    <th class="col-resp">Responsabilidad</th>
+                    <th class="col-prioridad">Prioridad</th>
+                    <th class="col-mantenimiento">Mantenimiento</th>
                     <th class="col-acciones"></th>
                 </tr>
             </thead>
@@ -111,6 +111,7 @@
                 @foreach (var item in Model)
                 {
                     var detalleId = $"detalle-{item.Id}";
+                    var tienePersonalAsignado = item.TieneMantenimientoAsociado && !string.IsNullOrEmpty(item.PersonalAsignadoNombreCompleto);
 
                     <tr class="fila-incidencia">
                         <td>
@@ -140,7 +141,7 @@
                                 <span class="text-muted">Sin asignar</span>
                             }
                         </td>
-                        <td>
+                        <td class="col-mantenimiento">
                             @if (item.TieneMantenimientoAsociado)
                             {
                                 <a asp-controller="Mantenimientos" asp-action="Details" asp-route-id="@item.MantenimientoId" class="mantenimiento-chip">
@@ -149,7 +150,7 @@
                             }
                             else
                             {
-                                <span class="text-muted">—</span>
+                                <span class="text-muted">No asignado</span>
                             }
                         </td>
                         <td class="celda-acciones">
@@ -193,43 +194,40 @@
                                     </div>
                                 </div>
 
-                                @if (item.TieneMantenimientoAsociado)
-                                {
-                                    <div class="fila-detalle-bloque">
-                                        <div class="fila-detalle-persona-titulo">
-                                            <i class="bi bi-tools"></i> Personal asignado
-                                        </div>
-                                        @if (!string.IsNullOrEmpty(item.PersonalAsignadoNombreCompleto))
-                                        {
-                                            <div class="fila-detalle-item">
-                                                <span class="meta-label">Nombre</span>
-                                                <span class="meta-valor">@item.PersonalAsignadoNombreCompleto</span>
-                                            </div>
-                                            <div class="fila-detalle-item">
-                                                <span class="meta-label">Identificación</span>
-                                                <span class="meta-valor">@(item.PersonalAsignadoIdentificacion ?? "N/D")</span>
-                                            </div>
-                                            <div class="fila-detalle-item">
-                                                <span class="meta-label">Teléfono</span>
-                                                <span class="meta-valor">@(item.PersonalAsignadoTelefono ?? "N/D")</span>
-                                            </div>
-                                            <div class="fila-detalle-item">
-                                                <span class="meta-label">Correo</span>
-                                                <span class="meta-valor">@(item.PersonalAsignadoCorreo ?? "N/D")</span>
-                                            </div>
-                                            <div class="fila-detalle-item">
-                                                <span class="meta-label">Tipos que maneja</span>
-                                                <span class="meta-valor">
-                                                    @(item.PersonalAsignadoTipos.Any() ? string.Join(", ", item.PersonalAsignadoTipos) : "N/D")
-                                                </span>
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <p class="text-muted small mb-0">Aún sin personal asignado.</p>
-                                        }
+                                <div class="fila-detalle-bloque">
+                                    <div class="fila-detalle-persona-titulo">
+                                        <i class="bi bi-tools"></i> Personal asignado
                                     </div>
-                                }
+                                    @if (tienePersonalAsignado)
+                                    {
+                                        <div class="fila-detalle-item">
+                                            <span class="meta-label">Nombre</span>
+                                            <span class="meta-valor">@item.PersonalAsignadoNombreCompleto</span>
+                                        </div>
+                                        <div class="fila-detalle-item">
+                                            <span class="meta-label">Identificación</span>
+                                            <span class="meta-valor">@(item.PersonalAsignadoIdentificacion ?? "N/D")</span>
+                                        </div>
+                                        <div class="fila-detalle-item">
+                                            <span class="meta-label">Teléfono</span>
+                                            <span class="meta-valor">@(item.PersonalAsignadoTelefono ?? "N/D")</span>
+                                        </div>
+                                        <div class="fila-detalle-item">
+                                            <span class="meta-label">Correo</span>
+                                            <span class="meta-valor">@(item.PersonalAsignadoCorreo ?? "N/D")</span>
+                                        </div>
+                                        <div class="fila-detalle-item">
+                                            <span class="meta-label">Tipo de mantenimiento</span>
+                                            <span class="meta-valor">
+                                                @(item.PersonalAsignadoTipos.Any() ? string.Join(", ", item.PersonalAsignadoTipos) : "N/D")
+                                            </span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">No asignado</span>
+                                    }
+                                </div>
 
                             </div>
                         </td>

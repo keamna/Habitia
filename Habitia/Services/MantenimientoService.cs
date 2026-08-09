@@ -10,14 +10,10 @@ namespace Habitia.Services
     public class MantenimientoService : IMantenimientoService
     {
         private readonly ApplicationDbContext _context;
-        private readonly ITipoMantenimientoService _tipoMantenimientoService;
 
-        public MantenimientoService(
-            ApplicationDbContext context,
-            ITipoMantenimientoService tipoMantenimientoService)
+        public MantenimientoService(ApplicationDbContext context)
         {
             _context = context;
-            _tipoMantenimientoService = tipoMantenimientoService;
         }
 
         public async Task<Mantenimiento> ConvertirDesdeIncidenciaAsync(MantenimientoCreateViewModel model)
@@ -43,9 +39,20 @@ namespace Habitia.Services
                     "Esta incidencia ya tiene una tarea de mantenimiento asociada.");
             }
 
-            var tipoMantenimiento = await _tipoMantenimientoService.ObtenerOCrearAsync(
-                model.IdTipoMantenimiento,
-                model.NuevoTipoMantenimiento);
+            // El tipo ahora siempre debe existir de antemano: se crea desde la pestaña
+            // "Tipos de Mantenimiento", ya no desde este flujo.
+            if (!model.IdTipoMantenimiento.HasValue)
+            {
+                throw new InvalidOperationException("Debe seleccionar un tipo de mantenimiento.");
+            }
+
+            var tipoMantenimiento = await _context.TiposMantenimiento
+                .FirstOrDefaultAsync(t => t.TN_Id == model.IdTipoMantenimiento.Value);
+
+            if (tipoMantenimiento == null)
+            {
+                throw new InvalidOperationException("El tipo de mantenimiento seleccionado no existe.");
+            }
 
             // Regla de negocio: la asignación debe respetar los tipos de mantenimiento
             // que el personal tiene configurados (Módulo 8).

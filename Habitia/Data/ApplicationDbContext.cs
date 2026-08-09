@@ -131,9 +131,9 @@ namespace Habitia.Data
             {
                 // Trazabilidad: una incidencia genera, a lo sumo, una tarea de mantenimiento
                 entity.HasOne(m => m.Incidencia)
-                    .WithMany()
-                    .HasForeignKey(m => m.TN_IdIncidencia)
-                    .OnDelete(DeleteBehavior.Restrict);
+                .WithOne(i => i.Mantenimiento)
+                .HasForeignKey<Mantenimiento>(m => m.TN_IdIncidencia)
+                .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasIndex(m => m.TN_IdIncidencia)
                     .IsUnique(); // evita generar más de una tarea por incidencia

@@ -1,20 +1,24 @@
-﻿@model Habitia.ViewModels.Usuario.CrearUsuarioViewModel
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@model Habitia.ViewModels.Usuario.CrearUsuarioViewModel
 @{
-    ViewData["Title"] = "Crear usuario";
+    ViewData["Title"] = "Crear personal de mantenimiento";
 }
+
+<partial name="_IncidenciaTabs" />
+<partial name="_MantenimientoTabs" />
 
 <div class="usuarios-page">
     <div class="usuarios-page-header">
         <div>
-            <h2 class="usuarios-page-titulo">Registrar usuario</h2>
-            <p class="usuarios-page-subtitulo">Solo se pueden crear usuarios con rol de Seguridad o Mantenimiento.</p>
+            <h1 class="usuarios-page-titulo">Crear personal de mantenimiento</h1>
+            <p class="usuarios-page-subtitulo">Se creará con rol Mantenimiento y los tipos que selecciones abajo.</p>
         </div>
     </div>
 
     <div class="usuario-form-card">
-        <form asp-action="Crear" method="post" id="formCrearUsuario">
+        <form asp-action="CrearPersonal" method="post" id="formCrearPersonalMantenimiento">
             @Html.AntiForgeryToken()
-            <div asp-validation-summary="ModelOnly" class="roles-error" role="alert" style="display:none;" id="crearUsuarioErrorSummary"></div>
+            <div asp-validation-summary="ModelOnly" class="roles-error" role="alert"></div>
 
             <div class="usuario-form-grid">
                 <div class="usuario-form-group">
@@ -59,22 +63,7 @@
             </div>
 
             <div class="roles-container">
-                <label class="d-block mb-2">Rol del usuario</label>
-                <div class="roles-opciones">
-                    <label class="rol-opcion">
-                        <input type="radio" name="Rol" value="Seguridad" class="input-rol-usuario" required />
-                        Seguridad
-                    </label>
-                    <label class="rol-opcion">
-                        <input type="radio" name="Rol" value="Mantenimiento" class="input-rol-usuario" required />
-                        Mantenimiento
-                    </label>
-                </div>
-                <span asp-validation-for="Rol" class="field-validation-error"></span>
-            </div>
-
-            <div class="roles-container" id="tiposMantenimientoContainer" style="display:none;">
-                <label class="d-block mb-2">Tipos de mantenimiento</label>
+                <label class="d-block mb-2">Tipos de mantenimiento que atenderá</label>
                 <div class="roles-opciones">
                     @if (ViewBag.TiposMantenimiento != null)
                     {
@@ -91,7 +80,7 @@
             </div>
 
             <div class="modal-footer" style="justify-content:flex-end; margin-top:24px;">
-                <a asp-action="Index" class="btn-modal-cancelar">Cancelar</a>
+                <a asp-action="Personal" class="btn-modal-cancelar">Cancelar</a>
                 <button type="submit" class="btn-modal-guardar">Guardar</button>
             </div>
         </form>
@@ -100,12 +89,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        document.querySelectorAll('.input-rol-usuario').forEach(function (radio) {
-            radio.addEventListener('change', function () {
-                var contenedor = document.getElementById('tiposMantenimientoContainer');
-                contenedor.style.display = this.value === 'Mantenimiento' ? 'block' : 'none';
-            });
-        });
-    </script>
 }
