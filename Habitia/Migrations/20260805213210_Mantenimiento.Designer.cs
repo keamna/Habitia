@@ -4,6 +4,7 @@ using Habitia.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Habitia.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260805213210_Mantenimiento")]
+    partial class Mantenimiento
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1241,6 +1244,9 @@ namespace Habitia.Migrations
                     b.Property<string>("ApplicationUserId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int?>("MantenimientoTN_Id")
+                        .HasColumnType("int");
+
                     b.Property<string>("TC_Descripcion")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -1285,6 +1291,8 @@ namespace Habitia.Migrations
                     b.HasKey("TN_Id");
 
                     b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("MantenimientoTN_Id");
 
                     b.HasIndex("TC_IdUsuario");
 
@@ -1989,6 +1997,10 @@ namespace Habitia.Migrations
                         .WithMany("Incidencias")
                         .HasForeignKey("ApplicationUserId");
 
+                    b.HasOne("Habitia.Models.Mantenimiento", "Mantenimiento")
+                        .WithMany()
+                        .HasForeignKey("MantenimientoTN_Id");
+
                     b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
                         .WithMany()
                         .HasForeignKey("TC_IdUsuario")
@@ -2006,6 +2018,8 @@ namespace Habitia.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("AreaComun");
+
+                    b.Navigation("Mantenimiento");
 
                     b.Navigation("Usuario");
 
@@ -2026,8 +2040,8 @@ namespace Habitia.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Habitia.Models.Incidencia", "Incidencia")
-                        .WithOne("Mantenimiento")
-                        .HasForeignKey("Habitia.Models.Mantenimiento", "TN_IdIncidencia")
+                        .WithMany()
+                        .HasForeignKey("TN_IdIncidencia")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -2265,11 +2279,6 @@ namespace Habitia.Migrations
             modelBuilder.Entity("Habitia.Models.Documentos.Documento", b =>
                 {
                     b.Navigation("Asambleas");
-                });
-
-            modelBuilder.Entity("Habitia.Models.Incidencia", b =>
-                {
-                    b.Navigation("Mantenimiento");
                 });
 
             modelBuilder.Entity("Habitia.Models.Publicacion", b =>

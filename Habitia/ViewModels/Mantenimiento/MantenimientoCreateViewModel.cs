@@ -3,17 +3,14 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Habitia.ViewModels.Mantenimiento
 {
-    public class MantenimientoCreateViewModel : IValidatableObject
+    public class MantenimientoCreateViewModel
     {
         [Required]
         public int IdIncidencia { get; set; }
 
-        [Display(Name = "Tipo de mantenimiento existente")]
+        [Required(ErrorMessage = "Debe seleccionar un tipo de mantenimiento.")]
+        [Display(Name = "Tipo de mantenimiento")]
         public int? IdTipoMantenimiento { get; set; }
-
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "El nuevo tipo debe tener entre {2} y {1} caracteres.")]
-        [Display(Name = "Nuevo tipo de mantenimiento")]
-        public string? NuevoTipoMantenimiento { get; set; }
 
         [Required(ErrorMessage = "Debe asignar al menos una persona de mantenimiento.")]
         [Display(Name = "Personal asignado")]
@@ -27,25 +24,5 @@ namespace Habitia.ViewModels.Mantenimiento
         public List<SelectListItem>? IncidenciasElegibles { get; set; }
         public List<SelectListItem>? TiposMantenimiento { get; set; }
         public List<SelectListItem>? PersonalMantenimiento { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            var tieneTipoExistente = IdTipoMantenimiento.HasValue;
-            var tieneTipoNuevo = !string.IsNullOrWhiteSpace(NuevoTipoMantenimiento);
-
-            if (!tieneTipoExistente && !tieneTipoNuevo)
-            {
-                yield return new ValidationResult(
-                    "Debe seleccionar un tipo de mantenimiento existente o ingresar uno nuevo.",
-                    new[] { nameof(IdTipoMantenimiento), nameof(NuevoTipoMantenimiento) });
-            }
-
-            if (tieneTipoExistente && tieneTipoNuevo)
-            {
-                yield return new ValidationResult(
-                    "No puede seleccionar un tipo existente e ingresar uno nuevo al mismo tiempo.",
-                    new[] { nameof(NuevoTipoMantenimiento) });
-            }
-        }
     }
 }

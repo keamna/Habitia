@@ -1,0 +1,360 @@
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@model List<Habitia.ViewModels.Usuario.PersonalMantenimientoListItemViewModel>
+@{
+    ViewData["Title"] = "Personal de Mantenimiento";
+}
+
+<partial name="_IncidenciaTabs" />
+<partial name="_MantenimientoTabs" />
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-1">Personal de Mantenimiento</h2>
+        <p class="text-muted mb-0">Consulta y filtra al personal de mantenimiento, o crea uno nuevo sin salir de este módulo.</p>
+    </div>
+    <a asp-action="CrearPersonal" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Crear personal
+    </a>
+</div>
+
+<form asp-action="Personal" method="get" class="row g-2 align-items-end mb-3">
+    <div class="col-md-3">
+        <label class="form-label small text-muted mb-1">Tipo de mantenimiento</label>
+        <select name="idTipo" class="form-select" onchange="this.form.submit()">
+            <option value="">Todos los tipos</option>
+            @if (ViewBag.TiposMantenimiento != null)
+            {
+                foreach (var tipo in (List<SelectListItem>)ViewBag.TiposMantenimiento)
+                {
+                    var seleccionado = ViewBag.IdTipoSeleccionado != null
+                        && ViewBag.IdTipoSeleccionado.ToString() == tipo.Value;
+
+                    @if (seleccionado)
+                    {
+                        <option value="@tipo.Value" selected>@tipo.Text</option>
+                    }
+                    else
+                    {
+                        <option value="@tipo.Value">@tipo.Text</option>
+                    }
+                }
+            }
+        </select>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No hay personal de mantenimiento @(ViewBag.IdTipoSeleccionado != null ? "con ese tipo" : "registrado") todavía.
+    </div>
+}
+else
+{
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Identificación</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
+                <th>Estado</th>
+                <th>Tipos que maneja</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr data-id="@p.Id"
+                    data-nombre="@p.Nombre"
+                    data-apellido="@p.Apellido"
+                    data-telefono="@p.Telefono"
+                    data-tipos="@string.Join(",", p.TiposIds)">
+                    <td>@p.NombreCompleto</td>
+                    <td>@p.Identificacion</td>
+                    <td>@p.Telefono</td>
+                    <td>@p.Email</td>
+                    <td>
+                        <span class="badge @(p.Estado == "Activo" ? "bg-success" : "bg-secondary")">@p.Estado</span>
+                    </td>
+                    <td>
+                        @(p.TiposNombres.Any() ? string.Join(", ", p.TiposNombres) : "N/D")
+                    </td>
+                    <td>
+                        <div class="fila-acciones">
+                            <button class="btn-menu-fila">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+
+                            <div class="dropdown-menu-fila">
+                                <a href="#" onclick='event.preventDefault(); abrirEditarPersonal(this.closest("tr"))'>
+                                    Editar
+                                </a>
+
+                                @if (p.Estado == "Activo")
+                                {
+                                    <a href="#" class="text-warning"
+                                       onclick='event.preventDefault(); abrirSuspenderPersonal(@Html.Raw(Json.Serialize(p.Id)), @Html.Raw(Json.Serialize(p.NombreCompleto)))'>
+                                        Suspender
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a href="#" class="text-success"
+                                       onclick='event.preventDefault(); abrirReactivarPersonal(@Html.Raw(Json.Serialize(p.Id)), @Html.Raw(Json.Serialize(p.NombreCompleto)))'>
+                                        Reactivar
+                                    </a>
+                                }
+
+                                <a href="#" class="text-danger"
+                                   onclick='event.preventDefault(); abrirEliminarPersonal(@Html.Raw(Json.Serialize(p.Id)), @Html.Raw(Json.Serialize(p.NombreCompleto)))'>
+                                    Eliminar
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<!-- TOASTS: ÉXITO / ERROR -->
+<div id="toastsPersonalContainer" class="position-fixed top-0 end-0 p-3" style="z-index:1080">
+
+    @if (TempData["Success"] != null)
+    {
+        <div id="toastPersonalExito" class="toast usuario-toast border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-body d-flex align-items-center">
+                <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>¡Listo!</strong><br />
+                    <small>@TempData["Success"]</small>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div id="toastPersonalError" class="toast usuario-toast-error border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-body d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+                <div>
+                    <strong>Ocurrió un problema</strong><br />
+                    <small>@TempData["Error"]</small>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+
+<!-- MODAL EDITAR PERSONAL (Bootstrap) -->
+<div class="modal fade" id="modalEditarPersonal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+            <div class="modal-body">
+                <h5 class="mb-1">Editar personal</h5>
+                <p class="text-muted small mb-3">Actualiza sus datos y los tipos de mantenimiento que atiende.</p>
+
+                <input type="hidden" id="editarPersonalId" />
+
+                <div class="mb-2">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" id="editarPersonalNombre" class="form-control" />
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Apellido</label>
+                    <input type="text" id="editarPersonalApellido" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" id="editarPersonalTelefono" class="form-control" />
+                </div>
+
+                <label class="form-label d-block mb-2">Tipos de mantenimiento</label>
+                <div id="editarPersonalTiposContainer" class="roles-opciones mb-2">
+                    @if (ViewBag.TiposMantenimiento != null)
+                    {
+                        foreach (var tipo in (List<SelectListItem>)ViewBag.TiposMantenimiento)
+                        {
+                            <label class="rol-opcion">
+                                <input type="checkbox" name="editarPersonalTipo" value="@tipo.Value" />
+                                @tipo.Text
+                            </label>
+                        }
+                    }
+                </div>
+
+                <div id="editarPersonalError" class="roles-error" style="display:none;"></div>
+
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-primary" onclick="guardarEditarPersonal()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SUSPENDER PERSONAL (Bootstrap) -->
+<div class="modal fade" id="modalSuspenderPersonal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+            <div class="modal-body text-center">
+                <div class="modal-icon-warning mx-auto mb-3">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+
+                <h5 class="mb-2">Suspender personal</h5>
+                <p class="text-muted mb-3">
+                    ¿Desea suspender a <strong id="suspenderPersonalNombre"></strong>?
+                    <br />
+                    No podrá iniciar sesión hasta que sea reactivado.
+                </p>
+
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-warning" onclick="confirmarSuspenderPersonal()">Suspender</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL REACTIVAR PERSONAL (Bootstrap) -->
+<div class="modal fade" id="modalReactivarPersonal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+            <div class="modal-body text-center">
+                <div class="modal-icon-success mx-auto mb-3">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </div>
+
+                <h5 class="mb-2">Reactivar personal</h5>
+                <p class="text-muted mb-3">
+                    ¿Desea reactivar a <strong id="reactivarPersonalNombre"></strong>?
+                    <br />
+                    Podrá iniciar sesión nuevamente.
+                </p>
+
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-success" onclick="confirmarReactivarPersonal()">Reactivar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ELIMINAR PERSONAL (Bootstrap) -->
+<div class="modal fade" id="modalEliminarPersonal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+            <div class="modal-body text-center">
+                <div class="modal-icon-danger mx-auto mb-3">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+
+                <h5 class="mb-2">Eliminar personal</h5>
+                <p class="text-muted mb-3">
+                    ¿Estás seguro de que querés eliminar a <strong id="eliminarPersonalNombre"></strong>?
+                    <br />
+                    Esta acción no se puede deshacer.
+                </p>
+
+                <div class="alert alert-danger text-start" id="eliminarPersonalError" style="display:none;"></div>
+
+                <input type="hidden" id="eliminarPersonalId" />
+
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-danger" id="btnConfirmarEliminarPersonal" onclick="confirmarEliminarPersonal()">
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function mostrarToastPersonal(mensaje, tipo) {
+            const contenedor = document.getElementById("toastsPersonalContainer");
+            if (!contenedor) return;
+
+            const esError = tipo === "error";
+            const claseToast = esError ? "usuario-toast-error" : "usuario-toast";
+            const icono = esError ? "bi-exclamation-triangle-fill" : "bi-check-circle-fill";
+            const titulo = esError ? "Ocurrió un problema" : "¡Listo!";
+
+            const toastEl = document.createElement("div");
+            toastEl.className = `toast ${claseToast} border-0`;
+            toastEl.setAttribute("role", "alert");
+            toastEl.innerHTML = `
+                <div class="toast-body d-flex align-items-center">
+                    <i class="bi ${icono} fs-4 me-3"></i>
+                    <div>
+                        <strong>${titulo}</strong><br />
+                        <small>${mensaje}</small>
+                    </div>
+                </div>
+            `;
+
+            contenedor.appendChild(toastEl);
+            const instancia = new bootstrap.Toast(toastEl, { delay: esError ? 4000 : 3000 });
+            instancia.show();
+            toastEl.addEventListener("hidden.bs.toast", () => toastEl.remove());
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const toastExito = document.getElementById("toastPersonalExito");
+            if (toastExito) new bootstrap.Toast(toastExito, { delay: 3000 }).show();
+
+            const toastError = document.getElementById("toastPersonalError");
+            if (toastError) new bootstrap.Toast(toastError, { delay: 4000 }).show();
+
+            const mensajePendiente = sessionStorage.getItem("personalToastMensaje");
+            if (mensajePendiente) {
+                sessionStorage.removeItem("personalToastMensaje");
+                mostrarToastPersonal(mensajePendiente, "exito");
+            }
+
+            // Menú de tres puntos (mismo patrón fixed-position que Usuarios)
+            function cerrarTodosLosMenus() {
+                document.querySelectorAll(".dropdown-menu-fila").forEach(menu => {
+                    menu.style.display = "none";
+                });
+            }
+
+            document.querySelectorAll(".btn-menu-fila").forEach(btn => {
+                btn.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    const menu = this.nextElementSibling;
+                    if (!menu) return;
+
+                    const estabaAbierto = menu.style.display === "block";
+                    cerrarTodosLosMenus();
+                    if (estabaAbierto) return;
+
+                    const rectBoton = this.getBoundingClientRect();
+                    const anchoMenu = parseFloat(getComputedStyle(menu).width) || 160;
+
+                    menu.style.position = "fixed";
+                    menu.style.top = `${rectBoton.bottom + 4}px`;
+                    menu.style.left = `${rectBoton.right - anchoMenu}px`;
+                    menu.style.display = "block";
+                });
+            });
+
+            document.addEventListener("click", cerrarTodosLosMenus);
+            window.addEventListener("scroll", cerrarTodosLosMenus, true);
+        });
+    </script>
+
+    <script src="~/js/admin/personal.js"></script>
+}

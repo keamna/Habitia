@@ -1,6 +1,26 @@
 ﻿/* =========================================================
-   MÓDULO: INCIDENCIAS Y MANTENIMIENTO
+   MÓDULO: INCIDENCIAS
 ========================================================= */
+
+:root {
+    --habitia-green-deep: #274a26;
+    --habitia-green-soft: #EAF3E9;
+    --shadow-card: 0 1px 2px rgba(16, 16, 16, 0.04), 0 4px 16px rgba(16, 16, 16, 0.06);
+    --shadow-card-hover: 0 2px 4px rgba(16, 16, 16, 0.05), 0 10px 28px rgba(16, 16, 16, 0.09);
+    --ease-out: cubic-bezier(.16, 1, .3, 1);
+}
+
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
 /* =========================
    ENCABEZADO DE SECCIÓN
@@ -32,6 +52,12 @@
     border-radius: 0 12px 12px 0;
     padding: 20px 24px 4px;
     margin-top: 8px;
+}
+
+@media (max-width: 700px) {
+    #seccionMantenimiento {
+        padding: 16px;
+    }
 }
 
 /* =========================
@@ -166,85 +192,8 @@
     }
 
 /* =========================
-   TARJETA DE TAREA (Mantenimiento/Tareas)
-========================= */
-
-.tarea-card {
-    background: #FFFFFF;
-    border: 1px solid var(--habitia-border);
-    border-radius: 16px;
-    padding: 18px 22px;
-    margin-bottom: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-}
-
-    .tarea-card .tarea-titulo {
-        font-weight: 700;
-        font-size: 14px;
-        color: #101010;
-        margin-bottom: 4px;
-    }
-
-    .tarea-card .tarea-meta {
-        font-size: 12.5px;
-        color: var(--habitia-text-gray);
-    }
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 700px) {
-    #seccionMantenimiento {
-        padding: 16px;
-    }
-
-    .tarea-card {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-}
-
-/* =========================
-   TABS: Mantenimientos / Tipos
-========================= */
-
-.mantenimiento-tabs {
-    border-bottom: 1px solid var(--habitia-border);
-}
-
-    .mantenimiento-tabs .nav-link {
-        border: none;
-        border-bottom: 2px solid transparent;
-        border-radius: 0;
-        color: var(--habitia-text-gray);
-        font-weight: 600;
-        font-size: 0.88rem;
-        padding: 10px 4px;
-        margin-right: 28px;
-    }
-
-        .mantenimiento-tabs .nav-link i {
-            margin-right: 6px;
-        }
-
-        .mantenimiento-tabs .nav-link:hover {
-            color: var(--habitia-green-active);
-            border-color: transparent;
-        }
-
-        .mantenimiento-tabs .nav-link.active {
-            color: var(--habitia-green-active);
-            border-bottom-color: var(--habitia-green-active);
-            background: none;
-        }
-
-/* =========================
    TABS: Incidencias / Mantenimientos
-   Mismo lenguaje visual que .ac-tabs / .habitia-nav-item
+   Mismo lenguaje visual que .mantenimiento-tabs (ver mantenimiento.css)
 ========================= */
 
 .incidencia-tabs {
@@ -299,3 +248,1123 @@
         display: none;
     }
 }
+
+/* =========================
+   TARJETAS DE RESPONSABILIDAD
+   (Create de Incidencia)
+========================= */
+
+.responsabilidad-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.responsabilidad-card {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #FFFFFF;
+    border: 1.5px solid var(--habitia-border);
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+    .responsabilidad-card input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .responsabilidad-card:hover {
+        border-color: var(--habitia-green-active);
+    }
+
+    .responsabilidad-card.selected {
+        border-color: var(--habitia-green-active);
+        background-color: rgba(51, 99, 50, 0.05);
+        box-shadow: 0 0 0 3px rgba(51, 99, 50, 0.12);
+    }
+
+.responsabilidad-card-icon {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+}
+
+.responsabilidad-card-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+    .responsabilidad-card-texto strong {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.92rem;
+        color: #101010;
+    }
+
+    .responsabilidad-card-texto span {
+        font-size: 12.5px;
+        color: var(--habitia-text-gray);
+        line-height: 1.35;
+    }
+
+.ubicacion-vacia {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--habitia-bg);
+    border: 1px dashed var(--habitia-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--habitia-text-gray);
+    font-size: 13px;
+}
+
+@media (max-width: 700px) {
+    .responsabilidad-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================
+   DETALLE DE INCIDENCIA (rediseño)
+========================= */
+
+.detalle-volver {
+    font-size: 13px;
+    color: var(--habitia-text-gray);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+    .detalle-volver:hover {
+        color: var(--habitia-green-active);
+    }
+
+.incidencia-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 14px;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.meta-label {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--habitia-text-gray);
+    font-weight: 600;
+}
+
+.meta-valor {
+    font-size: 13.5px;
+    color: #101010;
+    font-weight: 500;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.ubicacion-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ubicacion-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: var(--habitia-bg);
+    border: 1px solid var(--habitia-border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12.5px;
+    color: #101010;
+}
+
+/* Badges de estado (reemplaza los bg-* de Bootstrap usados antes) */
+
+.badge-estado {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-estado-pendiente {
+    background-color: #FFF7E0;
+    color: #B45309;
+}
+
+.badge-estado-proceso {
+    background-color: #E0F2FE;
+    color: #0369A1;
+}
+
+.badge-estado-resuelta {
+    background-color: #E7F6EC;
+    color: #15803D;
+}
+
+.badge-estado-cancelado {
+    background-color: #FEE2E2;
+    color: #B91C1C;
+}
+
+.badge-estado-default {
+    background-color: #F5F5F5;
+    color: var(--habitia-text-gray);
+}
+
+/* Badges de prioridad */
+
+.badge-prioridad {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-prioridad-alta {
+    background-color: #FEE2E2;
+    color: #B91C1C;
+}
+
+.badge-prioridad-media {
+    background-color: #FFF7E0;
+    color: #B45309;
+}
+
+.badge-prioridad-baja {
+    background-color: #F5F5F5;
+    color: var(--habitia-text-gray);
+}
+
+/* =========================================================
+   REDISEÑO V2: elevación y micro-interacciones
+========================================================= */
+
+.incidencia-form-wrapper,
+.detalle-header,
+.incidencia-contexto,
+.index-header,
+.prioridad-wrapper {
+    animation: fadeSlideUp .35s var(--ease-out) backwards;
+}
+
+    .incidencia-contexto:nth-of-type(2) {
+        animation-delay: .05s;
+    }
+
+    .incidencia-contexto:nth-of-type(3) {
+        animation-delay: .1s;
+    }
+
+.incidencia-contexto {
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--habitia-border);
+    transition: box-shadow .2s var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .incidencia-form-wrapper, .detalle-header, .incidencia-contexto,
+    .ubicacion-campo, .responsabilidad-card, .responsabilidad-card-icon,
+    .evidencia-preview, .index-header, .prioridad-wrapper,
+    .prioridad-card, .fila-incidencia {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* =========================
+   LAYOUT DE DOS COLUMNAS (Create)
+========================= */
+
+.incidencia-form-wrapper {
+    max-width: 1140px;
+    margin: 0 auto;
+}
+
+.incidencia-form-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 28px;
+    align-items: start;
+}
+
+@media (max-width: 960px) {
+    .incidencia-form-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.incidencia-form-card {
+    background: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 20px;
+    padding: 28px 32px;
+    box-shadow: var(--shadow-card);
+}
+
+    .incidencia-form-card h5 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .incidencia-form-card h5 .paso-numero {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--habitia-green-soft);
+            color: var(--habitia-green-deep);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+    .incidencia-form-card .form-control,
+    .incidencia-form-card .form-select {
+        border-radius: 10px;
+        border: 1.5px solid var(--habitia-border);
+        padding: 10px 14px;
+        font-size: 14px;
+        transition: border-color .15s var(--ease-out), box-shadow .15s var(--ease-out);
+    }
+
+        .incidencia-form-card .form-control:focus,
+        .incidencia-form-card .form-select:focus {
+            border-color: var(--habitia-green-active);
+            box-shadow: 0 0 0 3px rgba(51, 99, 50, 0.12);
+        }
+
+/* =========================
+   PANEL DE VISTA PREVIA (signature - Create)
+========================= */
+
+.preview-panel {
+    position: sticky;
+    top: 20px;
+    background: linear-gradient(180deg, #FFFFFF 0%, var(--habitia-bg) 100%);
+    border: 1px solid var(--habitia-border);
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow: var(--shadow-card);
+}
+
+.preview-panel-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-weight: 700;
+    color: var(--habitia-text-gray);
+    margin-bottom: 14px;
+}
+
+    .preview-panel-label i {
+        color: var(--habitia-green-active);
+    }
+
+.preview-card {
+    background: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.preview-titulo {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 14.5px;
+    color: #101010;
+    margin-bottom: 6px;
+    word-break: break-word;
+    min-height: 18px;
+}
+
+    .preview-titulo.vacio {
+        color: #B8B8B8;
+        font-weight: 500;
+        font-style: italic;
+    }
+
+.preview-descripcion {
+    font-size: 12.5px;
+    color: var(--habitia-text-gray);
+    line-height: 1.5;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 18px;
+}
+
+    .preview-descripcion.vacio {
+        color: #B8B8B8;
+        font-style: italic;
+    }
+
+.preview-divider {
+    border: none;
+    border-top: 1px dashed var(--habitia-border);
+    margin: 12px 0;
+}
+
+.preview-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+    .preview-row .preview-row-label {
+        color: var(--habitia-text-gray);
+    }
+
+.preview-empty-pill {
+    display: inline-block;
+    background: #F5F5F5;
+    color: #B8B8B8;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-style: italic;
+}
+
+.preview-evidencia-thumb {
+    width: 100%;
+    height: 110px;
+    border-radius: 10px;
+    object-fit: cover;
+    margin-top: 6px;
+    display: none;
+}
+
+/* =========================
+   TARJETAS DE RESPONSABILIDAD v2
+========================= */
+
+.responsabilidad-card {
+    border-radius: 16px;
+    transition: transform .15s var(--ease-out), border-color .15s var(--ease-out), box-shadow .15s var(--ease-out);
+}
+
+    .responsabilidad-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-card-hover);
+    }
+
+    .responsabilidad-card.selected {
+        box-shadow: 0 0 0 2px var(--habitia-green-active), var(--shadow-card-hover);
+    }
+
+        .responsabilidad-card.selected::after {
+            content: "\F26E";
+            font-family: "bootstrap-icons";
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            color: var(--habitia-green-active);
+            font-size: 16px;
+        }
+
+.responsabilidad-card-icon {
+    transition: transform .2s var(--ease-out);
+}
+
+.responsabilidad-card.selected .responsabilidad-card-icon {
+    transform: scale(1.08);
+}
+
+.ubicacion-campo {
+    animation: fadeSlideUp .25s var(--ease-out) backwards;
+}
+
+/* Botones modernizados (compartidos por todo el módulo) */
+
+.btn-habitia-primary, .incidencia-form-card .btn-primary,
+.detalle-header .btn-primary, .incidencia-contexto .btn-primary,
+.index-header .btn-primary {
+    background: var(--habitia-green-active);
+    border: none;
+    border-radius: 10px;
+    padding: 11px 22px;
+    font-weight: 600;
+    font-size: 13.5px;
+    transition: background-color .15s var(--ease-out), transform .1s var(--ease-out);
+}
+
+    .btn-habitia-primary:hover, .incidencia-form-card .btn-primary:hover,
+    .index-header .btn-primary:hover {
+        background: var(--habitia-green-deep);
+        transform: translateY(-1px);
+        color: #fff;
+    }
+
+.incidencia-form-card .btn-secondary, .prioridad-wrapper .btn-secondary {
+    border-radius: 10px;
+    padding: 11px 22px;
+    font-weight: 600;
+    font-size: 13.5px;
+    background: transparent;
+    border: 1.5px solid var(--habitia-border);
+    color: #3A3A3A;
+}
+
+    .incidencia-form-card .btn-secondary:hover, .prioridad-wrapper .btn-secondary:hover {
+        border-color: var(--habitia-text-gray);
+    }
+
+/* Zona de evidencia estilo dropzone */
+
+.evidencia-dropzone {
+    border: 1.5px dashed var(--habitia-border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .15s var(--ease-out), background-color .15s var(--ease-out);
+    background: var(--habitia-bg);
+}
+
+    .evidencia-dropzone:hover, .evidencia-dropzone.dragover {
+        border-color: var(--habitia-green-active);
+        background: var(--habitia-green-soft);
+    }
+
+    .evidencia-dropzone i {
+        font-size: 22px;
+        color: var(--habitia-green-active);
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .evidencia-dropzone input[type="file"] {
+        display: none;
+    }
+
+.evidencia-nombre-archivo {
+    font-size: 12.5px;
+    color: var(--habitia-green-deep);
+    font-weight: 600;
+    margin-top: 8px;
+    display: none;
+}
+
+/* =========================
+   TIMELINE DE ESTADO (signature - Details)
+========================= */
+
+.estado-timeline {
+    display: flex;
+    align-items: center;
+    margin: 18px 0 4px;
+}
+
+.estado-timeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+}
+
+    .estado-timeline-step .dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #E5E5E5;
+        border: 3px solid #FFFFFF;
+        box-shadow: 0 0 0 1.5px #E5E5E5;
+        z-index: 2;
+        transition: all .2s var(--ease-out);
+    }
+
+    .estado-timeline-step .label {
+        font-size: 11px;
+        color: var(--habitia-text-gray);
+        margin-top: 8px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .estado-timeline-step .linea {
+        position: absolute;
+        top: 6px;
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background: #E5E5E5;
+        z-index: 1;
+    }
+
+    .estado-timeline-step:last-child .linea {
+        display: none;
+    }
+
+    .estado-timeline-step.completado .dot {
+        background: var(--habitia-green-active);
+        box-shadow: 0 0 0 1.5px var(--habitia-green-active);
+    }
+
+    .estado-timeline-step.completado .linea {
+        background: var(--habitia-green-active);
+    }
+
+    .estado-timeline-step.completado .label {
+        color: var(--habitia-green-deep);
+    }
+
+    .estado-timeline-step.actual .dot {
+        background: #FFFFFF;
+        border-color: var(--habitia-green-active);
+        box-shadow: 0 0 0 1.5px var(--habitia-green-active), 0 0 0 5px var(--habitia-green-soft);
+        width: 16px;
+        height: 16px;
+    }
+
+    .estado-timeline-step.actual .label {
+        color: var(--habitia-green-deep);
+        font-weight: 700;
+    }
+
+/* =========================
+   DETAILS: layout de dos columnas
+========================= */
+
+.detalle-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 960px) {
+    .detalle-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.detalle-sidebar-card {
+    background: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+}
+
+    .detalle-sidebar-card + .detalle-sidebar-card {
+        margin-top: 18px;
+    }
+
+.detalle-sidebar-titulo {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    font-weight: 700;
+    color: var(--habitia-text-gray);
+    margin-bottom: 12px;
+}
+
+.evidencia-preview {
+    border-radius: 12px;
+    width: 100%;
+    transition: transform .2s var(--ease-out);
+}
+
+    .evidencia-preview:hover {
+        transform: scale(1.02);
+    }
+
+.responsabilidad-card:focus-within {
+    box-shadow: 0 0 0 3px rgba(51, 99, 50, 0.25);
+}
+
+/* =========================================================
+   INDEX (listado) — rediseño
+========================================================= */
+
+.index-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+    .index-header h2 {
+        margin: 0;
+    }
+
+    .index-header p {
+        color: var(--habitia-text-gray);
+        font-size: 13px;
+        margin: 4px 0 0;
+    }
+
+.index-filtros-card {
+    background: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 16px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow-card);
+    margin-bottom: 20px;
+}
+
+    .index-filtros-card .form-select,
+    .index-filtros-card .form-control {
+        border-radius: 10px;
+        border: 1.5px solid var(--habitia-border);
+        font-size: 13.5px;
+    }
+
+    .index-filtros-card .btn-outline-primary {
+        border-radius: 10px;
+        border-color: var(--habitia-green-active);
+        color: var(--habitia-green-active);
+        font-weight: 600;
+        font-size: 13.5px;
+    }
+
+        .index-filtros-card .btn-outline-primary:hover {
+            background: var(--habitia-green-active);
+            border-color: var(--habitia-green-active);
+        }
+
+    .index-filtros-card .btn-outline-secondary {
+        border-radius: 10px;
+        font-size: 13.5px;
+    }
+
+/* =========================
+   TABLA DE INCIDENCIAS
+   (sin scroll: layout fijo por columnas + fila expandible)
+========================= */
+
+.tabla-incidencias-card {
+    background: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 18px;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+
+.tabla-incidencias-scroll {
+    overflow-x: auto;
+}
+
+.tabla-incidencias {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+    .tabla-incidencias thead th {
+        background: #FFFFFF;
+        color: var(--habitia-text-gray);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        font-weight: 700;
+        padding: 14px 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--habitia-border);
+    }
+
+    /* Anchos de columna reequilibrados: Título, Responsabilidad y
+       Prioridad necesitan más aire; Mantenimiento puede envolver texto
+       (white-space: normal más abajo) así que no necesita tanto ancho fijo. */
+    .tabla-incidencias th.col-expandir {
+        width: 34px;
+    }
+
+    .tabla-incidencias th.col-titulo {
+        width: 19%;
+    }
+
+    .tabla-incidencias th.col-reportado {
+        width: 11%;
+    }
+
+    .tabla-incidencias th.col-ubicacion {
+        width: 12%;
+    }
+
+    .tabla-incidencias th.col-fecha {
+        width: 10%;
+    }
+
+    .tabla-incidencias th.col-estado {
+        width: 10%;
+    }
+
+    .tabla-incidencias th.col-resp {
+        width: 11%;
+    }
+
+    .tabla-incidencias th.col-prioridad {
+        width: 10%;
+    }
+
+    .tabla-incidencias th.col-mantenimiento {
+        width: 12%;
+    }
+
+    .tabla-incidencias th.col-acciones {
+        width: 150px;
+    }
+
+    .tabla-incidencias td {
+        padding: 14px 12px;
+        font-size: 13.5px;
+        vertical-align: middle;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+        /* La columna de Mantenimiento no debe truncar: el chip puede tener
+       texto largo (tipo + estado), así que se le permite envolver. */
+        .tabla-incidencias td.col-mantenimiento {
+            overflow: visible;
+            white-space: normal;
+            text-overflow: unset;
+        }
+
+    .tabla-incidencias tr.fila-incidencia:not(:last-child) td,
+    .tabla-incidencias tr.fila-incidencia:last-child:not(.expandida) td {
+        border-bottom: 1px solid #F3F3F3;
+    }
+
+.titulo-incidencia-celda {
+    font-weight: 600;
+    color: #101010;
+}
+
+.ubicacion-celda {
+    color: var(--habitia-text-gray);
+    font-size: 12.5px;
+}
+
+.fecha-celda {
+    color: var(--habitia-text-gray);
+    font-size: 12.5px;
+}
+
+.mantenimiento-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--habitia-green-soft);
+    color: var(--habitia-green-deep);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: normal;
+    line-height: 1.3;
+    transition: background-color .15s var(--ease-out);
+}
+
+    .mantenimiento-chip:hover {
+        background: var(--habitia-green-active);
+        color: #fff;
+    }
+
+.tabla-incidencias td.celda-acciones {
+    overflow: visible;
+    white-space: normal;
+    text-overflow: unset;
+}
+
+.acciones-celda {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.btn-fila-ver, .btn-fila-prioridad {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 14px;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: background-color .15s var(--ease-out), border-color .15s var(--ease-out), color .15s var(--ease-out), transform .15s var(--ease-out), box-shadow .15s var(--ease-out);
+}
+
+    .btn-fila-ver:hover, .btn-fila-prioridad:hover {
+        text-decoration: none;
+    }
+
+    .btn-fila-ver i, .btn-fila-prioridad i {
+        font-size: 12.5px;
+    }
+
+.btn-fila-ver {
+    border: 1.5px solid var(--habitia-border);
+    color: #3A3A3A;
+    background: #FFFFFF;
+}
+
+    .btn-fila-ver:hover {
+        border-color: var(--habitia-green-active);
+        color: var(--habitia-green-active);
+        background: var(--habitia-green-soft);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(51, 99, 50, 0.12);
+    }
+
+.btn-fila-prioridad {
+    border: 1.5px solid transparent;
+    background: #FFF7E0;
+    color: #B45309;
+}
+
+    .btn-fila-prioridad:hover {
+        background: #B45309;
+        border-color: #B45309;
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(180, 83, 9, 0.25);
+    }
+
+.tabla-empty-incidencias {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--habitia-text-gray);
+}
+
+    .tabla-empty-incidencias i {
+        font-size: 32px;
+        color: #D8D8D8;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+/* Botón flecha para expandir fila */
+.btn-expandir-fila {
+    background: none;
+    border: none;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--habitia-text-gray);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: transform .18s var(--ease-out), background-color .15s var(--ease-out), color .15s var(--ease-out);
+}
+
+    .btn-expandir-fila:hover {
+        background-color: #FFFFFF;
+        color: var(--habitia-green-active);
+    }
+
+    .btn-expandir-fila.expandido {
+        transform: rotate(90deg);
+        color: var(--habitia-green-active);
+    }
+
+/* Fila secundaria con detalle expandido */
+.fila-detalle {
+    display: none;
+}
+
+    .fila-detalle.visible {
+        display: table-row;
+    }
+
+    .fila-detalle td {
+        background-color: #FFFFFF;
+        padding: 14px 18px 14px 46px;
+        white-space: normal;
+        border-bottom: 1px solid #F3F3F3;
+    }
+
+.fila-detalle-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.fila-detalle-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+    .fila-detalle-item .meta-label {
+        margin-bottom: 0;
+    }
+
+/* Bloques de persona (Reportado por / Personal asignado) dentro de la fila expandida */
+.fila-detalle-bloque {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 240px;
+}
+
+.fila-detalle-persona-titulo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--habitia-green-deep);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+    .fila-detalle-persona-titulo i {
+        font-size: 12px;
+    }
+
+@media (max-width: 860px) {
+    .tabla-incidencias th.col-ubicacion,
+    .tabla-incidencias td.col-ubicacion,
+    .tabla-incidencias th.col-fecha,
+    .tabla-incidencias td.col-fecha {
+        display: none;
+    }
+}
+
+/* =========================================================
+   ASIGNAR PRIORIDAD — rediseño
+========================================================= */
+
+.prioridad-wrapper {
+    max-width: 620px;
+    margin: 0 auto;
+}
+
+.prioridad-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.prioridad-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: #FFFFFF;
+    border: 1.5px solid var(--habitia-border);
+    border-radius: 14px;
+    padding: 18px 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: transform .15s var(--ease-out), border-color .15s var(--ease-out), box-shadow .15s var(--ease-out);
+}
+
+    .prioridad-card input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .prioridad-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-card-hover);
+    }
+
+    .prioridad-card .prioridad-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+
+    .prioridad-card strong {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.92rem;
+        color: #101010;
+    }
+
+    .prioridad-card span {
+        font-size: 11.5px;
+        color: var(--habitia-text-gray);
+    }
+
+    .prioridad-card[data-nivel="baja"] .prioridad-icon {
+        background: #F5F5F5;
+        color: var(--habitia-text-gray);
+    }
+
+    .prioridad-card[data-nivel="media"] .prioridad-icon {
+        background: #FFF7E0;
+        color: #B45309;
+    }
+
+    .prioridad-card[data-nivel="alta"] .prioridad-icon {
+        background: #FEE2E2;
+        color: #B91C1C;
+    }
+
+    .prioridad-card.selected[data-nivel="baja"] {
+        border-color: var(--habitia-text-gray);
+        box-shadow: 0 0 0 2px rgba(58,58,58,.15);
+    }
+
+    .prioridad-card.selected[data-nivel="media"] {
+        border-color: #B45309;
+        box-shadow: 0 0 0 2px rgba(180,83,9,.15);
+    }
+
+    .prioridad-card.selected[data-nivel="alta"] {
+        border-color: #B91C1C;
+        box-shadow: 0 0 0 2px rgba(185,28,28,.15);
+    }
+
+    .prioridad-card.selected::after {
+        content: "\F26E";
+        font-family: "bootstrap-icons";
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        font-size: 14px;
+        color: inherit;
+    }

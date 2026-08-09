@@ -5,71 +5,215 @@
 }
 
 <partial name="_MantenimientoTabs" />
-<h2>Crear Tarea de Mantenimiento</h2>
 
-<form asp-action="Create" method="post" class="incidencia-form">
-    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-
-    @if (incidenciaFija)
-    {
-        <input type="hidden" asp-for="IdIncidencia" />
-        <div class="alert alert-info">
-            Generando tarea para la incidencia: <strong>@Model.Descripcion</strong>
+<div class="incidencia-form-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Crear Tarea de Mantenimiento</h2>
+            <p class="text-muted mb-0">Completa los datos y asigna al personal responsable.</p>
         </div>
-    }
-    else
-    {
-        <div class="mb-3">
-            <label asp-for="IdIncidencia" class="form-label">Incidencia</label>
-            <select asp-for="IdIncidencia" class="form-select" asp-items="Model.IncidenciasElegibles">
-                <option value="">-- Seleccione una incidencia --</option>
-            </select>
-            <span asp-validation-for="IdIncidencia" class="text-danger"></span>
-            <div class="form-text">
-                Solo se muestran incidencias con responsabilidad Común o Mixto que aún no tienen tarea asignada.
+    </div>
+
+    <form asp-action="Create" method="post" class="incidencia-form" id="formMantenimiento">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+        <div class="incidencia-form-layout">
+
+            <div class="incidencia-form-card">
+
+                <h5 class="mt-0"><span class="paso-numero">1</span> Incidencia relacionada</h5>
+                <hr />
+
+                @if (incidenciaFija)
+                {
+                    <input type="hidden" asp-for="IdIncidencia" />
+                    <div class="alert alert-info">
+                        Generando tarea para la incidencia: <strong>@Model.Descripcion</strong>
+                    </div>
+                }
+                else
+                {
+                    <div class="mb-1">
+                        <label asp-for="IdIncidencia" class="form-label"></label>
+                        <select asp-for="IdIncidencia" class="form-select" asp-items="Model.IncidenciasElegibles" id="selectIncidencia">
+                            <option value="">-- Seleccione una incidencia --</option>
+                        </select>
+                        <span asp-validation-for="IdIncidencia" class="text-danger"></span>
+                        <div class="form-text">
+                            Solo se muestran incidencias con responsabilidad Común o Mixto que aún no tienen tarea asignada.
+                        </div>
+                    </div>
+                }
+
+                <h5><span class="paso-numero">2</span> Datos de la tarea</h5>
+                <hr />
+
+                <div class="mb-1">
+                    <label asp-for="Descripcion" class="form-label"></label>
+                    <textarea asp-for="Descripcion" class="form-control" rows="3" placeholder="Describe el trabajo a realizar" id="inputDescripcionTarea"></textarea>
+                    <span asp-validation-for="Descripcion" class="text-danger"></span>
+                </div>
+
+                <h5><span class="paso-numero">3</span> Tipo de mantenimiento</h5>
+                <hr />
+
+                <div class="mb-1">
+                    <label asp-for="IdTipoMantenimiento" class="form-label"></label>
+                    <select asp-for="IdTipoMantenimiento" class="form-select" id="selectTipoMantenimiento" asp-items="Model.TiposMantenimiento">
+                        <option value="">-- Seleccione un tipo --</option>
+                    </select>
+                    <span asp-validation-for="IdTipoMantenimiento" class="text-danger"></span>
+                    <div class="form-text">
+                        ¿El tipo que necesitas no está en la lista?
+                        <a asp-controller="TiposMantenimiento" asp-action="Index">Créalo desde la pestaña Tipos de Mantenimiento</a>
+                        y vuelve aquí.
+                    </div>
+                </div>
+
+                <h5><span class="paso-numero">4</span> Personal asignado</h5>
+                <hr />
+
+                <div class="mb-1">
+                    <label asp-for="IdPersonalAsignado" class="form-label"></label>
+                    <select asp-for="IdPersonalAsignado" class="form-select" id="selectPersonalAsignado" asp-items="Model.PersonalMantenimiento">
+                        <option value="">-- Seleccione personal de mantenimiento --</option>
+                    </select>
+                    <span asp-validation-for="IdPersonalAsignado" class="text-danger"></span>
+                    <div class="form-text" id="avisoPersonalSinFiltrar">
+                        Selecciona primero un tipo de mantenimiento para ver solo al personal habilitado para atenderlo.
+                    </div>
+                    <div class="form-text text-warning" id="avisoSinPersonal" style="display:none;">
+                        No hay personal activo configurado para este tipo de mantenimiento.
+                    </div>
+                </div>
+
+                <div class="alert alert-secondary mt-3 mb-0">
+                    <i class="bi bi-clock"></i>
+                    La fecha y hora de creación de la tarea se registrará automáticamente al momento de guardar.
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Asignar Tarea</button>
+                    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                </div>
             </div>
+
+            <div class="preview-panel">
+                <div class="preview-panel-label"><i class="bi bi-eye"></i> Vista previa</div>
+
+                <div class="preview-card">
+                    <div class="preview-titulo vacio" id="previewDescripcionTarea"></div>
+
+                    <hr class="preview-divider" />
+
+                    <div class="preview-row">
+                        <span class="preview-row-label">Incidencia</span>
+                        <span id="previewIncidencia"><span class="preview-empty-pill">Sin elegir</span></span>
+                    </div>
+
+                    <div class="preview-row">
+                        <span class="preview-row-label">Tipo</span>
+                        <span id="previewTipo"><span class="preview-empty-pill">Sin elegir</span></span>
+                    </div>
+
+                    <div class="preview-row">
+                        <span class="preview-row-label">Asignado a</span>
+                        <span id="previewPersonal"><span class="preview-empty-pill">Sin asignar</span></span>
+                    </div>
+                </div>
+            </div>
+
         </div>
-    }
-
-    <div class="mb-3">
-        <label asp-for="Descripcion" class="form-label"></label>
-        <input asp-for="Descripcion" class="form-control" />
-        <span asp-validation-for="Descripcion" class="text-danger"></span>
-    </div>
-
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label asp-for="IdTipoMantenimiento" class="form-label"></label>
-            <select asp-for="IdTipoMantenimiento" class="form-select" asp-items="Model.TiposMantenimiento">
-                <option value="">-- Seleccione un tipo existente --</option>
-            </select>
-            <span asp-validation-for="IdTipoMantenimiento" class="text-danger"></span>
-        </div>
-        <div class="col-md-6 mb-3">
-            <label asp-for="NuevoTipoMantenimiento" class="form-label"></label>
-            <input asp-for="NuevoTipoMantenimiento" class="form-control" placeholder="Ej: Jardinería" />
-            <span asp-validation-for="NuevoTipoMantenimiento" class="text-danger"></span>
-            <div class="form-text">Complete este campo solo si el tipo no existe en la lista.</div>
-        </div>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="IdPersonalAsignado" class="form-label"></label>
-        <select asp-for="IdPersonalAsignado" class="form-select" asp-items="Model.PersonalMantenimiento">
-            <option value="">-- Seleccione personal de mantenimiento --</option>
-        </select>
-        <span asp-validation-for="IdPersonalAsignado" class="text-danger"></span>
-    </div>
-
-    <div class="alert alert-secondary">
-        <i class="bi bi-clock"></i>
-        La fecha y hora de creación de la tarea se registrará automáticamente al momento de guardar.
-    </div>
-
-    <button type="submit" class="btn btn-primary">Asignar Tarea</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-</form>
+    </form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const selectTipo = document.getElementById('selectTipoMantenimiento');
+        const selectPersonal = document.getElementById('selectPersonalAsignado');
+        const avisoPersonalSinFiltrar = document.getElementById('avisoPersonalSinFiltrar');
+        const avisoSinPersonal = document.getElementById('avisoSinPersonal');
+        const inputDescripcionTarea = document.getElementById('inputDescripcionTarea');
+        const selectIncidencia = document.getElementById('selectIncidencia');
+
+        function actualizarPreview() {
+
+            const descripcion = inputDescripcionTarea.value.trim();
+            const previewDescripcion = document.getElementById('previewDescripcionTarea');
+            previewDescripcion.textContent = descripcion || 'La descripción de la tarea aparecerá aquí a medida que escribes...';
+            previewDescripcion.classList.toggle('vacio', descripcion === '');
+
+            const previewIncidencia = document.getElementById('previewIncidencia');
+            if (selectIncidencia) {
+                previewIncidencia.innerHTML = selectIncidencia.value
+                    ? `<span class="ubicacion-chip">${selectIncidencia.options[selectIncidencia.selectedIndex].text}</span>`
+                    : '<span class="preview-empty-pill">Sin elegir</span>';
+            }
+
+            const previewTipo = document.getElementById('previewTipo');
+            previewTipo.innerHTML = selectTipo.value
+                ? `<span class="pill-responsabilidad pill-comun">${selectTipo.options[selectTipo.selectedIndex].text}</span>`
+                : '<span class="preview-empty-pill">Sin elegir</span>';
+
+            const previewPersonal = document.getElementById('previewPersonal');
+            previewPersonal.innerHTML = selectPersonal.value
+                ? `<span class="ubicacion-chip">${selectPersonal.options[selectPersonal.selectedIndex].text}</span>`
+                : '<span class="preview-empty-pill">Sin asignar</span>';
+        }
+
+        async function filtrarPersonalPorTipo() {
+            const idTipo = selectTipo.value;
+
+            if (!idTipo) {
+                selectPersonal.innerHTML = '<option value="">-- Seleccione personal de mantenimiento --</option>';
+                avisoPersonalSinFiltrar.style.display = 'block';
+                avisoSinPersonal.style.display = 'none';
+                actualizarPreview();
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Admin/Mantenimientos/PersonalPorTipo?idTipo=${idTipo}`);
+                const personal = await response.json();
+
+                const valorActual = selectPersonal.value;
+                selectPersonal.innerHTML = '<option value="">-- Seleccione personal de mantenimiento --</option>';
+
+                personal.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    option.textContent = p.nombre;
+                    selectPersonal.appendChild(option);
+                });
+
+                if (personal.some(p => p.id === valorActual)) {
+                    selectPersonal.value = valorActual;
+                }
+
+                avisoPersonalSinFiltrar.style.display = 'none';
+                avisoSinPersonal.style.display = personal.length === 0 ? 'block' : 'none';
+
+            } catch (error) {
+                console.error('No se pudo filtrar el personal por tipo:', error);
+            }
+
+            actualizarPreview();
+        }
+
+        selectTipo.addEventListener('change', filtrarPersonalPorTipo);
+        selectPersonal.addEventListener('change', actualizarPreview);
+        inputDescripcionTarea.addEventListener('input', actualizarPreview);
+        selectIncidencia?.addEventListener('change', actualizarPreview);
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Si venimos con un tipo ya preseleccionado (ej. al reintentar tras un error de validación),
+            // filtramos el personal automáticamente al cargar.
+            if (selectTipo.value) {
+                filtrarPersonalPorTipo();
+            } else {
+                actualizarPreview();
+            }
+        });
+    </script>
 }

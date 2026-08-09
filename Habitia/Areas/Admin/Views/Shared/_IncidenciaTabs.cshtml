@@ -1,13 +1,14 @@
 ﻿@{
     var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
-    bool EsTabActivo(string controlador) =>
-        string.Equals(controladorActual, controlador, StringComparison.OrdinalIgnoreCase);
+
+    bool EsTabActivo(params string[] controladores) =>
+        controladores.Any(c => string.Equals(controladorActual, c, StringComparison.OrdinalIgnoreCase));
 }
 <div class="incidencia-tabs mb-4">
     <a class="incidencia-tab @(EsTabActivo("Incidencias") ? "active" : "")" asp-controller="Incidencias" asp-action="Index">
         <i class="bi bi-exclamation-triangle-fill"></i> <span>Incidencias</span>
     </a>
-    <a class="incidencia-tab @(EsTabActivo("Mantenimientos") ? "active" : "")" asp-controller="Mantenimientos" asp-action="Index">
+    <a class="incidencia-tab @(EsTabActivo("Mantenimientos", "TiposMantenimiento") ? "active" : "")" asp-controller="Mantenimientos" asp-action="Index">
         <i class="bi bi-tools"></i> <span>Mantenimientos</span>
     </a>
 </div>

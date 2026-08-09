@@ -1,20 +1,34 @@
 ﻿@{
     var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
-    var esMantenimientos = string.Equals(controladorActual, "Mantenimientos", StringComparison.OrdinalIgnoreCase);
+    var accionActual = ViewContext.RouteData.Values["action"]?.ToString();
+
+    var esMantenimientos = string.Equals(controladorActual, "Mantenimientos", StringComparison.OrdinalIgnoreCase)
+        && !string.Equals(accionActual, "Personal", StringComparison.OrdinalIgnoreCase)
+        && !string.Equals(accionActual, "CrearPersonal", StringComparison.OrdinalIgnoreCase);
+
+    var esPersonal = string.Equals(controladorActual, "Mantenimientos", StringComparison.OrdinalIgnoreCase)
+        && (string.Equals(accionActual, "Personal", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(accionActual, "CrearPersonal", StringComparison.OrdinalIgnoreCase));
+
     var esTipos = string.Equals(controladorActual, "TiposMantenimiento", StringComparison.OrdinalIgnoreCase);
 }
-
-<ul class="nav nav-tabs mantenimiento-tabs mb-4">
+<ul class="nav mantenimiento-tabs mb-4">
     <li class="nav-item">
         <a class="nav-link @(esMantenimientos ? "active" : "")"
            asp-area="Admin" asp-controller="Mantenimientos" asp-action="Index">
-            <i class="bi bi-tools"></i> Tareas de Mantenimiento
+            <i class="bi bi-tools"></i> <span>Tareas de Mantenimiento</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(esPersonal ? "active" : "")"
+           asp-area="Admin" asp-controller="Mantenimientos" asp-action="Personal">
+            <i class="bi bi-people-fill"></i> <span>Personal de Mantenimiento</span>
         </a>
     </li>
     <li class="nav-item">
         <a class="nav-link @(esTipos ? "active" : "")"
            asp-area="Admin" asp-controller="TiposMantenimiento" asp-action="Index">
-            <i class="bi bi-tags-fill"></i> Tipos de Mantenimiento
+            <i class="bi bi-tags-fill"></i> <span>Tipos de Mantenimiento</span>
         </a>
     </li>
 </ul>

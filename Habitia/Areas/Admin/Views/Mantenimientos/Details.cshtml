@@ -1,63 +1,128 @@
 ﻿@model Habitia.Models.Mantenimiento
 @{
     ViewData["Title"] = "Detalle de Tarea de Mantenimiento";
+
+    string ClaseBadgeEstadoMantenimiento(Habitia.Enums.EstadoMantenimientoEnum e) => e switch
+    {
+        Habitia.Enums.EstadoMantenimientoEnum.Programado => "badge-estado-pendiente",
+        Habitia.Enums.EstadoMantenimientoEnum.EnProceso => "badge-estado-proceso",
+        Habitia.Enums.EstadoMantenimientoEnum.Completado => "badge-estado-resuelta",
+        Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "badge-estado-cancelado",
+        _ => "badge-estado-default"
+    };
+
+    var pasos = new[] { Habitia.Enums.EstadoMantenimientoEnum.Programado, Habitia.Enums.EstadoMantenimientoEnum.EnProceso, Habitia.Enums.EstadoMantenimientoEnum.Completado };
+    var estaCancelado = Model.TN_Estado == Habitia.Enums.EstadoMantenimientoEnum.Cancelado;
+    var indiceActual = Array.IndexOf(pasos, Model.TN_Estado);
 }
 
-<h2>Detalle de Tarea de Mantenimiento</h2>
+<div class="detalle-header d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a asp-action="Index" class="detalle-volver">
+            <i class="bi bi-arrow-left"></i> Volver a mantenimientos
+        </a>
+        <h2 class="mb-0 mt-1">Detalle de Tarea de Mantenimiento</h2>
+    </div>
+</div>
 
-<div class="card">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-            <h5 class="card-title mb-0">@Model.TC_Descripcion</h5>
-            <span class="badge @(Model.TN_Estado switch {
-                Habitia.Enums.EstadoMantenimientoEnum.Programado => "bg-secondary",
-                Habitia.Enums.EstadoMantenimientoEnum.EnProceso => "bg-info text-dark",
-                Habitia.Enums.EstadoMantenimientoEnum.Completado => "bg-success",
-                Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "bg-danger",
-                _ => "bg-secondary"
-            })">
-                @Model.TN_Estado
-            </span>
-        </div>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
 
-        <dl class="row mb-0">
-            <dt class="col-sm-3">Incidencia asociada</dt>
-            <dd class="col-sm-9">
-                <a asp-controller="Incidencias" asp-action="Details" asp-route-id="@Model.TN_IdIncidencia">
-                    @Model.Incidencia?.TC_Titulo
-                </a>
-            </dd>
+<div class="detalle-layout">
 
-            <dt class="col-sm-3">Tipo de mantenimiento</dt>
-            <dd class="col-sm-9">@Model.Tipo?.TC_Nombre</dd>
+    <div>
+        <div class="incidencia-contexto mb-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                <h5 class="mb-0">@Model.TC_Descripcion</h5>
+                <span class="badge-estado @ClaseBadgeEstadoMantenimiento(Model.TN_Estado)">
+                    @Model.TN_Estado
+                </span>
+            </div>
 
-            <dt class="col-sm-3">Personal asignado</dt>
-            <dd class="col-sm-9">@Model.PersonalAsignado?.UserName</dd>
-
-            <dt class="col-sm-3">Fecha de creación</dt>
-            <dd class="col-sm-9">@Model.TF_FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</dd>
-
-            @if (Model.TF_FechaFin.HasValue)
+            @* ── Línea de tiempo de estado (Cancelado queda fuera del flujo lineal) ── *@
+            @if (!estaCancelado)
             {
-                <dt class="col-sm-3">Fecha de finalización</dt>
-                <dd class="col-sm-9">@Model.TF_FechaFin.Value.ToString("dd/MM/yyyy hh:mm tt")</dd>
+                <div class="estado-timeline">
+                    @for (int i = 0; i < pasos.Length; i++)
+                    {
+                        var clase = i < indiceActual ? "completado" : (i == indiceActual ? "actual" : "");
+                        <div class="estado-timeline-step @clase">
+                            <div class="linea"></div>
+                            <div class="dot"></div>
+                            <div class="label">@pasos[i]</div>
+                        </div>
+                    }
+                </div>
             }
+            else
+            {
+                <div class="ubicacion-vacia mt-2 mb-2">
+                    <i class="bi bi-x-circle"></i> Esta tarea de mantenimiento fue cancelada.
+                </div>
+            }
+
+            <div class="incidencia-meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">Tipo de mantenimiento</span>
+                    <span class="meta-valor">@(Model.Tipo?.TC_Nombre ?? "N/D")</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Personal asignado</span>
+                    <span class="meta-valor">@(Model.PersonalAsignado?.UserName ?? "N/D")</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Fecha de creación</span>
+                    <span class="meta-valor">@Model.TF_FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</span>
+                </div>
+
+                @if (Model.TF_FechaFin.HasValue)
+                {
+                    <div class="meta-item">
+                        <span class="meta-label">Fecha de finalización</span>
+                        <span class="meta-valor">@Model.TF_FechaFin.Value.ToString("dd/MM/yyyy hh:mm tt")</span>
+                    </div>
+                }
+            </div>
 
             @if (!string.IsNullOrEmpty(Model.TC_Observaciones))
             {
-                <dt class="col-sm-3">Observaciones</dt>
-                <dd class="col-sm-9">@Model.TC_Observaciones</dd>
+                <div class="mt-3">
+                    <span class="meta-label d-block mb-1">Observaciones</span>
+                    <p class="mb-0">@Model.TC_Observaciones</p>
+                </div>
             }
 
             @if (Model.TN_Estado == Habitia.Enums.EstadoMantenimientoEnum.Completado)
             {
-                <dt class="col-sm-3"></dt>
-                <dd class="col-sm-9">
-                    <span class="text-muted"><i class="bi bi-lock-fill"></i> Esta tarea ya fue completada y no puede modificarse.</span>
-                </dd>
+                <div class="mt-3">
+                    <span class="text-muted small">
+                        <i class="bi bi-lock-fill"></i> Esta tarea ya fue completada y no puede modificarse.
+                    </span>
+                </div>
             }
-        </dl>
+        </div>
     </div>
-</div>
 
-<a asp-action="Index" class="btn btn-secondary mt-3">Volver</a>
+    <div>
+        <div class="detalle-sidebar-card">
+            <div class="detalle-sidebar-titulo">Incidencia asociada</div>
+            @if (Model.Incidencia != null)
+            {
+                <a asp-controller="Incidencias" asp-action="Details" asp-route-id="@Model.TN_IdIncidencia" class="mantenimiento-chip">
+                    <i class="bi bi-exclamation-circle"></i> @Model.Incidencia.TC_Titulo
+                </a>
+            }
+            else
+            {
+                <p class="text-muted small mb-0">No hay una incidencia asociada.</p>
+            }
+        </div>
+    </div>
+
+</div>

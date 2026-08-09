@@ -8,7 +8,6 @@ namespace Habitia.ViewModels.Incidencias
         [Required]
         public int Id { get; set; }
 
-        // Datos de solo lectura para mostrar contexto en la vista
         public string Titulo { get; set; }
         public string Descripcion { get; set; }
         public string NombreUsuarioReporta { get; set; }
@@ -17,6 +16,6 @@ namespace Habitia.ViewModels.Incidencias
 
         [Required(ErrorMessage = "Debe asignar la prioridad antes de continuar.")]
         [Display(Name = "Prioridad")]
-        public PrioridadEnum Prioridad { get; set; }
+        public PrioridadEnum? Prioridad { get; set; }
     }
 }

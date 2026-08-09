@@ -56,6 +56,7 @@ namespace Habitia.Data
         // Catálogos
         public DbSet<TipoArea> TiposArea { get; set; }
         public DbSet<TipoMantenimiento> TiposMantenimiento { get; set; }
+        public DbSet<PersonalTipoMantenimiento> PersonalTipoMantenimiento { get; set; }
 
         // ===== US-11: Documentos y Asambleas =====
         public DbSet<Documento> Documentos { get; set; }
@@ -130,9 +131,9 @@ namespace Habitia.Data
             {
                 // Trazabilidad: una incidencia genera, a lo sumo, una tarea de mantenimiento
                 entity.HasOne(m => m.Incidencia)
-                    .WithMany()
-                    .HasForeignKey(m => m.TN_IdIncidencia)
-                    .OnDelete(DeleteBehavior.Restrict);
+                .WithOne(i => i.Mantenimiento)
+                .HasForeignKey<Mantenimiento>(m => m.TN_IdIncidencia)
+                .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasIndex(m => m.TN_IdIncidencia)
                     .IsUnique(); // evita generar más de una tarea por incidencia
@@ -445,6 +446,26 @@ namespace Habitia.Data
                 new THBT_CAT_TipoRecargo { TN_Id = 1, TC_Nombre = "Fijo" },
                 new THBT_CAT_TipoRecargo { TN_Id = 2, TC_Nombre = "Porcentaje" }
             );
+
+            // ==========================================================
+            // PersonalTipoMantenimiento (M:N personal-tipos)
+            // ==========================================================
+            builder.Entity<PersonalTipoMantenimiento>(entity =>
+            {
+                entity.HasOne(pt => pt.Personal)
+                    .WithMany()
+                    .HasForeignKey(pt => pt.TC_IdPersonal)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(pt => pt.Tipo)
+                    .WithMany(t => t.PersonalAsignado)
+                    .HasForeignKey(pt => pt.TN_IdTipo)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Evita asignar el mismo tipo dos veces al mismo trabajador
+                entity.HasIndex(pt => new { pt.TC_IdPersonal, pt.TN_IdTipo })
+                    .IsUnique();
+            });
         }
     }
 }

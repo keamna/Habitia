@@ -10,14 +10,10 @@ namespace Habitia.Services
     public class MantenimientoService : IMantenimientoService
     {
         private readonly ApplicationDbContext _context;
-        private readonly ITipoMantenimientoService _tipoMantenimientoService;
 
-        public MantenimientoService(
-            ApplicationDbContext context,
-            ITipoMantenimientoService tipoMantenimientoService)
+        public MantenimientoService(ApplicationDbContext context)
         {
             _context = context;
-            _tipoMantenimientoService = tipoMantenimientoService;
         }
 
         public async Task<Mantenimiento> ConvertirDesdeIncidenciaAsync(MantenimientoCreateViewModel model)
@@ -43,9 +39,45 @@ namespace Habitia.Services
                     "Esta incidencia ya tiene una tarea de mantenimiento asociada.");
             }
 
-            var tipoMantenimiento = await _tipoMantenimientoService.ObtenerOCrearAsync(
-                model.IdTipoMantenimiento,
-                model.NuevoTipoMantenimiento);
+            // El tipo ahora siempre debe existir de antemano: se crea desde la pestaña
+            // "Tipos de Mantenimiento", ya no desde este flujo.
+            if (!model.IdTipoMantenimiento.HasValue)
+            {
+                throw new InvalidOperationException("Debe seleccionar un tipo de mantenimiento.");
+            }
+
+            var tipoMantenimiento = await _context.TiposMantenimiento
+                .FirstOrDefaultAsync(t => t.TN_Id == model.IdTipoMantenimiento.Value);
+
+            if (tipoMantenimiento == null)
+            {
+                throw new InvalidOperationException("El tipo de mantenimiento seleccionado no existe.");
+            }
+
+            // Regla de negocio: la asignación debe respetar los tipos de mantenimiento
+            // que el personal tiene configurados (Módulo 8).
+            var personal = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == model.IdPersonalAsignado);
+
+            if (personal == null)
+                throw new InvalidOperationException("El personal seleccionado no existe.");
+
+            if (personal.TN_Estado != EstadoUsuarioEnum.Activo)
+            {
+                throw new InvalidOperationException(
+                    "No se puede asignar la tarea a un usuario suspendido.");
+            }
+
+            var puedeAtenderTipo = await _context.PersonalTipoMantenimiento
+                .AnyAsync(pt =>
+                    pt.TC_IdPersonal == model.IdPersonalAsignado &&
+                    pt.TN_IdTipo == tipoMantenimiento.TN_Id);
+
+            if (!puedeAtenderTipo)
+            {
+                throw new InvalidOperationException(
+                    $"{personal.TC_Nombre} {personal.TC_Apellido} no tiene configurado el tipo de mantenimiento '{tipoMantenimiento.TC_Nombre}'.");
+            }
 
             // La fecha ya no la ingresa el Admin: se registra automáticamente al crear la tarea.
             var mantenimiento = new Mantenimiento
@@ -110,7 +142,6 @@ namespace Habitia.Services
                     "No tiene permiso para actualizar una tarea que no le fue asignada.");
             }
 
-            // Regla nueva: una tarea Completada queda bloqueada, no se puede modificar más.
             if (mantenimiento.TN_Estado == EstadoMantenimientoEnum.Completado)
             {
                 throw new InvalidOperationException(
@@ -144,6 +175,17 @@ namespace Habitia.Services
                 .Include(m => m.AreaComun)
                 .Include(m => m.PersonalAsignado)
                 .OrderByDescending(m => m.TF_FechaRegistro)
+                .ToListAsync();
+        }
+
+        public async Task<List<ApplicationUser>> ObtenerPersonalActivoPorTipoAsync(int idTipo)
+        {
+            return await _context.PersonalTipoMantenimiento
+                .Where(pt => pt.TN_IdTipo == idTipo)
+                .Include(pt => pt.Personal)
+                .Select(pt => pt.Personal)
+                .Where(u => u.TN_Estado == EstadoUsuarioEnum.Activo)
+                .OrderBy(u => u.UserName)
                 .ToListAsync();
         }
     }
