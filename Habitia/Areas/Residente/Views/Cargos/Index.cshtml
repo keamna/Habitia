@@ -1,55 +1,171 @@
 ﻿@model List<Habitia.ViewModels.Financiero.Residente.CargoPendienteViewModel>
 @{
     ViewData["Title"] = "Mis cargos";
+
+    var totalDeuda = Model.Sum(c => c.TN_MontoTotal);
+    var vencidos = Model.Count(c => c.EstadoCargo == "Vencido"
+                                    || c.TF_FechaVencimiento.Date < DateTime.Today);
+    var enRevision = Model.Count(c => c.EstadoCargo == "En revisión");
 }
+
 <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
-<h4 class="mb-3">Mis cargos pendientes y vencidos</h4>
+
+<div class="mb-3">
+    <h4 class="mb-1">Mis cargos</h4>
+    <p class="text-muted mb-0" style="font-size:.88rem;">
+        Cuotas, multas y servicios pendientes de pago.
+    </p>
+</div>
+
 @if (TempData["Mensaje"] != null)
 {
-    <div class="alert alert-success">@TempData["Mensaje"]</div>
+    <div class="alert alert-success d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i><span>@TempData["Mensaje"]</span>
+    </div>
 }
+
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger">@TempData["Error"]</div>
+    <div class="alert alert-danger d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i><span>@TempData["Error"]</span>
+    </div>
 }
+
+@if (Model.Any())
+{
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4">
+            <div class="fin-card h-100">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">Total por pagar</div>
+                    <div class="fin-monto-total">@totalDeuda.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4">
+            <div class="fin-card h-100">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">Vencidos</div>
+                    <div class="fin-monto-total" style="color:@(vencidos > 0 ? "#842029" : "#336332");">
+                        @vencidos
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4">
+            <div class="fin-card h-100">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">En revisión</div>
+                    <div class="fin-monto-total" style="color:#0C5460;">@enRevision</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (vencidos > 0)
+    {
+        <div class="alert alert-warning d-flex align-items-start gap-2">
+            <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+            <div>
+                <strong>Tiene @vencidos cargo@(vencidos == 1 ? "" : "s") vencido@(vencidos == 1 ? "" : "s").</strong>
+                <div style="font-size:.88rem;">
+                    Los cargos vencidos pueden generar un recargo por penalización.
+                </div>
+            </div>
+        </div>
+    }
+}
+
 <div class="row g-3">
     @if (!Model.Any())
     {
         <div class="col-12">
             <div class="fin-card">
-                <div class="fin-card-body text-center text-muted py-4">
-                    No tienes cargos pendientes ni vencidos
+                <div class="fin-card-body text-center text-muted py-5">
+                    <i class="bi bi-check2-circle" style="font-size:2.5rem; color:#C9D6C9;"></i>
+                    <p class="mt-3 mb-0">No tiene cargos pendientes.</p>
+                    <p class="mb-0" style="font-size:.85rem;">Está al día con sus pagos.</p>
                 </div>
             </div>
         </div>
     }
+
     @foreach (var c in Model)
     {
+        var dias = (c.TF_FechaVencimiento.Date - DateTime.Today).Days;
+        var esVencido = c.EstadoCargo == "Vencido" || dias < 0;
+        var enEspera = c.EstadoCargo == "En revisión";
+
         <div class="col-md-6 col-lg-4">
-            <div class="fin-card h-100">
+            <div class="fin-card h-100" style="@(esVencido ? "border-color:#F5C2C7;" : "")">
+
                 <div class="fin-card-header d-flex justify-content-between align-items-center">
                     <span><i class="bi bi-receipt"></i> @c.TipoCargo</span>
                     <span class="badge @c.BadgeClass">@c.EstadoCargo</span>
                 </div>
-                <div class="fin-card-body">
+
+                <div class="fin-card-body d-flex flex-column">
+
                     @if (!string.IsNullOrWhiteSpace(c.TC_Descripcion))
                     {
-                        <p class="text-muted mb-1">@c.TC_Descripcion</p>
+                        <p class="text-muted mb-2" style="font-size:.88rem;">@c.TC_Descripcion</p>
                     }
-                    <p class="fin-monto-total mb-2">@c.TN_MontoTotal.ToString("C")</p>
-                    <p class="small mb-1"><strong>Emitido:</strong> @c.TF_FechaEmision.ToString("dd/MM/yyyy")</p>
-                    <p class="small mb-3">
-                        <strong>Vence:</strong> @c.TF_FechaVencimiento.ToString("dd/MM/yyyy")
-                        @if (c.EstadoCargo == "Vencido")
-                        {
-                            <span class="text-danger"> (vencido)</span>
-                        }
-                    </p>
-                    <div>
-                        <a asp-action="Pagar" asp-route-id="@c.TN_Id" class="btn btn-sm w-100" style="background-color:#336332;color:#fff;">
-                            <i class="bi bi-cash-coin"></i> Pagar
-                        </a>
+
+                    <p class="fin-monto-total mb-3">@c.TN_MontoTotal.ToString("C")</p>
+
+                    <div class="mb-3" style="font-size:.85rem;">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Emitido</span>
+                            <span>@c.TF_FechaEmision.ToString("dd/MM/yyyy")</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Vence</span>
+                            <span class="@(esVencido ? "text-danger fw-semibold" : "")">
+                                @c.TF_FechaVencimiento.ToString("dd/MM/yyyy")
+                            </span>
+                        </div>
                     </div>
+
+                    @if (esVencido)
+                    {
+                        <div class="badge badge-vencido mb-3 align-self-start">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Vencido hace @Math.Abs(dias) día@(Math.Abs(dias) == 1 ? "" : "s")
+                        </div>
+                    }
+                    else if (dias == 0)
+                    {
+                        <div class="badge badge-pendiente mb-3 align-self-start">
+                            <i class="bi bi-clock"></i> Vence hoy
+                        </div>
+                    }
+                    else if (dias <= 5)
+                    {
+                        <div class="badge badge-pendiente mb-3 align-self-start">
+                            <i class="bi bi-clock"></i> Vence en @dias día@(dias == 1 ? "" : "s")
+                        </div>
+                    }
+
+                    <div class="mt-auto">
+                        @if (enEspera)
+                        {
+                            <div class="alert alert-info mb-0 py-2 px-3" style="font-size:.82rem;">
+                                <i class="bi bi-hourglass-split"></i>
+                                Su comprobante está siendo revisado por la administración.
+                            </div>
+                        }
+                        else
+                        {
+                            <a asp-action="Pagar" asp-route-id="@c.TN_Id"
+                               class="btn btn-sm w-100 text-white" style="background-color:#336332;">
+                                <i class="bi bi-cash-coin"></i> Registrar pago
+                            </a>
+                        }
+                    </div>
+
                 </div>
             </div>
         </div>

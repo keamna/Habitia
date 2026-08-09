@@ -26,7 +26,7 @@ namespace Habitia.Models
 
 
         [MaxLength(20)]
-        public string TC_Telefono { get; set; }
+        public string? TC_Telefono { get; set; }
 
 
         public EstadoUsuarioEnum TN_Estado { get; set; }

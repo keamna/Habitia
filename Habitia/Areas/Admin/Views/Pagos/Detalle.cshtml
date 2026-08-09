@@ -1,106 +1,249 @@
 ﻿@model Habitia.ViewModels.Financiero.Admin.PagoDetalleViewModel
 @{
     ViewData["Title"] = "Revisar pago";
+
+    var ext = System.IO.Path.GetExtension(Model.TC_RutaComprobante ?? "").ToLowerInvariant();
+    var esImagen = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".webp";
+    var vencido = Model.TF_FechaPago.Date > Model.TF_FechaVencimiento.Date;
 }
+
 <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
 <partial name="_FinancieroTabs" />
-<h4 class="mb-3">Revisar pago</h4>
 
-<div class="row g-3">
-    <div class="col-md-6">
-        <div class="fin-card">
-            <div class="fin-card-header"><i class="bi bi-person"></i> Residente</div>
-            <div class="fin-card-body">
-                <p class="mb-1"><strong>Nombre:</strong> @Model.NombreResidente</p>
-                <p class="mb-1"><strong>Identificación:</strong> @Model.IdentificacionResidente</p>
-                <p class="mb-1"><strong>Correo:</strong> @Model.CorreoResidente</p>
-                <p class="mb-0"><strong>Teléfono:</strong> @(Model.TelefonoResidente ?? "No registrado")</p>
-            </div>
-        </div>
-
-        <div class="fin-card mt-3">
-            <div class="fin-card-header"><i class="bi bi-receipt"></i> Cargo</div>
-            <div class="fin-card-body">
-                <p class="mb-1"><strong>Tipo:</strong> @Model.TipoCargo</p>
-                @if (!string.IsNullOrWhiteSpace(Model.Descripcion))
-                {
-                    <p class="mb-1"><strong>Descripción:</strong> @Model.Descripcion</p>
-                }
-                <p class="mb-1"><strong>Emitido:</strong> @Model.TF_FechaEmision.ToString("dd/MM/yyyy")</p>
-                <p class="mb-1"><strong>Vencimiento:</strong> @Model.TF_FechaVencimiento.ToString("dd/MM/yyyy")</p>
-                <table class="table table-sm mb-0 mt-2">
-                    <tr><td>Monto base</td><td class="text-end">@Model.TN_MontoBase.ToString("C")</td></tr>
-                    <tr><td>IVA</td><td class="text-end">@(Model.TB_AplicaIva ? Model.TN_MontoIva.ToString("C") : "No aplica")</td></tr>
-                    <tr class="fw-bold"><td>Total</td><td class="text-end fin-monto-total">@Model.TN_MontoTotal.ToString("C")</td></tr>
-                </table>
-            </div>
-        </div>
+<div class="d-flex align-items-center gap-3 mb-3">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary" title="Volver">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+        <h4 class="mb-1">Revisar pago</h4>
+        <p class="text-muted mb-0" style="font-size:.88rem;">
+            Verifique el comprobante antes de aprobar o rechazar.
+        </p>
     </div>
-
-    <div class="col-md-6">
-        <div class="fin-card">
-            <div class="fin-card-header"><i class="bi bi-cash-coin"></i> Datos del pago</div>
-            <div class="fin-card-body">
-                <p class="mb-1"><strong>Método:</strong> @Model.MetodoPago</p>
-                <p class="mb-3"><strong>Fecha de pago:</strong> @Model.TF_FechaPago.ToString("dd/MM/yyyy HH:mm")</p>
-
-                <label class="form-label">Comprobante</label>
-                @{
-                    var esImagen = Model.TC_RutaComprobante.EndsWith(".jpg") || Model.TC_RutaComprobante.EndsWith(".jpeg") || Model.TC_RutaComprobante.EndsWith(".png");
-                }
-                @if (esImagen)
-                {
-                    <div class="mb-2">
-                        <img src="@Model.TC_RutaComprobante" class="img-fluid rounded border" alt="Comprobante de pago" />
-                    </div>
-                }
-                <a href="@Model.TC_RutaComprobante" target="_blank" class="btn btn-outline-secondary w-100">
-                    <i class="bi bi-box-arrow-up-right"></i> Ver comprobante en tamaño completo
-                </a>
-            </div>
-        </div>
-
-        <div class="d-flex gap-2 mt-3">
-            <form asp-action="Aprobar" method="post" class="flex-fill">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="idPago" value="@Model.TN_IdPago" />
-                <button type="submit" class="btn w-100" style="background-color:#336332;color:#fff;"
-                        onclick="return confirm('¿Confirma que el pago es correcto y desea aprobarlo?');">
-                    <i class="bi bi-check-lg"></i> Aprobar pago
-                </button>
-            </form>
-
-            <button type="button" class="btn btn-outline-danger flex-fill" data-bs-toggle="modal" data-bs-target="#modalRechazar">
-                <i class="bi bi-x-lg"></i> Rechazar pago
-            </button>
-        </div>
-    </div>
+    <span class="badge badge-revision ms-2">@Model.EstadoCargo</span>
 </div>
 
-<!-- Modal Rechazar -->
-<div class="modal fade" id="modalRechazar" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form asp-action="Rechazar" method="post">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="TN_IdPago" value="@Model.TN_IdPago" />
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle text-danger"></i> Rechazar pago</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>@TempData["Error"]</span>
+    </div>
+}
+
+<div class="row g-3">
+
+    <!-- ================= COMPROBANTE ================= -->
+    <div class="col-lg-5">
+        <div class="fin-card h-100">
+            <div class="fin-card-header">
+                <i class="bi bi-file-earmark-image"></i>
+                Comprobante enviado
+            </div>
+
+            <div class="fin-card-body">
+                @if (string.IsNullOrWhiteSpace(Model.TC_RutaComprobante))
+                {
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-file-earmark-x" style="font-size:2.5rem; color:#C9D6C9;"></i>
+                        <p class="mt-3 mb-0">El residente no adjuntó comprobante.</p>
+                    </div>
+                }
+                else if (esImagen)
+                {
+                    <div class="fin-comprobante-preview mb-3">
+                        <a href="@Model.TC_RutaComprobante" target="_blank" rel="noopener">
+                            <img src="@Model.TC_RutaComprobante" alt="Comprobante de pago" />
+                        </a>
+                    </div>
+                    <a href="@Model.TC_RutaComprobante" target="_blank" rel="noopener"
+                       class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrows-fullscreen"></i> Ver en tamaño completo
+                    </a>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="bi bi-file-earmark-pdf-fill" style="font-size:3rem; color:#C53030;"></i>
+                        <p class="mt-3 mb-3 text-muted">El comprobante es un archivo PDF.</p>
+                        <a href="@Model.TC_RutaComprobante" target="_blank" rel="noopener"
+                           class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-box-arrow-up-right"></i> Abrir comprobante
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= DATOS ================= -->
+    <div class="col-lg-7">
+
+        <!-- Residente -->
+        <div class="fin-card mb-3">
+            <div class="fin-card-header">
+                <i class="bi bi-person-fill"></i>
+                Residente
+            </div>
+
+            <div class="fin-card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="text-muted" style="font-size:.75rem; text-transform:uppercase;">Nombre</div>
+                        <div class="fw-semibold">@Model.NombreResidente</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted" style="font-size:.75rem; text-transform:uppercase;">Identificación</div>
+                        <div>@Model.IdentificacionResidente</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted" style="font-size:.75rem; text-transform:uppercase;">Correo</div>
+                        <div>@(string.IsNullOrWhiteSpace(Model.CorreoResidente) ? "—" : Model.CorreoResidente)</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted" style="font-size:.75rem; text-transform:uppercase;">Teléfono</div>
+                        <div>@(string.IsNullOrWhiteSpace(Model.TelefonoResidente) ? "—" : Model.TelefonoResidente)</div>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <label class="form-label">Motivo del rechazo</label>
-                    <textarea name="TC_MotivoRechazo" class="form-control" rows="3" required
-                              placeholder="Ej: El comprobante no coincide con el monto del cargo"></textarea>
-                    <div class="form-text">El cargo volverá a estado <strong>Pendiente</strong> y el residente verá este motivo.</div>
+            </div>
+        </div>
+
+        <!-- Cargo -->
+        <div class="fin-card mb-3">
+            <div class="fin-card-header">
+                <i class="bi bi-receipt"></i>
+                Detalle del cargo
+            </div>
+
+            <div class="fin-card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <div class="text-muted" style="font-size:.75rem; text-transform:uppercase;">Tipo de cargo</div>
+                        <div class="fw-semibold">@Model.TipoCargo</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted" style="font-size:.75rem; text-transform:uppercase;">Método de pago</div>
+                        <div><span class="badge badge-revision">@Model.MetodoPago</span></div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Descripcion))
+                    {
+                        <div class="col-12">
+                            <div class="text-muted" style="font-size:.75rem; text-transform:uppercase;">Descripción</div>
+                            <div>@Model.Descripcion</div>
+                        </div>
+                    }
+
+                    <div class="col-sm-4">
+                        <div class="text-muted" style="font-size:.75rem; text-transform:uppercase;">Emisión</div>
+                        <div>@Model.TF_FechaEmision.ToString("dd/MM/yyyy")</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="text-muted" style="font-size:.75rem; text-transform:uppercase;">Vencimiento</div>
+                        <div>@Model.TF_FechaVencimiento.ToString("dd/MM/yyyy")</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="text-muted" style="font-size:.75rem; text-transform:uppercase;">Fecha del pago</div>
+                        <div>
+                            @Model.TF_FechaPago.ToString("dd/MM/yyyy HH:mm")
+                            @if (vencido)
+                            {
+                                <span class="badge badge-pendiente ms-1">Fuera de plazo</span>
+                            }
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-x-lg"></i> Confirmar rechazo
+
+                <hr />
+
+                <!-- Desglose de montos -->
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Monto base</span>
+                    <span>@Model.TN_MontoBase.ToString("C")</span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">
+                        IVA
+                        @if (!Model.TB_AplicaIva)
+                        {
+                            <small>(no aplica)</small>
+                        }
+                    </span>
+                    <span>@Model.TN_MontoIva.ToString("C")</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-2"
+                     style="border-top:1px solid #ECECEC;">
+                    <span class="fw-semibold">Total a validar</span>
+                    <span class="fin-monto-total">@Model.TN_MontoTotal.ToString("C")</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="fin-card">
+            <div class="fin-card-header">
+                <i class="bi bi-check2-square"></i>
+                Resolución
+            </div>
+
+            <div class="fin-card-body">
+                <p class="text-muted" style="font-size:.88rem;">
+                    Al <strong>aprobar</strong>, el cargo pasa a <em>Pagado</em>.
+                    Al <strong>rechazar</strong>, vuelve a <em>Pendiente</em> y el residente
+                    verá el motivo indicado.
+                </p>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <form asp-action="Aprobar" method="post" class="d-inline"
+                          onsubmit="return confirm('¿Aprobar este pago? El cargo quedará marcado como Pagado.');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="idPago" value="@Model.TN_IdPago" />
+                        <button type="submit" class="btn text-white" style="background-color:#336332;">
+                            <i class="bi bi-check-lg"></i> Aprobar pago
+                        </button>
+                    </form>
+
+                    <button type="button" class="btn btn-outline-danger"
+                            data-bs-toggle="collapse" data-bs-target="#formRechazo">
+                        <i class="bi bi-x-lg"></i> Rechazar pago
                     </button>
                 </div>
-            </form>
+
+                <!-- Formulario de rechazo -->
+                <div class="collapse mt-3" id="formRechazo">
+                    <div style="background-color:#F8F9FA; border:1px solid #ECECEC; border-radius:8px; padding:16px;">
+                        <form asp-action="Rechazar" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="TN_IdPago" value="@Model.TN_IdPago" />
+
+                            <label for="motivo" class="form-label fw-semibold">
+                                Motivo del rechazo
+                            </label>
+
+                            <textarea id="motivo" name="TC_MotivoRechazo" class="form-control mb-2"
+                                      rows="3" required maxlength="300"
+                                      placeholder="Ej: El comprobante no es legible / El monto no coincide con el cargo"></textarea>
+
+                            <div class="form-text mb-3">
+                                Este mensaje será visible para el residente.
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-x-circle"></i> Confirmar rechazo
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary"
+                                        data-bs-toggle="collapse" data-bs-target="#formRechazo">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
+
     </div>
 </div>
