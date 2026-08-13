@@ -64,3 +64,111 @@
         <i class="bi bi-save"></i> Aplicar recargo
     </button>
 </div>
+@{
+    ViewData["Title"] = "Aplicar recargo";
+}
+
+<link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
+<partial name="_FinancieroTabs" />
+
+<div class="d-flex align-items-center gap-3 mb-3">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary" title="Volver">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+        <h4 class="mb-1">Aplicar recargo</h4>
+        <p class="text-muted mb-0" style="font-size:.88rem;">
+            Agregue una penalización a un cargo que no fue pagado dentro del plazo.
+        </p>
+    </div>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>@TempData["Error"]</span>
+    </div>
+}
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="fin-card">
+            <div class="fin-card-header">
+                <i class="bi bi-cash-coin"></i>
+                Datos del recargo
+            </div>
+
+            <div class="fin-card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Cargo vencido</label>
+                            <select asp-for="TN_IdCargo" asp-items="Model.CargosVencidos" class="form-select">
+                                <option value="">-- Seleccione el cargo a penalizar --</option>
+                            </select>
+                            <span asp-validation-for="TN_IdCargo" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tipo de recargo</label>
+                            <select asp-for="TN_IdTipoRecargo" asp-items="Model.TiposRecargo" class="form-select">
+                                <option value="">-- Seleccione --</option>
+                            </select>
+                            <span asp-validation-for="TN_IdTipoRecargo" class="text-danger small"></span>
+                            <div class="form-text">
+                                Define si el valor se toma como monto fijo o porcentaje.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Valor</label>
+                            <input asp-for="TN_Valor" type="number" step="0.01" min="0"
+                                   class="form-control" placeholder="0.00" />
+                            <span asp-validation-for="TN_Valor" class="text-danger small"></span>
+                            <div class="form-text">
+                                Monto fijo en colones, o porcentaje según el tipo elegido.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn text-white" style="background-color:#336332;">
+                            <i class="bi bi-save"></i> Aplicar recargo
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="fin-card">
+            <div class="fin-card-header">
+                <i class="bi bi-info-circle"></i>
+                Cómo funciona
+            </div>
+
+            <div class="fin-card-body" style="font-size:.88rem;">
+                <p class="text-muted">
+                    El recargo se suma al cargo original como penalización por
+                    no haber pagado dentro de la fecha límite.
+                </p>
+                <p class="text-muted mb-0">
+                    Solo aparecen en la lista los cargos que ya vencieron.
+                    Una vez aplicado, el recargo queda registrado en el
+                    historial financiero del residente.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
