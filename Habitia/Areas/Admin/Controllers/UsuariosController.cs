@@ -227,11 +227,42 @@ namespace Habitia.Areas.Admin.Controllers
         }
 
         // ==========================
+        // MI PERFIL
+        // ==========================
+        [HttpGet]
+        public async Task<IActionResult> Perfil()
+        {
+            var userId = _userManager.GetUserId(User);
+            var user = await _userManager.FindByIdAsync(userId!);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var vm = new EditarUsuarioVM
+            {
+                Id = user.Id,
+                Nombre = user.TC_Nombre,
+                Email = user.Email,
+                Telefono = user.TC_Telefono
+            };
+
+            return View(vm);
+        }
+
+        // ==========================
         // EDITAR DATOS
         // ==========================
         [HttpPost]
         public async Task<IActionResult> Editar([FromBody] EditarUsuarioVM model)
         {
+            // Endpoint JSON: no pasa por ModelState de un <form>, así que se valida a mano.
+            if (string.IsNullOrWhiteSpace(model.Telefono))
+            {
+                return Json(new { success = false, message = "El teléfono es obligatorio" });
+            }
+
             var user = await _userManager.FindByIdAsync(model.Id);
 
             if (user == null)
@@ -242,6 +273,7 @@ namespace Habitia.Areas.Admin.Controllers
             user.TC_Nombre = model.Nombre;
             user.Email = model.Email;
             user.UserName = model.Email;
+            user.TC_Telefono = model.Telefono;
 
             var resultado = await _userManager.UpdateAsync(user);
 

@@ -11,7 +11,19 @@
             @Html.AntiForgeryToken()
             <div asp-validation-summary="All" class="alert alert-danger d-none" id="validationSummary"></div>
             <div class="row g-3">
-                <div class="col-md-6">
+
+                <!-- ===== checkbox aplicar a todos ===== -->
+                <div class="col-12">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" asp-for="TB_AplicarATodos" id="aplicarATodos" />
+                        <label class="form-check-label fw-semibold" for="aplicarATodos">
+                            Aplicar este cargo a todos los residentes
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ===== Residente único (modo normal) ===== -->
+                <div class="col-md-6" id="residenteUnicoWrapper">
                     <label class="form-label">Residente</label>
                     <div class="input-group">
                         <input type="text" id="residenteDisplay" class="form-control"
@@ -23,6 +35,43 @@
                     </div>
                     <input type="hidden" asp-for="TC_IdResidente" id="TC_IdResidente" />
                     <span asp-validation-for="TC_IdResidente" class="text-danger small"></span>
+                </div>
+
+                <!-- ===== tabla de residentes (modo masivo) ===== -->
+                <div class="col-12 d-none" id="residentesMasivoWrapper">
+                    <label class="form-label">Residentes a incluir</label>
+                    <div class="d-flex gap-2 mb-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnSeleccionarTodos">Seleccionar todos</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnQuitarTodos">Quitar todos</button>
+                        <input type="text" id="buscadorMasivo" class="form-control form-control-sm w-auto flex-grow-1"
+                               placeholder="Filtrar por nombre o identificación..." />
+                    </div>
+                    <div class="table-responsive" style="max-height:320px; overflow-y:auto; border:1px solid #ECECEC; border-radius:6px;">
+                        <table class="table table-sm mb-0">
+                            <thead class="table-light" style="position:sticky; top:0;">
+                                <tr>
+                                    <th style="width:40px;"></th>
+                                    <th>Identificación</th>
+                                    <th>Nombre</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaResidentesMasivo">
+                                @foreach (var r in Model.Residentes)
+                                {
+                                    <tr class="fila-residente-masivo" data-nombre="@r.Nombre" data-identificacion="@r.Identificacion">
+                                        <td>
+                                            <input type="checkbox" class="form-check-input chk-residente-masivo"
+                                                   name="ResidentesSeleccionados" value="@r.Id" checked />
+                                        </td>
+                                        <td>@r.Identificacion</td>
+                                        <td>@r.Nombre</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="form-text" id="contadorSeleccionados"></div>
+                    <span asp-validation-for="ResidentesSeleccionados" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-6">
@@ -140,6 +189,14 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+        // ================== Utilidad: fecha local en formato YYYY-MM-DD (sin desfase por UTC) ==================
+        function fechaLocalYMD(fecha) {
+            const anio = fecha.getFullYear();
+            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+            const dia = String(fecha.getDate()).padStart(2, '0');
+            return `${anio}-${mes}-${dia}`;
+        }
+
         // ================== Tipo de cargo ==================
         const tipoCargoSelect = document.getElementById('tipoCargoSelect');
         const tipoCargoTexto = document.getElementById('tipoCargoTexto');
@@ -155,9 +212,9 @@
             }
         });
 
-        // ================== Fecha límite de pago ==================
+        // ================== Fecha límite de pago: permite hoy, no permite pasado ==================
         const inputFecha = document.getElementById('fechaVencimiento');
-        const hoyStr = new Date().toISOString().split('T')[0];
+        const hoyStr = fechaLocalYMD(new Date());
         inputFecha.setAttribute('min', hoyStr);
 
         // ================== Monto / IVA ==================
@@ -191,7 +248,7 @@
         document.getElementById('montoBase').addEventListener('input', calcularTotal);
         document.getElementById('aplicaIva').addEventListener('change', calcularTotal);
 
-        // ================== Buscador de residentes ==================
+        // ================== Buscador de residentes (modal único) ==================
         document.getElementById('buscadorResidente').addEventListener('input', function () {
             const filtro = this.value.trim().toLowerCase();
             const filas = document.querySelectorAll('#tablaResidentes .fila-residente');
@@ -219,12 +276,57 @@
             });
         });
 
+        // ================== Modo masivo (aplicar a todos) ==================
+        const chkAplicarATodos = document.getElementById('aplicarATodos');
+        const residenteUnicoWrapper = document.getElementById('residenteUnicoWrapper');
+        const residentesMasivoWrapper = document.getElementById('residentesMasivoWrapper');
+        const checksResidentes = document.querySelectorAll('.chk-residente-masivo');
+        const contadorSeleccionados = document.getElementById('contadorSeleccionados');
+
+        function actualizarContador() {
+            const total = checksResidentes.length;
+            const marcados = document.querySelectorAll('.chk-residente-masivo:checked').length;
+            contadorSeleccionados.innerText = `${marcados} de ${total} residentes seleccionados`;
+        }
+
+        chkAplicarATodos.addEventListener('change', function () {
+            residenteUnicoWrapper.classList.toggle('d-none', this.checked);
+            residentesMasivoWrapper.classList.toggle('d-none', !this.checked);
+            if (this.checked) actualizarContador();
+        });
+
+        checksResidentes.forEach(chk => chk.addEventListener('change', actualizarContador));
+
+        document.getElementById('btnSeleccionarTodos').addEventListener('click', function () {
+            checksResidentes.forEach(chk => { if (!chk.closest('tr').classList.contains('d-none')) chk.checked = true; });
+            actualizarContador();
+        });
+
+        document.getElementById('btnQuitarTodos').addEventListener('click', function () {
+            checksResidentes.forEach(chk => chk.checked = false);
+            actualizarContador();
+        });
+
+        document.getElementById('buscadorMasivo').addEventListener('input', function () {
+            const filtro = this.value.trim().toLowerCase();
+            document.querySelectorAll('.fila-residente-masivo').forEach(fila => {
+                const coincide = fila.dataset.nombre.toLowerCase().includes(filtro) ||
+                                  fila.dataset.identificacion.toLowerCase().includes(filtro);
+                fila.classList.toggle('d-none', !coincide);
+            });
+        });
+
         // ================== Validación al enviar ==================
         document.querySelector('form').addEventListener('submit', function (e) {
             let errores = [];
 
-            // Residente
-            if (!document.getElementById('TC_IdResidente').value) {
+            // Residente (único o masivo)
+            if (chkAplicarATodos.checked) {
+                const seleccionados = document.querySelectorAll('.chk-residente-masivo:checked').length;
+                if (seleccionados === 0) {
+                    errores.push('Debe seleccionar al menos un residente.');
+                }
+            } else if (!document.getElementById('TC_IdResidente').value) {
                 errores.push('Debe seleccionar un residente.');
             }
 

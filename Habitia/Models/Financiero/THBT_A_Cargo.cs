@@ -18,11 +18,17 @@ namespace Habitia.Models.Financiero
         [Required]
         public int TN_IdTipoCargo { get; set; }
 
+        // --- recargo programado al crear el cargo ---
+        public bool TB_RecargoProgramado { get; set; }
+        public int? TN_IdTipoRecargo { get; set; }
+        public decimal? TN_ValorRecargo { get; set; }
+        public bool TB_RecargoAplicado { get; set; }
+
         [Required]
         public int TN_IdEstadoCargo { get; set; }
 
         [MaxLength(200)]
-        public string TC_Descripcion { get; set; }
+        public string? TC_Descripcion { get; set; }
 
         [Required]
         public decimal TN_MontoBase { get; set; }
@@ -30,7 +36,7 @@ namespace Habitia.Models.Financiero
         [Required]
         public decimal TN_MontoIva { get; set; }
 
-        // Calculado automáticamente: TN_MontoBase + TN_MontoIva (US-10, punto 1.3).
+        // Calculado automáticamente: TN_MontoBase + TN_MontoIva 
         [Required]
         public decimal TN_MontoTotal { get; set; }
 
@@ -54,5 +60,8 @@ namespace Habitia.Models.Financiero
 
         [ForeignKey(nameof(TN_IdEstadoCargo))]
         public THBT_CAT_EstadoCargo EstadoCargo { get; set; }
+
+        [ForeignKey(nameof(TN_IdTipoRecargo))]
+        public THBT_CAT_TipoRecargo? TipoRecargo { get; set; }
     }
 }

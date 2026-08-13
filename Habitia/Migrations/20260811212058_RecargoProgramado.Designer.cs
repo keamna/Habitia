@@ -4,6 +4,7 @@ using Habitia.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Habitia.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260811212058_RecargoProgramado")]
+    partial class RecargoProgramado
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -839,92 +842,6 @@ namespace Habitia.Migrations
                     b.HasIndex("TN_IdTipoRecargo");
 
                     b.ToTable("THBT_A_Cargo");
-                });
-
-            modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_CargoRecurrente", b =>
-                {
-                    b.Property<int>("TN_Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
-
-                    b.Property<bool>("TB_AplicaIva")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("TB_AplicarATodos")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("TB_Estado")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("TB_RecargoProgramado")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("TC_Descripcion")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("TC_Frecuencia")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("TF_FechaInicio")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("TF_UltimaGeneracion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("TN_DiasPlazoPago")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TN_IdTipoCargo")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TN_IdTipoRecargo")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("TN_MontoBase")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal?>("TN_ValorRecargo")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("TN_Id");
-
-                    b.HasIndex("TB_Estado");
-
-                    b.HasIndex("TN_IdTipoCargo");
-
-                    b.HasIndex("TN_IdTipoRecargo");
-
-                    b.ToTable("THBT_A_CargoRecurrente");
-                });
-
-            modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_CargoRecurrenteResidente", b =>
-                {
-                    b.Property<int>("TN_Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
-
-                    b.Property<string>("TC_IdResidente")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("TN_IdCargoRecurrente")
-                        .HasColumnType("int");
-
-                    b.HasKey("TN_Id");
-
-                    b.HasIndex("TC_IdResidente");
-
-                    b.HasIndex("TN_IdCargoRecurrente", "TC_IdResidente")
-                        .IsUnique();
-
-                    b.ToTable("THBT_A_CargoRecurrenteResidente");
                 });
 
             modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_ConfiguracionPago", b =>
@@ -2041,43 +1958,6 @@ namespace Habitia.Migrations
                     b.Navigation("TipoRecargo");
                 });
 
-            modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_CargoRecurrente", b =>
-                {
-                    b.HasOne("Habitia.Models.Financiero.THBT_CAT_TipoCargo", "TipoCargo")
-                        .WithMany()
-                        .HasForeignKey("TN_IdTipoCargo")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Habitia.Models.Financiero.THBT_CAT_TipoRecargo", "TipoRecargo")
-                        .WithMany()
-                        .HasForeignKey("TN_IdTipoRecargo")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("TipoCargo");
-
-                    b.Navigation("TipoRecargo");
-                });
-
-            modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_CargoRecurrenteResidente", b =>
-                {
-                    b.HasOne("Habitia.Models.ApplicationUser", "Residente")
-                        .WithMany()
-                        .HasForeignKey("TC_IdResidente")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Habitia.Models.Financiero.THBT_A_CargoRecurrente", "CargoRecurrente")
-                        .WithMany("Residentes")
-                        .HasForeignKey("TN_IdCargoRecurrente")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CargoRecurrente");
-
-                    b.Navigation("Residente");
-                });
-
             modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_Pago", b =>
                 {
                     b.HasOne("Habitia.Models.Financiero.THBT_A_Cargo", "Cargo")
@@ -2407,11 +2287,6 @@ namespace Habitia.Migrations
             modelBuilder.Entity("Habitia.Models.Documentos.Documento", b =>
                 {
                     b.Navigation("Asambleas");
-                });
-
-            modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_CargoRecurrente", b =>
-                {
-                    b.Navigation("Residentes");
                 });
 
             modelBuilder.Entity("Habitia.Models.Incidencia", b =>

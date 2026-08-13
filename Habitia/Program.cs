@@ -6,6 +6,7 @@ using Habitia.Services.Interfaces;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,13 +39,19 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
+builder.Services.AddScoped<ICargoVencimientoService, CargoVencimientoService>();
+
+builder.Services.AddHangfire(config => config
+    .UseSqlServerStorage(connectionString));
+builder.Services.AddHangfireServer();
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<IIncidenciaService, IncidenciaService>();
 builder.Services.AddScoped<IMantenimientoService, MantenimientoService>();
 builder.Services.AddScoped<ITipoMantenimientoService, TipoMantenimientoService>();
 builder.Services.AddScoped<IReporteService, ReporteService>();
-
+builder.Services.AddScoped<ICargoRecurrenteService, CargoRecurrenteService>();
 
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(
@@ -140,6 +147,18 @@ else
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+app.UseHangfireDashboard("/hangfire"); 
+
+RecurringJob.AddOrUpdate<ICargoVencimientoService>(
+    "revisar-cargos-vencidos",
+    service => service.ProcesarCargosVencidosAsync(),
+    Cron.Daily); // corre todos los días a medianoche
+
+RecurringJob.AddOrUpdate<ICargoRecurrenteService>(
+    "generar-cargos-recurrentes",
+    service => service.GenerarCargosPendientesAsync(),
+    Cron.Daily);
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

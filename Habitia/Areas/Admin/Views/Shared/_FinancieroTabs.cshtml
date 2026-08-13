@@ -1,26 +1,24 @@
 ﻿@* /Areas/Admin/Views/Shared/_FinancieroTabs.cshtml *@
 @{
     var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
-
     bool EsTabActivo(string controlador) =>
         string.Equals(controladorActual, controlador, StringComparison.OrdinalIgnoreCase);
 }
 <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
-
 <div class="fin-tabs mb-4">
+    <a class="fin-tab @(EsTabActivo("ConfiguracionPago") ? "active" : "")" asp-controller="ConfiguracionPago" asp-action="Index">
+        <i class="bi bi-gear-wide-connected"></i> Configuración
+    </a>
     <a class="fin-tab @(EsTabActivo("Cargos") ? "active" : "")" asp-controller="Cargos" asp-action="Index">
         <i class="bi bi-receipt"></i> Cargos
     </a>
-    <a class="fin-tab @(EsTabActivo("Pagos") ? "active" : "")" asp-controller="Pagos" asp-action="Revision">
-        <i class="bi bi-cash-coin"></i> Pagos
+    <a class="fin-tab @(EsTabActivo("CargosRecurrentes") ? "active" : "")" asp-controller="CargosRecurrentes" asp-action="Index">
+        <i class="bi bi-arrow-repeat"></i> Recurrentes
     </a>
-    <a class="fin-tab @(EsTabActivo("Recargos") ? "active" : "")" asp-controller="Recargos" asp-action="Index">
-        <i class="bi bi-graph-up-arrow"></i> Recargos
+    <a class="fin-tab @(EsTabActivo("Pagos") ? "active" : "")" asp-controller="Pagos" asp-action="Index">
+        <i class="bi bi-cash-coin"></i> Pagos
     </a>
     <a class="fin-tab @(EsTabActivo("HistorialFinanciero") ? "active" : "")" asp-controller="HistorialFinanciero" asp-action="Index">
         <i class="bi bi-clock-history"></i> Historial
-    </a>
-    <a class="fin-tab @(EsTabActivo("ConfiguracionPago") ? "active" : "")" asp-controller="ConfiguracionPago" asp-action="Index">
-        <i class="bi bi-gear-wide-connected"></i> Configuración
     </a>
 </div>

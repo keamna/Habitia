@@ -1,0 +1,250 @@
+﻿@model Habitia.ViewModels.Incidencias.IncidenciaCreateViewModel
+@{
+    ViewData["Title"] = "Registrar Incidencia";
+}
+
+<div class="incidencia-form-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Registrar Incidencia</h2>
+            <p class="text-muted mb-0">Completa los datos y elige a quién corresponde la responsabilidad.</p>
+        </div>
+    </div>
+
+    <form asp-action="Create" enctype="multipart/form-data" method="post" class="incidencia-form" id="formIncidencia">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+        <div class="incidencia-form-layout">
+
+            <div class="incidencia-form-card">
+
+                <h5 class="mt-0"><span class="paso-numero">1</span> Datos de la incidencia</h5>
+                <hr />
+
+                <div class="mb-3">
+                    <label asp-for="Titulo" class="form-label"></label>
+                    <input asp-for="Titulo" class="form-control" placeholder="Ej: Fuga de agua en el pasillo" id="inputTitulo" />
+                    <span asp-validation-for="Titulo" class="text-danger"></span>
+                </div>
+
+                <div class="mb-1">
+                    <label asp-for="Descripcion" class="form-label"></label>
+                    <textarea asp-for="Descripcion" class="form-control" rows="3" placeholder="Describe qué ocurre, desde cuándo y cualquier detalle relevante" id="inputDescripcion"></textarea>
+                    <span asp-validation-for="Descripcion" class="text-danger"></span>
+                </div>
+
+                <h5><span class="paso-numero">2</span> ¿De quién es la responsabilidad?</h5>
+                <hr />
+                <p class="text-muted small mb-3">
+                    Según tu selección, te pediremos la vivienda, el área común, o ambas.
+                </p>
+
+                <div class="responsabilidad-cards mb-2" id="responsabilidadCards">
+                    <label class="responsabilidad-card" data-valor="1">
+                        <input type="radio" name="Responsabilidad" value="1" id="respPrivado"
+                               @(Model.Responsabilidad == Habitia.Enums.ResponsabilidadEnum.Privado ? "checked" : "") />
+                        <div class="responsabilidad-card-icon pill-privado"><i class="bi bi-house-door"></i></div>
+                        <div class="responsabilidad-card-texto">
+                            <strong>Privado</strong>
+                            <span>Dentro de una vivienda. Responsabilidad del residente o propietario.</span>
+                        </div>
+                    </label>
+
+                    <label class="responsabilidad-card" data-valor="2">
+                        <input type="radio" name="Responsabilidad" value="2" id="respComun"
+                               @(Model.Responsabilidad == Habitia.Enums.ResponsabilidadEnum.Comun ? "checked" : "") />
+                        <div class="responsabilidad-card-icon pill-comun"><i class="bi bi-buildings"></i></div>
+                        <div class="responsabilidad-card-texto">
+                            <strong>Común</strong>
+                            <span>En un área compartida. Responsabilidad del condominio.</span>
+                        </div>
+                    </label>
+
+                    <label class="responsabilidad-card" data-valor="3">
+                        <input type="radio" name="Responsabilidad" value="3" id="respMixto"
+                               @(Model.Responsabilidad == Habitia.Enums.ResponsabilidadEnum.Mixto ? "checked" : "") />
+                        <div class="responsabilidad-card-icon pill-mixto"><i class="bi bi-diagram-3"></i></div>
+                        <div class="responsabilidad-card-texto">
+                            <strong>Mixto</strong>
+                            <span>Involucra una zona privada y una zona común a la vez.</span>
+                        </div>
+                    </label>
+                </div>
+                <span asp-validation-for="Responsabilidad" class="text-danger d-block mb-3"></span>
+
+                <div id="grupoVivienda" class="mb-3 ubicacion-campo">
+                    <label asp-for="IdVivienda" class="form-label"></label>
+                    <select asp-for="IdVivienda" class="form-select" asp-items="Model.Viviendas" id="selectVivienda">
+                        <option value="">-- Seleccione la vivienda --</option>
+                    </select>
+                    <span asp-validation-for="IdVivienda" class="text-danger"></span>
+                </div>
+
+                <div id="grupoAreaComun" class="mb-3 ubicacion-campo">
+                    <label asp-for="IdAreaComun" class="form-label"></label>
+                    <select asp-for="IdAreaComun" class="form-select" asp-items="Model.AreasComunes" id="selectAreaComun">
+                        <option value="">-- Seleccione el área común --</option>
+                    </select>
+                    <span asp-validation-for="IdAreaComun" class="text-danger"></span>
+                </div>
+
+                <div id="mensajeSeleccionarResponsabilidad" class="ubicacion-vacia mb-3">
+                    <i class="bi bi-info-circle"></i>
+                    Selecciona un tipo de responsabilidad para indicar la ubicación.
+                </div>
+
+                <h5><span class="paso-numero">3</span> Evidencia</h5>
+                <hr />
+
+                <label for="inputEvidencia" class="evidencia-dropzone" id="dropzoneEvidencia">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                    <div><strong>Haz clic para subir</strong> o arrastra una imagen aquí</div>
+                    <div class="form-text mb-0">Formatos permitidos: JPG, PNG. Tamaño máximo: 5 MB.</div>
+                    <div class="evidencia-nombre-archivo" id="nombreArchivo"></div>
+                    <input asp-for="Evidencia" type="file" accept=".jpg,.jpeg,.png" id="inputEvidencia" />
+                </label>
+                <span asp-validation-for="Evidencia" class="text-danger d-block mt-1"></span>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Reportar Incidencia</button>
+                    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </div>
+
+            <div class="preview-panel">
+                <div class="preview-panel-label"><i class="bi bi-eye"></i> Vista previa</div>
+
+                <div class="preview-card">
+                    <div class="preview-titulo vacio" id="previewTitulo"></div>
+                    <div class="preview-descripcion vacio" id="previewDescripcion"></div>
+
+                    <hr class="preview-divider" />
+
+                    <div class="preview-row">
+                        <span class="preview-row-label">Responsabilidad</span>
+                        <span id="previewResponsabilidad"><span class="preview-empty-pill">Sin elegir</span></span>
+                    </div>
+
+                    <div class="preview-row">
+                        <span class="preview-row-label">Ubicación</span>
+                        <span id="previewUbicacion"><span class="preview-empty-pill">—</span></span>
+                    </div>
+
+                    <img id="previewEvidencia" class="preview-evidencia-thumb" alt="Vista previa de evidencia" />
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const grupoVivienda = document.getElementById('grupoVivienda');
+        const grupoAreaComun = document.getElementById('grupoAreaComun');
+        const mensajeVacio = document.getElementById('mensajeSeleccionarResponsabilidad');
+        const tarjetas = document.querySelectorAll('.responsabilidad-card');
+
+        const mapaResponsabilidad = { '1': 'Privado', '2': 'Común', '3': 'Mixto' };
+        const mapaPill = { '1': 'pill-privado', '2': 'pill-comun', '3': 'pill-mixto' };
+
+        function actualizarUbicaciones() {
+            const seleccionado = document.querySelector('input[name="Responsabilidad"]:checked');
+            tarjetas.forEach(t => t.classList.toggle('selected', t.querySelector('input').checked));
+
+            if (!seleccionado) {
+                grupoVivienda.style.display = 'none';
+                grupoAreaComun.style.display = 'none';
+                mensajeVacio.style.display = 'flex';
+            } else {
+                mensajeVacio.style.display = 'none';
+                const valor = seleccionado.value;
+                grupoVivienda.style.display = (valor === '1' || valor === '3') ? 'block' : 'none';
+                grupoAreaComun.style.display = (valor === '2' || valor === '3') ? 'block' : 'none';
+            }
+
+            actualizarPreview();
+        }
+
+        function actualizarPreview() {
+            const titulo = document.getElementById('inputTitulo').value.trim();
+            const descripcion = document.getElementById('inputDescripcion').value.trim();
+            const seleccionado = document.querySelector('input[name="Responsabilidad"]:checked');
+
+            const previewTitulo = document.getElementById('previewTitulo');
+            previewTitulo.textContent = titulo;
+            previewTitulo.classList.toggle('vacio', titulo === '');
+            if (titulo === '') previewTitulo.textContent = 'Sin título todavía';
+
+            const previewDescripcion = document.getElementById('previewDescripcion');
+            previewDescripcion.textContent = descripcion;
+            previewDescripcion.classList.toggle('vacio', descripcion === '');
+            if (descripcion === '') previewDescripcion.textContent = 'La descripción aparecerá aquí a medida que escribes...';
+
+            const previewResp = document.getElementById('previewResponsabilidad');
+            if (seleccionado) {
+                previewResp.innerHTML = `<span class="pill-responsabilidad ${mapaPill[seleccionado.value]}">${mapaResponsabilidad[seleccionado.value]}</span>`;
+            } else {
+                previewResp.innerHTML = '<span class="preview-empty-pill">Sin elegir</span>';
+            }
+
+            const previewUbicacion = document.getElementById('previewUbicacion');
+            const vivienda = document.getElementById('selectVivienda');
+            const areaComun = document.getElementById('selectAreaComun');
+            let partes = [];
+
+            if (seleccionado && (seleccionado.value === '1' || seleccionado.value === '3') && vivienda.value) {
+                partes.push(vivienda.options[vivienda.selectedIndex].text);
+            }
+            if (seleccionado && (seleccionado.value === '2' || seleccionado.value === '3') && areaComun.value) {
+                partes.push(areaComun.options[areaComun.selectedIndex].text);
+            }
+
+            previewUbicacion.innerHTML = partes.length > 0
+                ? partes.map(p => `<span class="ubicacion-chip">${p}</span>`).join(' ')
+                : '<span class="preview-empty-pill">—</span>';
+        }
+
+        document.querySelectorAll('input[name="Responsabilidad"]').forEach(radio => {
+            radio.addEventListener('change', actualizarUbicaciones);
+        });
+        document.getElementById('inputTitulo').addEventListener('input', actualizarPreview);
+        document.getElementById('inputDescripcion').addEventListener('input', actualizarPreview);
+        document.getElementById('selectVivienda').addEventListener('change', actualizarPreview);
+        document.getElementById('selectAreaComun').addEventListener('change', actualizarPreview);
+
+        // Dropzone de evidencia
+        const inputEvidencia = document.getElementById('inputEvidencia');
+        const dropzone = document.getElementById('dropzoneEvidencia');
+        const nombreArchivo = document.getElementById('nombreArchivo');
+        const previewEvidencia = document.getElementById('previewEvidencia');
+
+        inputEvidencia.addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                nombreArchivo.textContent = this.files[0].name;
+                nombreArchivo.style.display = 'block';
+
+                const reader = new FileReader();
+                reader.onload = e => {
+                    previewEvidencia.src = e.target.result;
+                    previewEvidencia.style.display = 'block';
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        ['dragover', 'dragenter'].forEach(evt =>
+            dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('dragover'); }));
+        ['dragleave', 'drop'].forEach(evt =>
+            dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('dragover'); }));
+        dropzone.addEventListener('drop', function (e) {
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                inputEvidencia.files = e.dataTransfer.files;
+                inputEvidencia.dispatchEvent(new Event('change'));
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', actualizarUbicaciones);
+    </script>
+}

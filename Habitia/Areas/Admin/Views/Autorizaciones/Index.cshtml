@@ -103,7 +103,8 @@
                                         <form asp-action="Invalidar" method="post" class="d-inline form-invalidar">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@a.Id" />
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <button type="button" class="btn btn-sm btn-outline-danger btn-abrir-invalidar"
+                                                    data-nombre="@a.NombreVisitante">
                                                 Invalidar
                                             </button>
                                         </form>
@@ -147,14 +148,51 @@
 
 </div>
 
+<!-- MODAL INVALIDAR AUTORIZACIÓN -->
+<div class="modal fade" id="modalInvalidarAutorizacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content acc-modal-content">
+            <div class="modal-body text-center pt-4">
+                <div class="acc-modal-icon acc-modal-icon-danger">
+                    <i class="bi bi-x-octagon"></i>
+                </div>
+
+                <div class="acc-modal-titulo">Invalidar autorización</div>
+                <p class="acc-modal-desc">
+                    ¿Está seguro de invalidar la autorización de <strong id="invalidarAutorizacionNombre"></strong>?
+                    <br />
+                    El visitante no podrá usar este código para ingresar.
+                </p>
+            </div>
+
+            <div class="modal-footer justify-content-center border-0 pb-4">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmarInvalidar">
+                    <i class="bi bi-x-octagon"></i> Invalidar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
-        document.querySelectorAll('.form-invalidar').forEach(form => {
-            form.addEventListener('submit', e => {
-                if (!confirm('¿Está seguro de invalidar esta autorización? El visitante no podrá usar este código para ingresar.')) {
-                    e.preventDefault();
-                }
+        var modalInvalidarEl = document.getElementById('modalInvalidarAutorizacion');
+        var modalInvalidar = modalInvalidarEl && window.bootstrap ? new bootstrap.Modal(modalInvalidarEl) : null;
+        var formAInvalidar = null;
+
+        document.querySelectorAll('.btn-abrir-invalidar').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                formAInvalidar = this.closest('form.form-invalidar');
+                document.getElementById('invalidarAutorizacionNombre').textContent = this.dataset.nombre;
+                if (modalInvalidar) modalInvalidar.show();
             });
+        });
+
+        document.getElementById('btnConfirmarInvalidar').addEventListener('click', function () {
+            if (formAInvalidar) {
+                formAInvalidar.submit();
+            }
         });
 
         document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(btn => {

@@ -16,7 +16,14 @@
     <div class="card shadow-sm">
         <div class="card-body">
 
-            <form asp-action="RegistroManual" method="post" id="formRegistroManual">
+            <div id="resumenErrores" class="alert alert-danger d-none" role="alert">
+                <div class="fw-semibold mb-1">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Corrija los siguientes campos:
+                </div>
+                <ul id="listaErrores" class="mb-0 ps-3"></ul>
+            </div>
+
+            <form asp-action="RegistroManual" method="post" id="formRegistroManual" novalidate>
                 @Html.AntiForgeryToken()
 
                 <div class="row g-4">
@@ -123,7 +130,7 @@
                 <!-- ===================== MOTIVO ===================== -->
                 <div class="mb-3">
                     <label class="form-label">Motivo de la visita</label>
-                    <textarea name="Motivo" class="form-control" rows="2" maxlength="200" required></textarea>
+                    <textarea name="Motivo" id="Motivo" class="form-control" rows="2" maxlength="200"></textarea>
                 </div>
 
                 <!-- ===================== VEHÍCULO ===================== -->
@@ -135,7 +142,7 @@
                 <div id="camposVehiculo" class="row g-3 mb-3 d-none">
                     <div class="col-12 col-md-4">
                         <label class="form-label">Placa</label>
-                        <input type="text" name="Placa" class="form-control" />
+                        <input type="text" name="Placa" id="Placa" class="form-control" />
                     </div>
                     <div class="col-12 col-md-4">
                         <label class="form-label">Tipo de vehículo</label>
@@ -309,20 +316,98 @@
             document.getElementById('camposVehiculo').classList.toggle('d-none', !this.checked);
         });
 
-        // ---------- Validación mínima antes de enviar ----------
-        document.getElementById('formRegistroManual').addEventListener('submit', function (e) {
+        // ---------- Validación completa antes de enviar ----------
+        function limpiarEstadosInvalidos() {
+            document.querySelectorAll('#formRegistroManual .is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
+        }
+
+        function marcarInvalido(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('is-invalid');
+        }
+
+        function validarFormulario() {
+            const errores = [];
+            limpiarEstadosInvalidos();
+            document.getElementById('residenteError').classList.add('d-none');
+
             const esNuevo = checkNuevo.checked;
             const idVisitanteExistente = document.getElementById('IdVisitanteExistente').value;
 
-            if (!esNuevo && !idVisitanteExistente) {
-                e.preventDefault();
-                alert('Seleccione un visitante de la lista, búsquelo, o marque "Es un visitante nuevo".');
+            // --- Visitante ---
+            if (esNuevo) {
+                const nombre = document.getElementById('NombreVisitante').value.trim();
+                const tipoId = document.getElementById('TipoIdentificacionVisitante').value;
+                const identificacion = document.getElementById('IdentificacionVisitante').value.trim();
+
+                if (!nombre) {
+                    errores.push('Ingrese el nombre completo del visitante.');
+                    marcarInvalido('NombreVisitante');
+                }
+                if (!tipoId) {
+                    errores.push('Seleccione el tipo de identificación del visitante.');
+                    marcarInvalido('TipoIdentificacionVisitante');
+                }
+                if (!identificacion) {
+                    errores.push('Ingrese el número de identificación del visitante.');
+                    marcarInvalido('IdentificacionVisitante');
+                }
+            } else {
+                if (!idVisitanteExistente) {
+                    errores.push('Seleccione un visitante existente o marque "Es un visitante nuevo".');
+                }
+            }
+
+            // --- Residente / vivienda ---
+            if (!document.getElementById('IdUsuario').value || !document.getElementById('IdVivienda').value) {
+                errores.push('Seleccione el residente o la vivienda que autoriza la visita.');
+                document.getElementById('residenteError').classList.remove('d-none');
+            }
+
+            // --- Motivo ---
+            const motivo = document.getElementById('Motivo').value.trim();
+            if (!motivo) {
+                errores.push('Ingrese el motivo de la visita.');
+                marcarInvalido('Motivo');
+            }
+
+            // --- Vehículo (solo si marcó que ingresa en vehículo) ---
+            if (document.getElementById('IngresaEnVehiculo').checked) {
+                const placa = document.getElementById('Placa').value.trim();
+                if (!placa) {
+                    errores.push('Ingrese la placa del vehículo.');
+                    marcarInvalido('Placa');
+                }
+            }
+
+            return errores;
+        }
+
+        function mostrarErrores(errores) {
+            const resumen = document.getElementById('resumenErrores');
+            const lista = document.getElementById('listaErrores');
+
+            if (errores.length === 0) {
+                resumen.classList.add('d-none');
+                lista.innerHTML = '';
                 return;
             }
 
-            if (!document.getElementById('IdUsuario').value || !document.getElementById('IdVivienda').value) {
+            lista.innerHTML = errores.map(e => `<li>${e}</li>`).join('');
+            resumen.classList.remove('d-none');
+            resumen.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        document.getElementById('formRegistroManual').addEventListener('submit', function (e) {
+            const errores = validarFormulario();
+
+            if (errores.length > 0) {
                 e.preventDefault();
-                document.getElementById('residenteError').classList.remove('d-none');
+                mostrarErrores(errores);
+            } else {
+                mostrarErrores([]);
             }
         });
 

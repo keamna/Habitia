@@ -12,6 +12,7 @@ namespace Habitia.Areas.Admin.Controllers
     [Authorize(Roles = "Admin")]
     public class RecargosController : Controller
     {
+        private const string ESTADO_VENCIDO = "Vencido";
         private readonly ApplicationDbContext _context;
 
         public RecargosController(ApplicationDbContext context)
@@ -19,53 +20,37 @@ namespace Habitia.Areas.Admin.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        // ============ MODAL: contenido del modal "Aplicar recargo", cargado vía AJAX ============
+        [HttpGet]
+        public async Task<IActionResult> Modal(int id)
         {
-            var hoy = DateTime.Now.Date;
+            var cargo = await ObtenerCargoVencido(id);
+            if (cargo == null)
+                return NotFound();
 
-            var vencidos = await _context.Cargos
-                .Include(c => c.Residente)
-                .Include(c => c.EstadoCargo)
-                .Where(c => c.EstadoCargo.TC_Nombre == "Pendiente" && c.TF_FechaVencimiento < hoy)
-                .Select(c => new CargoListItemViewModel
-                {
-                    TN_Id = c.TN_Id,
-                    NombreResidente = c.Residente.UserName,
-                    TN_MontoTotal = c.TN_MontoTotal,
-                    TF_FechaVencimiento = c.TF_FechaVencimiento,
-                    EstadoCargo = c.EstadoCargo.TC_Nombre
-                })
-                .ToListAsync();
-
-            return View(vencidos);
+            var vm = await MapearVm(cargo);
+            return PartialView("_RecargoModalContent", vm);
         }
 
-        public async Task<IActionResult> Create()
-        {
-            var vm = new RecargoCreateViewModel
-            {
-                CargosVencidos = await ObtenerCargosVencidos(),
-                TiposRecargo = await ObtenerTiposRecargo()
-            };
-            return View(vm);
-        }
-
+        // ============ CREATE ============
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(RecargoCreateViewModel vm)
         {
+            var cargo = await ObtenerCargoVencido(vm.TN_IdCargo);
+            if (cargo == null)
+                return NotFound();
+
             if (!ModelState.IsValid)
             {
-                vm.CargosVencidos = await ObtenerCargosVencidos();
-                vm.TiposRecargo = await ObtenerTiposRecargo();
-                return View(vm);
+                var vmError = await MapearVm(cargo);
+                vmError.TN_IdTipoRecargo = vm.TN_IdTipoRecargo;
+                vmError.TN_Valor = vm.TN_Valor;
+                return PartialView("_RecargoModalContent", vmError);
             }
 
             try
             {
-                var cargo = await _context.Cargos.FirstOrDefaultAsync(c => c.TN_Id == vm.TN_IdCargo);
-                if (cargo == null) return NotFound();
-
                 var tipoRecargo = await _context.TiposRecargo.FirstAsync(t => t.TN_Id == vm.TN_IdTipoRecargo);
 
                 var montoAplicado = tipoRecargo.TC_Nombre == "Porcentaje"
@@ -83,31 +68,55 @@ namespace Habitia.Areas.Admin.Controllers
                 });
 
                 cargo.TN_MontoTotal += montoAplicado;
+                cargo.TB_RecargoAplicado = true; // <-- NUEVO: evita duplicar el recargo
 
                 await _context.SaveChangesAsync();
-                TempData["Mensaje"] = "Datos guardados correctamente";
+                TempData["Mensaje"] = $"Recargo aplicado a {cargo.Residente.TC_Nombre} {cargo.Residente.TC_Apellido} correctamente.";
             }
             catch
             {
                 TempData["Error"] = "No fue posible completar la operación";
             }
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Cargos", new { estado = ESTADO_VENCIDO });
         }
 
-        private async Task<List<SelectListItem>> ObtenerCargosVencidos()
+        // ============ Helpers ============
+
+        private async Task<THBT_A_Cargo?> ObtenerCargoVencido(int id)
         {
-            var hoy = DateTime.Now.Date;
-            return await _context.Cargos
+            var cargo = await _context.Cargos
                 .Include(c => c.Residente)
+                .Include(c => c.TipoCargo)
                 .Include(c => c.EstadoCargo)
-                .Where(c => c.EstadoCargo.TC_Nombre == "Pendiente" && c.TF_FechaVencimiento < hoy)
-                .Select(c => new SelectListItem
-                {
-                    Value = c.TN_Id.ToString(),
-                    Text = c.Residente.UserName + " - " + c.TC_Descripcion
-                })
-                .ToListAsync();
+                .FirstOrDefaultAsync(c => c.TN_Id == id && c.TB_Estado);
+
+            // <-- NUEVO: ya no se puede aplicar recargo si ya se aplicó uno antes
+            if (cargo == null || cargo.EstadoCargo.TC_Nombre != ESTADO_VENCIDO || cargo.TB_RecargoAplicado)
+                return null;
+
+            return cargo;
+        }
+
+        private async Task<RecargoCreateViewModel> MapearVm(THBT_A_Cargo cargo)
+        {
+            return new RecargoCreateViewModel
+            {
+                TN_IdCargo = cargo.TN_Id,
+                NombreResidente = cargo.Residente.TC_Nombre + " " + cargo.Residente.TC_Apellido,
+                IdentificacionResidente = cargo.Residente.TC_Identificacion,
+                CorreoResidente = cargo.Residente.Email,
+                TelefonoResidente = cargo.Residente.TC_Telefono,
+                TipoCargo = cargo.TipoCargo.TC_Nombre,
+                Descripcion = cargo.TC_Descripcion,
+                TN_MontoBase = cargo.TN_MontoBase,
+                TB_AplicaIva = cargo.TB_AplicaIva,
+                TN_MontoIva = cargo.TN_MontoIva,
+                TN_MontoTotal = cargo.TN_MontoTotal,
+                TF_FechaVencimiento = cargo.TF_FechaVencimiento,
+                DiasVencido = Math.Max(0, (DateTime.Now.Date - cargo.TF_FechaVencimiento.Date).Days),
+                TiposRecargo = await ObtenerTiposRecargo()
+            };
         }
 
         private async Task<List<SelectListItem>> ObtenerTiposRecargo()

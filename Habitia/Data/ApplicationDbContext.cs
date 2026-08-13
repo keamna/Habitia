@@ -44,6 +44,8 @@ namespace Habitia.Data
         public DbSet<THBT_CAT_TipoRecargo> TiposRecargo { get; set; }
         public DbSet<THBT_CAT_TipoTarjeta> TiposTarjeta { get; set; }
         public DbSet<THBT_H_Cargo> HistorialCargos { get; set; }
+        public DbSet<THBT_A_CargoRecurrente> CargosRecurrentes { get; set; }
+        public DbSet<THBT_A_CargoRecurrenteResidente> CargosRecurrentesResidentes { get; set; }
         public DbSet<THBT_H_Pago> HistorialPagos { get; set; }
         public DbSet<THBT_A_Recargo> Recargos { get; set; }
 
@@ -188,7 +190,7 @@ namespace Habitia.Data
             });
 
             // ==========================================================
-            // Autorizacion (US-05: generada por el residente, código QR)
+            // Autorizacion generada por el residente 
             // ==========================================================
             builder.Entity<Autorizacion>(entity =>
             {
@@ -218,7 +220,7 @@ namespace Habitia.Data
             });
 
             // ==========================================================
-            // Acceso (US-04: registro manual o validación de QR)
+            // Acceso (registro manual o validación de codigo)
             // ==========================================================
             builder.Entity<Acceso>(entity =>
             {
@@ -281,9 +283,46 @@ namespace Habitia.Data
                     .HasForeignKey(c => c.TN_IdEstadoCargo)
                     .OnDelete(DeleteBehavior.Restrict);
 
+                entity.HasOne(c => c.TipoRecargo)
+                .WithMany()
+                .HasForeignKey(c => c.TN_IdTipoRecargo)
+                .OnDelete(DeleteBehavior.Restrict);
+
                 // Acelera "cargos pendientes del residente" y "cargos vencidos" (US-10, puntos 2.2 y 4.1)
                 entity.HasIndex(c => c.TN_IdEstadoCargo);
                 entity.HasIndex(c => c.TF_FechaVencimiento);
+            });
+
+            builder.Entity<THBT_A_CargoRecurrente>(entity =>
+            {
+                entity.HasOne(cr => cr.TipoCargo)
+                    .WithMany()
+                    .HasForeignKey(cr => cr.TN_IdTipoCargo)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(cr => cr.TipoRecargo)
+                    .WithMany()
+                    .HasForeignKey(cr => cr.TN_IdTipoRecargo)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(cr => cr.TB_Estado);
+            });
+
+            // Cargo recurrente
+
+            builder.Entity<THBT_A_CargoRecurrenteResidente>(entity =>
+            {
+                entity.HasOne(x => x.CargoRecurrente)
+                    .WithMany(cr => cr.Residentes)
+                    .HasForeignKey(x => x.TN_IdCargoRecurrente)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.Residente)
+                    .WithMany()
+                    .HasForeignKey(x => x.TC_IdResidente)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(x => new { x.TN_IdCargoRecurrente, x.TC_IdResidente }).IsUnique();
             });
 
             builder.Entity<THBT_A_Pago>(entity =>

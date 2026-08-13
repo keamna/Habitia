@@ -62,11 +62,13 @@
                 <label class="d-block mb-2">Rol del usuario</label>
                 <div class="roles-opciones">
                     <label class="rol-opcion">
-                        <input type="radio" name="Rol" value="Seguridad" class="input-rol-usuario" required />
+                        <input type="radio" name="Rol" value="Seguridad" class="input-rol-usuario"
+                               data-val="true" data-val-required="Debe seleccionar un rol." />
                         Seguridad
                     </label>
                     <label class="rol-opcion">
-                        <input type="radio" name="Rol" value="Mantenimiento" class="input-rol-usuario" required />
+                        <input type="radio" name="Rol" value="Mantenimiento" class="input-rol-usuario"
+                               data-val="true" data-val-required="Debe seleccionar un rol." />
                         Mantenimiento
                     </label>
                 </div>
@@ -81,13 +83,13 @@
                         foreach (var tipo in (List<SelectListItem>)ViewBag.TiposMantenimiento)
                         {
                             <label class="rol-opcion">
-                                <input type="checkbox" name="TiposMantenimientoIds" value="@tipo.Value" />
+                                <input type="checkbox" name="TiposMantenimientoIds" value="@tipo.Value" class="input-tipo-mantenimiento" />
                                 @tipo.Text
                             </label>
                         }
                     }
                 </div>
-                <span asp-validation-for="TiposMantenimientoIds" class="field-validation-error"></span>
+                <span asp-validation-for="TiposMantenimientoIds" class="field-validation-error" id="tiposMantenimientoError"></span>
             </div>
 
             <div class="modal-footer" style="justify-content:flex-end; margin-top:24px;">
@@ -101,11 +103,42 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+        const contenedorMantenimiento = document.getElementById('tiposMantenimientoContainer');
+        const errorMantenimiento = document.getElementById('tiposMantenimientoError');
+        const checksMantenimiento = document.querySelectorAll('.input-tipo-mantenimiento');
+        const formCrearUsuario = document.getElementById('formCrearUsuario');
+
         document.querySelectorAll('.input-rol-usuario').forEach(function (radio) {
             radio.addEventListener('change', function () {
-                var contenedor = document.getElementById('tiposMantenimientoContainer');
-                contenedor.style.display = this.value === 'Mantenimiento' ? 'block' : 'none';
+                contenedorMantenimiento.style.display = this.value === 'Mantenimiento' ? 'block' : 'none';
+
+                if (this.value !== 'Mantenimiento') {
+                    errorMantenimiento.textContent = '';
+                }
             });
+        });
+
+        checksMantenimiento.forEach(function (check) {
+            check.addEventListener('change', function () {
+                if (Array.from(checksMantenimiento).some(c => c.checked)) {
+                    errorMantenimiento.textContent = '';
+                }
+            });
+        });
+
+        formCrearUsuario.addEventListener('submit', function (e) {
+            const rolSeleccionado = document.querySelector('.input-rol-usuario:checked');
+
+            if (rolSeleccionado && rolSeleccionado.value === 'Mantenimiento') {
+                const algunoMarcado = Array.from(checksMantenimiento).some(c => c.checked);
+
+                if (!algunoMarcado) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    errorMantenimiento.textContent = 'Debe asignar al menos un tipo de mantenimiento.';
+                    errorMantenimiento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
         });
     </script>
 }

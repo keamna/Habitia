@@ -18,5 +18,8 @@
             "Vencido" => "badge-vencido",
             _ => "badge-aplicado"
         };
+
+        // Si el total ya no cuadra con base + IVA, la diferencia es un recargo aplicado por atraso.
+        public decimal TN_MontoRecargo => Math.Max(0, TN_MontoTotal - TN_MontoBase - TN_MontoIva);
     }
 }

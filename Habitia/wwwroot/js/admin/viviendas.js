@@ -1,18 +1,26 @@
 ﻿let modalEliminarViviendaInstance = null;
 
 async function abrirEliminarVivienda(id, numero) {
-    document.getElementById("eliminarViviendaId").value = id;
-    document.getElementById("eliminarViviendaNumero").textContent = numero;
+    const modalEl = document.getElementById("modalEliminarVivienda");
+    const confirmacionTexto = modalEl.querySelector("#eliminarViviendaConfirmacionTexto");
+    const numeroSpan = modalEl.querySelector("#eliminarViviendaNumero");
+    const errorBox = modalEl.querySelector("#eliminarViviendaError");
+    const idInput = modalEl.querySelector("#eliminarViviendaId");
+    const botonesConfirmar = modalEl.querySelector("#eliminarViviendaBotonesConfirmar");
+    const botonEntendido = modalEl.querySelector("#eliminarViviendaBotonEntendido");
+    const btnConfirmar = modalEl.querySelector("#btnConfirmarEliminarVivienda");
 
-    const errorBox = document.getElementById("eliminarViviendaError");
+    idInput.value = id;
+    numeroSpan.textContent = numero;
+
     errorBox.style.display = "none";
     errorBox.textContent = "";
 
     // Reset visual antes de verificar
-    document.getElementById("eliminarViviendaBotonesConfirmar").style.display = "none";
-    document.getElementById("eliminarViviendaBotonEntendido").style.display = "none";
+    confirmacionTexto.style.display = "none";
+    botonesConfirmar.style.display = "none";
+    botonEntendido.style.display = "none";
 
-    const modalEl = document.getElementById("modalEliminarVivienda");
     modalEliminarViviendaInstance = new bootstrap.Modal(modalEl);
     modalEliminarViviendaInstance.show();
 
@@ -22,8 +30,9 @@ async function abrirEliminarVivienda(id, numero) {
         const result = await response.json();
 
         if (result.puedeEliminar) {
-            document.getElementById("eliminarViviendaBotonesConfirmar").style.display = "flex";
-            document.getElementById("btnConfirmarEliminarVivienda").disabled = false;
+            confirmacionTexto.style.display = "block";
+            botonesConfirmar.style.display = "flex";
+            btnConfirmar.disabled = false;
         } else {
             mostrarErrorEliminarVivienda(result.message);
         }
@@ -38,18 +47,19 @@ function obtenerAntiForgeryToken() {
 }
 
 async function confirmarEliminarVivienda() {
-    const id = document.getElementById("eliminarViviendaId").value;
+    const modalEl = document.getElementById("modalEliminarVivienda");
+    const idInput = modalEl.querySelector("#eliminarViviendaId");
+    const id = idInput.value;
     if (!id) return;
 
-    const boton = document.getElementById("btnConfirmarEliminarVivienda");
+    const boton = modalEl.querySelector("#btnConfirmarEliminarVivienda");
     boton.disabled = true;
 
-    const errorBox = document.getElementById("eliminarViviendaError");
+    const errorBox = modalEl.querySelector("#eliminarViviendaError");
     errorBox.style.display = "none";
 
     try {
         const token = obtenerAntiForgeryToken();
-
         const response = await fetch('/Admin/Viviendas/Eliminar', {
             method: "POST",
             headers: {
@@ -65,7 +75,6 @@ async function confirmarEliminarVivienda() {
         }
 
         const result = await response.json();
-
         if (result.success) {
             location.reload();
         } else {
@@ -77,11 +86,17 @@ async function confirmarEliminarVivienda() {
 }
 
 function mostrarErrorEliminarVivienda(mensaje) {
-    const errorBox = document.getElementById("eliminarViviendaError");
+    const modalEl = document.getElementById("modalEliminarVivienda");
+    const errorBox = modalEl.querySelector("#eliminarViviendaError");
+    const confirmacionTexto = modalEl.querySelector("#eliminarViviendaConfirmacionTexto");
+    const botonesConfirmar = modalEl.querySelector("#eliminarViviendaBotonesConfirmar");
+    const botonEntendido = modalEl.querySelector("#eliminarViviendaBotonEntendido");
+
     errorBox.textContent = mensaje;
     errorBox.style.display = "block";
 
-    // Ocultar Cancelar/Eliminar, mostrar solo "Entendido"
-    document.getElementById("eliminarViviendaBotonesConfirmar").style.display = "none";
-    document.getElementById("eliminarViviendaBotonEntendido").style.display = "flex";
+    // Ocultar el texto de confirmación y Cancelar/Eliminar; mostrar solo "Entendido"
+    confirmacionTexto.style.display = "none";
+    botonesConfirmar.style.display = "none";
+    botonEntendido.style.display = "flex";
 }

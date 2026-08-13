@@ -1,143 +1,269 @@
 ﻿@model List<Habitia.ViewModels.Financiero.Admin.CargoListItemViewModel>
 @{
     ViewData["Title"] = "Cargos";
+
+    var totalPendiente = Model.Where(c => c.EstadoCargo == "Pendiente").Sum(c => c.TN_MontoTotal);
+    var totalPagado = Model.Where(c => c.EstadoCargo == "Pagado").Sum(c => c.TN_MontoTotal);
+    var enRevision = Model.Count(c => c.EstadoCargo == "En revisión");
+    var vencidos = Model.Count(c => c.EstadoCargo == "Vencido");
+    var estadoInicial = ViewData["EstadoInicial"] as string ?? "";
 }
+
 <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
 <partial name="_FinancieroTabs" />
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Cargos</h4>
-    <a asp-action="Create" class="btn" style="background-color:#336332;color:#fff;">
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+        <h4 class="mb-1">Cargos</h4>
+        <p class="text-muted mb-0" style="font-size:.88rem;">
+            Multas, cuotas y servicios asignados a los residentes.
+        </p>
+    </div>
+
+    <a asp-action="Create" class="btn text-white" style="background-color:#336332;">
         <i class="bi bi-plus-lg"></i> Crear cargo
     </a>
 </div>
+
 @if (TempData["Mensaje"] != null)
 {
-    <div class="alert alert-success">@TempData["Mensaje"]</div>
+    <div class="alert alert-success d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i><span>@TempData["Mensaje"]</span>
+    </div>
 }
+
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger">@TempData["Error"]</div>
+    <div class="alert alert-danger d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i><span>@TempData["Error"]</span>
+    </div>
 }
-<div class="fin-card">
-    <div class="fin-card-body p-0">
-        <div class="table-responsive">
-            <table class="table fin-table mb-0">
-                <thead>
-                    <tr>
-                        <th style="width:30px;"></th>
-                        <th>Residente</th>
-                        <th>Tipo</th>
-                        <th style="width:30px;"></th>
-                        <th>Monto total</th>
-                        <th>Emisión</th>
-                        <th>Vencimiento</th>
-                        <th>Estado</th>
-                        <th style="width:110px;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (!Model.Any())
-                    {
-                        <tr><td colspan="9" class="text-center text-muted py-4">No hay cargos registrados</td></tr>
-                    }
-                    @foreach (var c in Model)
-                    {
-                        var badgeClass = c.EstadoCargo switch
-                        {
-                            "Pendiente" => "badge-pendiente",
-                            "En revisión" => "badge-revision",
-                            "Pagado" => "badge-pagado",
-                            "Vencido" => "badge-vencido",
-                            _ => "badge-aplicado"
-                        };
-                        var filaResidenteId = $"detalle-residente-{c.TN_Id}";
-                        var filaMontoId = $"detalle-monto-{c.TN_Id}";
-                        var puedeEditar = c.EstadoCargo == "Pendiente";
 
-                        <tr>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-link p-0 btn-expandir"
-                                        data-bs-toggle="collapse" data-bs-target="#@filaResidenteId">
-                                    <i class="bi bi-caret-right-fill"></i>
-                                </button>
-                            </td>
-                            <td>@c.NombreResidente</td>
-                            <td>@c.TipoCargo</td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-link p-0 btn-expandir"
-                                        data-bs-toggle="collapse" data-bs-target="#@filaMontoId">
-                                    <i class="bi bi-caret-right-fill"></i>
-                                </button>
-                            </td>
-                            <td>@c.TN_MontoTotal.ToString("C")</td>
-                            <td>@c.TF_FechaEmision.ToString("dd/MM/yyyy")</td>
-                            <td>@c.TF_FechaVencimiento.ToString("dd/MM/yyyy")</td>
-                            <td><span class="badge @badgeClass">@c.EstadoCargo</span></td>
-                            <td>
-                                @if (puedeEditar)
-                                {
-                                    <a asp-action="Edit" asp-route-id="@c.TN_Id"
-                                       class="btn btn-sm btn-outline-secondary" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar"
-                                            title="Eliminar"
-                                            data-id="@c.TN_Id"
-                                            data-descripcion="@c.TipoCargo - @c.NombreResidente">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                }
-                                else
-                                {
-                                    <span class="text-muted small">—</span>
-                                }
-                            </td>
-                        </tr>
-
-                        <tr class="collapse" id="@filaResidenteId">
-                            <td></td>
-                            <td colspan="8" class="bg-light">
-                                <div class="p-2">
-                                    <strong>Identificación:</strong> @c.IdentificacionResidente <br />
-                                    <strong>Nombre completo:</strong> @c.NombreResidente <br />
-                                    <strong>Correo:</strong> @c.CorreoResidente <br />
-                                    <strong>Teléfono:</strong> @(c.TelefonoResidente ?? "No registrado")
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr class="collapse" id="@filaMontoId">
-                            <td colspan="3"></td>
-                            <td colspan="6" class="bg-light">
-                                <div class="p-2">
-                                    <strong>Monto base:</strong> @c.TN_MontoBase.ToString("C") <br />
-                                    <strong>IVA aplicado:</strong> @(c.TB_AplicaIva ? "Sí (13%)" : "No") <br />
-                                    <strong>Monto IVA:</strong> @c.TN_MontoIva.ToString("C") <br />
-                                    <strong>Monto total:</strong> @c.TN_MontoTotal.ToString("C")
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+@if (Model.Any())
+{
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-md-3">
+            <div class="fin-card h-100 fin-metrica" data-filtro="">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">Por cobrar</div>
+                    <div class="fin-monto-total" style="color:#856404;">@totalPendiente.ToString("C")</div>
+                </div>
+            </div>
         </div>
+
+        <div class="col-6 col-md-3">
+            <div class="fin-card h-100 fin-metrica" data-filtro="Pagado">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">Cobrado</div>
+                    <div class="fin-monto-total">@totalPagado.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="fin-card h-100 fin-metrica" data-filtro="En revisión">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">En revisión</div>
+                    <div class="fin-monto-total" style="color:#0C5460;">@enRevision</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="fin-card h-100 fin-metrica" data-filtro="Vencido">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">Vencidos</div>
+                    <div class="fin-monto-total" style="color:#842029;">@vencidos</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-2 mb-3">
+        <div class="col-md-5">
+            <input type="text" id="buscarCargo" class="form-control"
+                   placeholder="Buscar por residente o tipo de cargo..." />
+        </div>
+        <div class="col-md-3">
+            <select id="filtroEstadoCargo" class="form-select">
+                <option value="">Todos los estados</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="En revisión">En revisión</option>
+                <option value="Pagado">Pagado</option>
+                <option value="Vencido">Vencido</option>
+            </select>
+        </div>
+    </div>
+}
+
+<div class="fin-card">
+    <div class="fin-card-header">
+        <i class="bi bi-receipt-cutoff"></i>
+        Listado de cargos
+    </div>
+
+    <div class="fin-card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-receipt" style="font-size:2.5rem; color:#C9D6C9;"></i>
+                <p class="mt-3 mb-0">No hay cargos registrados.</p>
+                <p class="mb-0" style="font-size:.85rem;">
+                    Use el botón «Crear cargo» para asignar el primero.
+                </p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table fin-table mb-0" id="tablaCargos">
+                    <thead>
+                        <tr>
+                            <th style="width:36px;"></th>
+                            <th>Residente</th>
+                            <th>Tipo</th>
+                            <th class="text-end">Monto total</th>
+                            <th>Emisión</th>
+                            <th>Vencimiento</th>
+                            <th>Estado</th>
+                            <th class="text-end" style="width:110px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model)
+                        {
+                            var badgeClass = c.EstadoCargo switch
+                            {
+                                "Pendiente" => "badge-pendiente",
+                                "En revisión" => "badge-revision",
+                                "Pagado" => "badge-pagado",
+                                "Vencido" => "badge-vencido",
+                                _ => "badge-aplicado"
+                            };
+
+                            var detalleId = $"detalle-cargo-{c.TN_Id}";
+                            var puedeEditar = c.EstadoCargo == "Pendiente";
+                            var estaVencido = c.EstadoCargo == "Vencido";
+
+                            <tr data-estado="@c.EstadoCargo">
+                                <td>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#@detalleId"
+                                            aria-expanded="false"
+                                            aria-controls="@detalleId"
+                                            title="Ver detalle">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </button>
+                                </td>
+
+                                <td class="fw-semibold">@c.NombreResidente</td>
+                                <td>@c.TipoCargo</td>
+                                <td class="text-end fw-semibold">@c.TN_MontoTotal.ToString("C")</td>
+                                <td class="text-nowrap">@c.TF_FechaEmision.ToString("dd/MM/yyyy")</td>
+                                <td class="text-nowrap">@c.TF_FechaVencimiento.ToString("dd/MM/yyyy")</td>
+                                <td><span class="badge @badgeClass">@c.EstadoCargo</span></td>
+
+                                <td class="text-end">
+                                    @if (puedeEditar)
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@c.TN_Id"
+                                           class="btn btn-sm btn-outline-secondary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar"
+                                                title="Eliminar"
+                                                data-id="@c.TN_Id"
+                                                data-descripcion="@c.TipoCargo - @c.NombreResidente">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">—</span>
+                                    }
+                                </td>
+                            </tr>
+
+                            <tr class="collapse" id="@detalleId"
+                                data-estado="@c.EstadoCargo">
+                                <td></td>
+                                <td colspan="7" class="fin-detalle-panel">
+                                    <div class="row g-3 py-2">
+                                        <div class="col-md-6">
+                                            <div class="fin-metrica-label mb-2">Datos del residente</div>
+                                            <div><strong>Identificación:</strong> @c.IdentificacionResidente</div>
+                                            <div><strong>Nombre:</strong> @c.NombreResidente</div>
+                                            <div><strong>Teléfono:</strong> @(c.TelefonoResidente ?? "No registrado")</div>
+                                            <div><strong>Correo:</strong> @c.CorreoResidente</div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="fin-metrica-label mb-2">Desglose del monto</div>
+                                            <div class="d-flex justify-content-between" style="max-width:280px;">
+                                                <span class="text-muted">Monto base</span>
+                                                <span>@c.TN_MontoBase.ToString("C")</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between" style="max-width:280px;">
+                                                <span class="text-muted">IVA @(c.TB_AplicaIva ? "(13%)" : "(no aplica)")</span>
+                                                <span>@c.TN_MontoIva.ToString("C")</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between pt-1 mt-1"
+                                                 style="max-width:280px; border-top:1px solid #ECECEC;">
+                                                <span class="fw-semibold">Total</span>
+                                                <span class="fw-semibold">@c.TN_MontoTotal.ToString("C")</span>
+                                            </div>
+                                        </div>
+
+                                        @if (estaVencido && !c.TB_RecargoAplicado)
+                                        {
+                                            <div class="col-12">
+                                                <button type="button" class="btn btn-sm text-white btn-aplicar-recargo"
+                                                        style="background-color:#B02A37;"
+                                                        data-id="@c.TN_Id">
+                                                    <i class="bi bi-graph-up-arrow"></i> Aplicar recargo
+                                                </button>
+                                            </div>
+                                        }
+                                        else if (estaVencido && c.TB_RecargoAplicado)
+                                        {
+                                            <div class="col-12">
+                                                <span class="badge" style="background-color:#6c757d;">
+                                                    <i class="bi bi-check-circle"></i> Recargo ya aplicado
+                                                </span>
+                                            </div>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
 </div>
 
 <!-- Modal confirmación de eliminación -->
 <div class="modal fade" id="modalEliminar" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-exclamation-triangle text-danger"></i> Confirmar eliminación</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-body text-center pt-4">
+                <div class="modal-icon modal-icon-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+
+                <div class="modal-titulo">Eliminar cargo</div>
+                <p class="modal-desc">
+                    ¿Está seguro de que desea eliminar el cargo <strong id="eliminarDescripcion"></strong>?
+                    <br />
+                    Esta acción marcará el cargo como inactivo y no podrá revertirse desde esta pantalla.
+                </p>
             </div>
-            <div class="modal-body">
-                <p>¿Está seguro de que desea eliminar el cargo <strong id="eliminarDescripcion"></strong>?</p>
-                <p class="text-muted small mb-0">Esta acción marcará el cargo como inactivo y no podrá revertirse desde esta pantalla.</p>
-            </div>
-            <div class="modal-footer">
-                <form asp-action="Delete" method="post" id="formEliminar">
+
+            <div class="modal-footer justify-content-center border-0 pb-4">
+                <form asp-action="Delete" method="post" id="formEliminar" class="d-flex gap-2">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" id="eliminarId" />
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -150,33 +276,153 @@
     </div>
 </div>
 
+<!-- Modal Aplicar recargo (contenido cargado vía AJAX desde Recargos/Modal/{id}) -->
+<div class="modal fade" id="modalRecargo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="modalRecargoContent">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-danger" role="status"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
-        document.querySelectorAll('.btn-expandir').forEach(btn => {
-            const targetSelector = btn.getAttribute('data-bs-target');
-            const target = document.querySelector(targetSelector);
-            const icono = btn.querySelector('i');
+        (function () {
 
-            target.addEventListener('shown.bs.collapse', () => {
-                icono.classList.remove('bi-caret-right-fill');
-                icono.classList.add('bi-caret-down-fill');
-            });
-            target.addEventListener('hidden.bs.collapse', () => {
-                icono.classList.remove('bi-caret-down-fill');
-                icono.classList.add('bi-caret-right-fill');
-            });
-        });
+            // ===== Expandir / contraer detalle (collapse nativo de Bootstrap, como en Accesos) =====
+            document.querySelectorAll('[data-bs-target^="#detalle-cargo-"]').forEach(function (btn) {
+                var target = document.querySelector(btn.getAttribute('data-bs-target'));
+                if (!target) return;
 
-        // Modal de confirmación de eliminación
-        const modalEliminarEl = document.getElementById('modalEliminar');
-        const modalEliminar = new bootstrap.Modal(modalEliminarEl);
-
-        document.querySelectorAll('.btn-eliminar').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.getElementById('eliminarId').value = this.dataset.id;
-                document.getElementById('eliminarDescripcion').innerText = this.dataset.descripcion;
-                modalEliminar.show();
+                target.addEventListener('show.bs.collapse', function () {
+                    btn.querySelector('i').classList.replace('bi-chevron-down', 'bi-chevron-up');
+                });
+                target.addEventListener('hide.bs.collapse', function () {
+                    btn.querySelector('i').classList.replace('bi-chevron-up', 'bi-chevron-down');
+                });
             });
-        });
+
+            // ===== Modal de eliminación =====
+            var modalEliminarEl = document.getElementById('modalEliminar');
+
+            if (modalEliminarEl && window.bootstrap) {
+                var modalEliminar = new bootstrap.Modal(modalEliminarEl);
+
+                document.querySelectorAll('.btn-eliminar').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        document.getElementById('eliminarId').value = btn.dataset.id;
+                        document.getElementById('eliminarDescripcion').innerText = btn.dataset.descripcion;
+                        modalEliminar.show();
+                    });
+                });
+            }
+
+            // ===== Modal Aplicar recargo (AJAX) =====
+            var modalRecargoEl = document.getElementById('modalRecargo');
+            var modalRecargoContent = document.getElementById('modalRecargoContent');
+            var modalRecargo = modalRecargoEl && window.bootstrap ? new bootstrap.Modal(modalRecargoEl) : null;
+
+            function cargarModalRecargo(id) {
+                modalRecargoContent.innerHTML = '<div class="modal-body text-center py-5"><div class="spinner-border text-danger" role="status"></div></div>';
+                modalRecargo.show();
+
+                fetch('@Url.Action("Modal", "Recargos")/' + id)
+                    .then(function (r) { return r.ok ? r.text() : Promise.reject(); })
+                    .then(function (html) {
+                        modalRecargoContent.innerHTML = html;
+                        vincularFormRecargo();
+                    })
+                    .catch(function () {
+                        modalRecargoContent.innerHTML = '<div class="modal-body text-center text-danger py-4">' +
+                            'No fue posible cargar la información del cargo.</div>';
+                    });
+            }
+
+            function vincularFormRecargo() {
+                var form = document.getElementById('formRecargo');
+                if (!form) return;
+
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    var formData = new FormData(form);
+
+                    fetch(form.action, { method: 'POST', body: formData })
+                        .then(function (r) {
+                            if (r.redirected) {
+                                window.location.href = r.url;
+                                return null;
+                            }
+                            return r.text();
+                        })
+                        .then(function (html) {
+                            if (html) {
+                                modalRecargoContent.innerHTML = html;
+                                vincularFormRecargo();
+                            }
+                        })
+                        .catch(function () {
+                            // deja el formulario como estaba para reintentar
+                        });
+                });
+            }
+
+            if (modalRecargo) {
+                document.querySelectorAll('.btn-aplicar-recargo').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        cargarModalRecargo(btn.dataset.id);
+                    });
+                });
+            }
+
+            // ===== Filtros =====
+            var buscar = document.getElementById('buscarCargo');
+            var filtro = document.getElementById('filtroEstadoCargo');
+            var tabla = document.getElementById('tablaCargos');
+
+            function aplicar() {
+                if (!tabla) return;
+
+                var texto = (buscar && buscar.value || '').toLowerCase();
+                var estado = filtro && filtro.value || '';
+
+                tabla.querySelectorAll('tbody tr:not(.collapse)').forEach(function (fila) {
+                    var coincideTexto = fila.textContent.toLowerCase().includes(texto);
+                    var coincideEstado = estado === '' || fila.dataset.estado === estado;
+                    var visible = coincideTexto && coincideEstado;
+
+                    fila.style.display = visible ? '' : 'none';
+
+                    var detalle = fila.nextElementSibling;
+                    if (detalle && detalle.classList.contains('collapse') && !visible) {
+                        var instancia = bootstrap.Collapse.getInstance(detalle);
+                        if (instancia) instancia.hide();
+                    }
+                });
+            }
+
+            if (buscar) buscar.addEventListener('input', aplicar);
+            if (filtro) filtro.addEventListener('change', aplicar);
+
+            // Clic en tarjetas de métricas también filtra
+            document.querySelectorAll('.fin-metrica').forEach(function (tarjeta) {
+                tarjeta.style.cursor = 'pointer';
+                tarjeta.addEventListener('click', function () {
+                    if (filtro) {
+                        filtro.value = tarjeta.dataset.filtro;
+                        aplicar();
+                    }
+                });
+            });
+
+            // Filtro inicial (llega por query string, ej. al volver de aplicar un recargo)
+            var estadoInicial = '@estadoInicial';
+            if (estadoInicial && filtro) {
+                filtro.value = estadoInicial;
+                aplicar();
+            }
+
+        })();
     </script>
 }

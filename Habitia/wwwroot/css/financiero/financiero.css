@@ -1,135 +1,334 @@
-﻿/* /wwwroot/css/financiero/financiero.css */
+﻿/* =========================================================
+   FINANCIERO — Cargos / Pagos / Historial / Configuración
+========================================================= */
 
-.fin-card {
-    background-color: #FFFFFF; 
-    border: 1px solid #ECECEC;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+:root {
+    --fin-danger: #B02A37;
+    --fin-danger-bg: #F8D7DA;
+    --fin-danger-border: #F1AEB5;
+    --fin-warning: #856404;
+    --fin-warning-bg: #FFF3CD;
+    --fin-warning-border: #FFE69C;
+    --fin-info: #0C5460;
+    --fin-info-bg: #D1ECF1;
+    --fin-info-border: #A6E1EA;
+    --fin-success: #155724;
+    --fin-success-bg: #D4EDDA;
+    --fin-success-border: #A9DFB5;
+    --fin-neutral: #41464B;
+    --fin-neutral-bg: #E2E3E5;
+    --fin-neutral-border: #D3D6D8;
 }
 
-.fin-card-header {
-    background-color: #FFFFFF; 
-    border-bottom: 1px solid #ECECEC;
-    border-radius: 12px 12px 0 0;
-    padding: 16px 20px;
-    font-weight: 700;
-    color: #275126;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
 
-.fin-card-body {
-    padding: 20px;
-}
-
-.fin-table thead th {
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #848484;
-    border-bottom: 2px solid #ECECEC;
-}
-
-.fin-table td {
-    vertical-align: middle;
-    font-size: 0.9rem;
-}
-
-/* Badges de estado */
-.badge-pendiente {
-    background-color: #FFF3CD;
-    color: #856404;
-}
-
-.badge-revision {
-    background-color: #D1ECF1;
-    color: #0C5460;
-}
-
-.badge-pagado {
-    background-color: #D4EDDA;
-    color: #275126;
-}
-
-.badge-aplicado {
-    background-color: #E2E3E5;
-    color: #383D41;
-}
-
-.fin-monto-total {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #336332;
-}
-
-.fin-dato-copiable {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: #F8F9FA;
-    border: 1px solid #ECECEC;
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 10px;
-}
-
-.fin-btn-copiar {
-    border: none;
-    background: none;
-    color: #336332;
-    cursor: pointer;
-}
-
-.fin-comprobante-preview img {
-    max-width: 100%;
-    border-radius: 8px;
-    border: 1px solid #ECECEC;
-}
-
-.fin-tarjeta-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-/* ============================================
-   TABS DEL MÓDULO FINANCIERO
-============================================ */
-
+/* ---------- Tabs (mismo lenguaje que acc-chip / acc-btn-green de Accesos) ---------- */
 .fin-tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
-    border-bottom: 1px solid #ECECEC;
-    padding-bottom: 0;
-    overflow-x: auto;
+    padding: 6px;
+    background-color: var(--habitia-bg);
+    border: 1px solid var(--habitia-border);
+    border-radius: 14px;
+    width: fit-content;
 }
 
 .fin-tab {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 18px;
-    border-radius: 10px 10px 0 0;
-    color: #848484;
-    text-decoration: none;
-    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: 10px;
     font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--habitia-text-gray);
+    text-decoration: none;
+    transition: .15s ease;
     white-space: nowrap;
-    border: 1px solid transparent;
-    border-bottom: none;
-    transition: background-color .15s ease, color .15s ease;
 }
 
     .fin-tab:hover {
-        background-color: #F2FDF2;
-        color: #275126;
+        background-color: rgba(51,99,50,0.08);
+        color: var(--habitia-green-active);
         text-decoration: none;
     }
 
     .fin-tab.active {
-        background-color: #FFFFFF;
-        color: #336332;
-        border-color: #ECECEC;
-        box-shadow: 0 -2px 0 #336332 inset;
+        background-color: var(--habitia-green-active);
+        color: #FFFFFF;
+        box-shadow: 0 2px 8px rgba(51,99,50,0.25);
     }
+
+        .fin-tab.active:hover {
+            background-color: var(--habitia-green-active);
+            color: #FFFFFF;
+        }
+
+@media (max-width: 576px) {
+    .fin-tabs {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    .fin-tab {
+        flex-shrink: 0;
+    }
+}
+
+
+/* ---------- Cards ---------- */
+.fin-card {
+    background-color: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.fin-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--habitia-border);
+    font-weight: 600;
+    color: #1a1a1a;
+    background-color: var(--habitia-bg);
+}
+
+.fin-card-body {
+    padding: 18px;
+}
+
+
+/* ---------- Métricas ---------- */
+.fin-metrica-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--habitia-text-gray);
+    margin-bottom: 4px;
+}
+
+.fin-monto-total {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--habitia-green-active);
+    margin: 0;
+}
+
+.fin-metrica {
+    cursor: pointer;
+    transition: box-shadow .15s ease, transform .15s ease;
+}
+
+    .fin-metrica:hover {
+        box-shadow: 0 4px 14px rgba(0, 0, 0, .08);
+        transform: translateY(-2px);
+    }
+
+
+/* ---------- Tabla ---------- */
+.fin-table {
+    margin-bottom: 0;
+}
+
+    .fin-table thead th {
+        font-size: 0.76rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--habitia-text-gray);
+        border-bottom: 1px solid var(--habitia-border);
+        padding: 12px 14px;
+    }
+
+    .fin-table tbody td {
+        padding: 12px 14px;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--habitia-border);
+    }
+
+#tablaCargos tbody tr:not(.collapse):hover {
+    background-color: #FAFBF9;
+}
+
+/* Panel de detalle expandible — mismo lenguaje que .acc-detalle-panel de Accesos */
+.fin-detalle-panel {
+    background-color: var(--habitia-bg);
+    border-top: 1px solid var(--habitia-border);
+}
+
+.collapse td {
+    animation: fin-fade-in .15s ease;
+}
+
+@keyframes fin-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.btn-expandir i {
+    transition: transform .15s ease;
+}
+
+/* ---------- Badges ---------- */
+.badge {
+    font-weight: 600;
+    font-size: .76rem;
+    padding: .4em .7em;
+    border-radius: .4rem;
+}
+
+.badge-pendiente {
+    background-color: var(--fin-warning-bg);
+    color: var(--fin-warning);
+    border: 1px solid var(--fin-warning-border);
+}
+
+.badge-revision {
+    background-color: var(--fin-info-bg);
+    color: var(--fin-info);
+    border: 1px solid var(--fin-info-border);
+}
+
+.badge-pagado {
+    background-color: var(--fin-success-bg);
+    color: var(--fin-success);
+    border: 1px solid var(--fin-success-border);
+}
+
+.badge-vencido {
+    background-color: var(--fin-danger-bg);
+    color: var(--fin-danger);
+    border: 1px solid var(--fin-danger-border);
+}
+
+.badge-aplicado {
+    background-color: var(--fin-neutral-bg);
+    color: var(--fin-neutral);
+    border: 1px solid var(--fin-neutral-border);
+}
+
+
+/* ---------- Botón "Aplicar recargo" ---------- */
+.btn-aplicar-recargo {
+    background-color: var(--fin-danger);
+    box-shadow: 0 2px 6px rgba(176, 42, 55, .25);
+    transition: box-shadow .15s ease, transform .15s ease;
+}
+
+    .btn-aplicar-recargo:hover {
+        box-shadow: 0 4px 10px rgba(176, 42, 55, .35);
+        transform: translateY(-1px);
+        color: #fff;
+    }
+
+
+/* ---------- Tarjeta de contexto dentro del modal de recargo ---------- */
+.fin-recargo-contexto {
+    background-color: var(--habitia-bg);
+    border: 1px solid var(--habitia-border);
+    border-radius: .5rem;
+    padding: 1rem;
+}
+
+.fin-recargo-monto {
+    border-top: 1px dashed var(--habitia-border);
+}
+
+
+/* ---------- Dato copiable (cuenta/IBAN/SINPE en Pagar del residente) ---------- */
+.fin-dato-copiable {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    background-color: rgba(51,99,50,0.06);
+    border: 1px solid rgba(51,99,50,0.18);
+    font-size: 0.88rem;
+    color: #1a1a1a;
+}
+
+.fin-btn-copiar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--habitia-green-active);
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    color: var(--habitia-green-active);
+    transition: .15s ease;
+}
+
+    .fin-btn-copiar:hover {
+        background-color: var(--habitia-green-active);
+        color: #FFFFFF;
+    }
+
+
+/* ---------- Modal — sombra y bordes más profesionales ---------- */
+.modal-content {
+    border: none;
+    border-radius: .6rem;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .18);
+}
+
+.modal-header {
+    border-bottom: 1px solid #F0F0F0;
+}
+
+.modal-footer {
+    border-top: 1px solid #F0F0F0;
+}
+
+.spinner-border.text-danger {
+    color: var(--fin-danger) !important;
+}
+
+/* Modal de eliminar */
+/* ---------- Ícono / título / descripción del modal (mismo lenguaje que usuarios.css) ---------- */
+.modal-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px auto;
+}
+
+.modal-icon-danger {
+    background-color: var(--fin-danger-bg);
+}
+
+    .modal-icon-danger i {
+        font-size: 26px;
+        color: var(--fin-danger);
+    }
+
+.modal-titulo {
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #101010;
+    text-align: center;
+    margin-bottom: 6px;
+}
+
+.modal-desc {
+    font-size: 13.5px;
+    color: var(--habitia-text-gray);
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 0;
+}

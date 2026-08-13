@@ -1,76 +1,52 @@
-﻿/* ===== Tabs del módulo Documentos y Asambleas ===== */
-
+﻿/* ===== Tabs del módulo Documentos y Asambleas (estilo pill, igual que Accesos) ===== */
 .documentos-tabs {
-    border-bottom: 2px solid #e6ede6;
+    display: flex;
+    gap: 6px;
+    border-bottom: none;
+    background-color: #FFFFFF;
+    border: 1px solid var(--habitia-border);
+    border-radius: 14px;
+    padding: 6px;
+    width: fit-content;
 }
 
+    .documentos-tabs .nav-item {
+        display: flex;
+    }
+
     .documentos-tabs .nav-link {
-        color: #5c6b5c;
+        display: flex;
+        align-items: center;
+        color: var(--habitia-text-gray);
         border: none;
-        border-bottom: 3px solid transparent;
-        padding: .65rem 1.1rem;
+        border-radius: 10px;
+        padding: .55rem 1.1rem;
         font-weight: 500;
         background: transparent;
-        transition: color .15s ease, border-color .15s ease;
+        transition: color .15s ease, background-color .15s ease;
     }
 
         .documentos-tabs .nav-link:hover {
-            color: #2f6b3f;
-            border-bottom-color: #cfe0d2;
-            background: transparent;
+            color: var(--habitia-green-active);
+            background-color: rgba(51,99,50,0.08);
         }
 
         .documentos-tabs .nav-link.active {
-            color: #2f6b3f;
-            background: transparent;
-            border-bottom-color: #2f6b3f;
+            color: #FFFFFF;
+            background-color: var(--habitia-green-active);
             font-weight: 600;
         }
 
+            .documentos-tabs .nav-link.active:hover {
+                background-color: #2b552a;
+                color: #FFFFFF;
+            }
+
         .documentos-tabs .nav-link i {
-            margin-right: .35rem;
+            margin-right: .4rem;
         }
 
-
-/* ===== Filas clickeables ===== */
-
-
-.fila-clickeable {
-    cursor: pointer;
-}
-
-    .fila-clickeable td {
-        transition: background-color .16s ease, box-shadow .16s ease;
-    }
-
-    .fila-clickeable:hover td {
-        background-color: #f2f8f3;
-    }
-
-    /* Acento sutil a la izquierda, aparece al pasar el cursor */
-    .fila-clickeable td:first-child {
-        box-shadow: inset 3px 0 0 transparent;
-    }
-
-    .fila-clickeable:hover td:first-child {
-        box-shadow: inset 3px 0 0 #2f6b3f;
-    }
-
-    /* El título se refuerza levemente */
-    .fila-clickeable .fw-semibold {
-        transition: color .16s ease;
-    }
-
-    .fila-clickeable:hover .fw-semibold {
-        color: #2f6b3f;
-    }
-
-    /* La flecha se desplaza y se tiñe */
-    .fila-clickeable .bi-chevron-right {
-        transition: transform .16s ease, color .16s ease;
-    }
-
-    .fila-clickeable:hover .bi-chevron-right {
-        color: #2f6b3f !important;
-        transform: translateX(4px);
-    }
+        .documentos-tabs .nav-link:focus {
+            box-shadow: none;
+            outline: none;
+        }
