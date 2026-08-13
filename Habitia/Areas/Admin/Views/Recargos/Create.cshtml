@@ -1,4 +1,69 @@
 ﻿@model Habitia.ViewModels.Financiero.Admin.RecargoCreateViewModel
+
+<div class="modal-header">
+    <h5 class="modal-title">
+        <i class="bi bi-graph-up-arrow text-danger"></i> Aplicar recargo
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+</div>
+
+<div class="modal-body">
+    <div class="fin-recargo-contexto mb-3">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+                <div class="fw-semibold">@Model.NombreResidente</div>
+                <div class="text-muted small">Cédula @Model.IdentificacionResidente</div>
+            </div>
+            <span class="badge badge-vencido">
+                Vencido hace @Model.DiasVencido día@(Model.DiasVencido == 1 ? "" : "s")
+            </span>
+        </div>
+
+        <hr class="my-2" />
+
+        <div class="row g-2 small">
+            <div class="col-md-6"><span class="text-muted">Correo:</span> @Model.CorreoResidente</div>
+            <div class="col-md-6"><span class="text-muted">Teléfono:</span> @(Model.TelefonoResidente ?? "No registrado")</div>
+            <div class="col-md-6"><span class="text-muted">Tipo de cargo:</span> @Model.TipoCargo</div>
+            <div class="col-md-6"><span class="text-muted">Vencimiento:</span> @Model.TF_FechaVencimiento.ToString("dd/MM/yyyy")</div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 fin-recargo-monto">
+            <span class="text-muted">Monto actual del cargo</span>
+            <span class="fw-semibold fs-5">@Model.TN_MontoTotal.ToString("C")</span>
+        </div>
+    </div>
+
+    <form id="formRecargo" asp-controller="Recargos" asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="TN_IdCargo" />
+
+        <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Tipo de recargo</label>
+                <select asp-for="TN_IdTipoRecargo" asp-items="Model.TiposRecargo" class="form-select">
+                    <option value="">-- Seleccione --</option>
+                </select>
+                <span asp-validation-for="TN_IdTipoRecargo" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Valor</label>
+                <input asp-for="TN_Valor" type="number" step="0.01" min="0" class="form-control" placeholder="0.00" />
+                <span asp-validation-for="TN_Valor" class="text-danger small"></span>
+                <div class="form-text">Monto fijo en colones, o porcentaje según el tipo elegido.</div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+    <button type="submit" form="formRecargo" class="btn text-white" style="background-color:#B02A37;">
+        <i class="bi bi-save"></i> Aplicar recargo
+    </button>
+</div>
 @{
     ViewData["Title"] = "Aplicar recargo";
 }

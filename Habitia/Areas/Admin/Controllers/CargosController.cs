@@ -21,7 +21,7 @@ namespace Habitia.Areas.Admin.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string estado)
         {
             var cargos = await _context.Cargos
                 .Include(c => c.Residente)
@@ -44,9 +44,13 @@ namespace Habitia.Areas.Admin.Controllers
                     TN_MontoTotal = c.TN_MontoTotal,
                     TF_FechaEmision = c.TF_FechaEmision,
                     TF_FechaVencimiento = c.TF_FechaVencimiento,
-                    EstadoCargo = c.EstadoCargo.TC_Nombre
+                    EstadoCargo = c.EstadoCargo.TC_Nombre,
+                    TB_RecargoAplicado = c.TB_RecargoAplicado // <-- NUEVO
                 })
                 .ToListAsync();
+
+            // Filtro inicial (llega, por ejemplo, al volver de aplicar un recargo)
+            ViewData["EstadoInicial"] = estado;
 
             return View(cargos);
         }
@@ -86,24 +90,36 @@ namespace Habitia.Areas.Admin.Controllers
                 var estadoPendiente = await _context.EstadosCargo
                     .FirstAsync(e => e.TC_Nombre == ESTADO_PENDIENTE);
 
-                var cargo = new THBT_A_Cargo
-                {
-                    TC_IdResidente = vm.TC_IdResidente,
-                    TN_IdTipoCargo = tipoCargo.TN_Id,
-                    TN_IdEstadoCargo = estadoPendiente.TN_Id,
-                    TC_Descripcion = vm.TC_Descripcion,
-                    TN_MontoBase = montoBase,
-                    TB_AplicaIva = vm.TB_AplicaIva,
-                    TN_MontoIva = montoIva,
-                    TN_MontoTotal = montoTotal,
-                    TF_FechaEmision = DateTime.Now,
-                    TF_FechaVencimiento = vm.TF_FechaVencimiento!.Value,
-                    TB_Estado = true
-                };
+                // --- NUEVO: lista de residentes destino según el modo (único o masivo) ---
+                var residentesDestino = vm.TB_AplicarATodos
+                    ? vm.ResidentesSeleccionados
+                    : new List<string> { vm.TC_IdResidente! };
 
-                _context.Cargos.Add(cargo);
+                foreach (var idResidente in residentesDestino)
+                {
+                    var cargo = new THBT_A_Cargo
+                    {
+                        TC_IdResidente = idResidente,
+                        TN_IdTipoCargo = tipoCargo.TN_Id,
+                        TN_IdEstadoCargo = estadoPendiente.TN_Id,
+                        TC_Descripcion = vm.TC_Descripcion,
+                        TN_MontoBase = montoBase,
+                        TB_AplicaIva = vm.TB_AplicaIva,
+                        TN_MontoIva = montoIva,
+                        TN_MontoTotal = montoTotal,
+                        TF_FechaEmision = DateTime.Now,
+                        TF_FechaVencimiento = vm.TF_FechaVencimiento!.Value,
+                        TB_Estado = true
+                    };
+
+                    _context.Cargos.Add(cargo);
+                }
+
                 await _context.SaveChangesAsync();
-                TempData["Mensaje"] = "Cargo creado correctamente";
+
+                TempData["Mensaje"] = residentesDestino.Count > 1
+                    ? $"Se crearon {residentesDestino.Count} cargos correctamente"
+                    : "Cargo creado correctamente";
             }
             catch
             {
@@ -208,6 +224,7 @@ namespace Habitia.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
         // ============ DELETE (lógico) ============
         // Solo si está en estado "Pendiente", se puede eliminar. De lo contrario, se muestra un mensaje de error.
 

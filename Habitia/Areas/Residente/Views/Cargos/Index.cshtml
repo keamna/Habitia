@@ -10,6 +10,7 @@
 
 <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
 
+<h4 class="mb-3">Mis cargos pendientes y vencidos</h4>
 <div class="mb-3">
     <h4 class="mb-1">Mis cargos</h4>
     <p class="text-muted mb-0" style="font-size:.88rem;">
@@ -113,6 +114,23 @@
                         <p class="text-muted mb-2" style="font-size:.88rem;">@c.TC_Descripcion</p>
                     }
 
+                    <p class="fin-monto-total mb-1">@c.TN_MontoTotal.ToString("C")</p>
+
+                    @if (c.TN_MontoRecargo > 0)
+                    {
+                        <p class="small text-danger mb-2">
+                            <i class="bi bi-graph-up-arrow"></i>
+                            Incluye recargo por atraso: @c.TN_MontoRecargo.ToString("C")
+                        </p>
+                    }
+
+                    <p class="small mb-1"><strong>Emitido:</strong> @c.TF_FechaEmision.ToString("dd/MM/yyyy")</p>
+                    <p class="small mb-3"><strong>Vence:</strong> @c.TF_FechaVencimiento.ToString("dd/MM/yyyy")</p>
+
+                    <div>
+                        <a asp-action="Pagar" asp-route-id="@c.TN_Id" class="btn btn-sm w-100" style="background-color:#336332;color:#fff;">
+                            <i class="bi bi-cash-coin"></i> Pagar
+                        </a>
                     <p class="fin-monto-total mb-3">@c.TN_MontoTotal.ToString("C")</p>
 
                     <div class="mb-3" style="font-size:.85rem;">

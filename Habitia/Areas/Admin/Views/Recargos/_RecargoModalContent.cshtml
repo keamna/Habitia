@@ -1,0 +1,43 @@
+﻿@* /Areas/Admin/Views/Recargos/_RecargoModalContent.cshtml *@
+@model Habitia.ViewModels.Financiero.Admin.RecargoCreateViewModel
+
+<div class="modal-header">
+    <h5 class="modal-title"><i class="bi bi-graph-up-arrow text-danger"></i> Aplicar recargo</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<form asp-action="Create" asp-controller="Recargos" method="post" id="formRecargo">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="TN_IdCargo" />
+    <div class="modal-body">
+        <div asp-validation-summary="All" class="alert alert-danger d-none"></div>
+
+        <p class="mb-1"><strong>Residente:</strong> @Model.NombreResidente</p>
+        <p class="mb-1"><strong>Identificación:</strong> @Model.IdentificacionResidente</p>
+        <p class="mb-1"><strong>Tipo de cargo:</strong> @Model.TipoCargo</p>
+        <p class="mb-1"><strong>Vencimiento:</strong> @Model.TF_FechaVencimiento.ToString("dd/MM/yyyy")
+            <span class="text-danger small">(@Model.DiasVencido día(s) de atraso)</span>
+        </p>
+        <p class="mb-3"><strong>Monto total actual:</strong> @Model.TN_MontoTotal.ToString("C")</p>
+
+        <div class="mb-3">
+            <label class="form-label">Tipo de recargo</label>
+            <select asp-for="TN_IdTipoRecargo" asp-items="Model.TiposRecargo" class="form-select">
+                <option value="">-- Seleccione --</option>
+            </select>
+            <span asp-validation-for="TN_IdTipoRecargo" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Valor (₡ si es fijo, % si es porcentaje)</label>
+            <input asp-for="TN_Valor" type="number" step="0.01" min="0.01" class="form-control" />
+            <span asp-validation-for="TN_Valor" class="text-danger small"></span>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn text-white" style="background-color:#B02A37;">
+            <i class="bi bi-check-lg"></i> Aplicar recargo
+        </button>
+    </div>
+</form>

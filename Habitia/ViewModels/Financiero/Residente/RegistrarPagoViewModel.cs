@@ -1,5 +1,4 @@
-﻿// RegistrarPagoViewModel.cs
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Habitia.ViewModels.Financiero.Residente
@@ -14,6 +13,9 @@ namespace Habitia.ViewModels.Financiero.Residente
         public decimal TN_MontoBase { get; set; }
         public decimal TN_MontoIva { get; set; }
         public decimal TN_MontoTotal { get; set; }
+
+        // Si el total no cuadra con base + IVA, la diferencia es un recargo por atraso.
+        public decimal TN_MontoRecargo => Math.Max(0, TN_MontoTotal - TN_MontoBase - TN_MontoIva);
 
         [Required(ErrorMessage = "Debe completar los campos obligatorios")]
         public int TN_IdMetodoPago { get; set; }

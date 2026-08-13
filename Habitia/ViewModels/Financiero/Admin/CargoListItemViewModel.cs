@@ -17,6 +17,7 @@ namespace Habitia.ViewModels.Financiero.Admin
         // Desglose del monto (para el desplegable)
         public decimal TN_MontoBase { get; set; }
         public bool TB_AplicaIva { get; set; }
+        public bool TB_RecargoAplicado { get; set; }
         public decimal TN_MontoIva { get; set; }
         public decimal TN_MontoTotal { get; set; }
 

@@ -136,6 +136,14 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+        // ================== Utilidad: fecha local en formato YYYY-MM-DD (sin desfase por UTC) ==================
+        function fechaLocalYMD(fecha) {
+            const anio = fecha.getFullYear();
+            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+            const dia = String(fecha.getDate()).padStart(2, '0');
+            return `${anio}-${mes}-${dia}`;
+        }
+
         const tipoCargoSelect = document.getElementById('tipoCargoSelect');
         const tipoCargoTexto = document.getElementById('tipoCargoTexto');
 
@@ -151,7 +159,7 @@
         });
 
         const inputFecha = document.getElementById('fechaVencimiento');
-        const hoyStr = new Date().toISOString().split('T')[0];
+        const hoyStr = fechaLocalYMD(new Date());
         inputFecha.setAttribute('min', hoyStr);
 
         const PORCENTAJE_IVA = 0.13;

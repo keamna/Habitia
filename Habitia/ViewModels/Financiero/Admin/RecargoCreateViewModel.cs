@@ -4,17 +4,26 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Habitia.ViewModels.Financiero.Admin
 {
-    // (opcional): aplicar recargo a un cargo vencido.
+    // Aplicar recargo a un cargo vencido. El cargo llega precargado (ya no se elige de un select).
     public class RecargoCreateViewModel
     {
-        [Required(ErrorMessage = "Debe completar los campos obligatorios")]
         public int TN_IdCargo { get; set; }
 
-        // Datos de solo lectura para contexto en pantalla.
+        // ===== Datos de solo lectura para la tarjeta de contexto en el modal =====
         public string NombreResidente { get; set; }
+        public string IdentificacionResidente { get; set; }
+        public string CorreoResidente { get; set; }
+        public string TelefonoResidente { get; set; }
+        public string TipoCargo { get; set; }
+        public string Descripcion { get; set; }
+        public decimal TN_MontoBase { get; set; }
+        public bool TB_AplicaIva { get; set; }
+        public decimal TN_MontoIva { get; set; }
         public decimal TN_MontoTotal { get; set; }
         public DateTime TF_FechaVencimiento { get; set; }
+        public int DiasVencido { get; set; }
 
+        // ===== Datos del formulario =====
         [Required(ErrorMessage = "Debe completar los campos obligatorios")]
         public int TN_IdTipoRecargo { get; set; }
 
@@ -22,7 +31,6 @@ namespace Habitia.ViewModels.Financiero.Admin
         [Range(0.01, double.MaxValue, ErrorMessage = "Debe completar los campos obligatorios")]
         public decimal TN_Valor { get; set; }
 
-        public List<SelectListItem> CargosVencidos { get; set; } = new();
         public List<SelectListItem> TiposRecargo { get; set; } = new();
     }
 }

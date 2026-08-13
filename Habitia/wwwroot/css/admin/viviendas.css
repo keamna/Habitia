@@ -1,6 +1,5 @@
 ﻿/* =========================================================
    MÓDULO: VIVIENDAS
-   Alineado al lenguaje visual de incidencias.css / usuarios.css
 ========================================================= */
 
 :root {
@@ -405,12 +404,14 @@
 #modalCancelarVivienda .btn-danger {
     background-color: #DC2626;
     border-color: #DC2626;
+    color: #FFFFFF;
 }
 
     #modalEliminarVivienda .btn-danger:hover,
     #modalCancelarVivienda .btn-danger:hover {
         background-color: #B91C1C;
         border-color: #B91C1C;
+        color: #FFFFFF;
         transform: translateY(-1px);
     }
 
@@ -616,4 +617,35 @@
         color: #C4C9D1;
         margin-bottom: 10px;
         display: block;
+    }
+
+
+/* ==============================
+   BOTÓN GUARDAR (Crear/Editar Vivienda)
+============================== */
+
+.btn-guardar-vivienda {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    padding: 0 20px;
+    background: var(--habitia-green-active, #336332);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    transition: background-color .15s var(--ease-out), transform .15s var(--ease-out);
+}
+
+    .btn-guardar-vivienda:hover {
+        background: var(--habitia-green-deep);
+        color: #FFFFFF;
+        transform: translateY(-1px);
+    }
+
+    .btn-guardar-vivienda:disabled {
+        opacity: .6;
+        cursor: not-allowed;
     }

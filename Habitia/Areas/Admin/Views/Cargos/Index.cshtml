@@ -6,6 +6,7 @@
     var totalPagado = Model.Where(c => c.EstadoCargo == "Pagado").Sum(c => c.TN_MontoTotal);
     var enRevision = Model.Count(c => c.EstadoCargo == "En revisión");
     var vencidos = Model.Count(c => c.EstadoCargo == "Vencido");
+    var estadoInicial = ViewData["EstadoInicial"] as string ?? "";
 }
 
 <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
@@ -36,6 +37,65 @@
     <div class="alert alert-danger d-flex align-items-center gap-2">
         <i class="bi bi-exclamation-triangle-fill"></i><span>@TempData["Error"]</span>
     </div>
+}
+
+@if (Model.Any())
+{
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-md-3">
+            <div class="fin-card h-100 fin-metrica" data-filtro="">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">Por cobrar</div>
+                    <div class="fin-monto-total" style="color:#856404;">@totalPendiente.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="fin-card h-100 fin-metrica" data-filtro="Pagado">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">Cobrado</div>
+                    <div class="fin-monto-total">@totalPagado.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="fin-card h-100 fin-metrica" data-filtro="En revisión">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">En revisión</div>
+                    <div class="fin-monto-total" style="color:#0C5460;">@enRevision</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="fin-card h-100 fin-metrica" data-filtro="Vencido">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">Vencidos</div>
+                    <div class="fin-monto-total" style="color:#842029;">@vencidos</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-2 mb-3">
+        <div class="col-md-5">
+            <input type="text" id="buscarCargo" class="form-control"
+                   placeholder="Buscar por residente o tipo de cargo..." />
+        </div>
+        <div class="col-md-3">
+            <select id="filtroEstadoCargo" class="form-select">
+                <option value="">Todos los estados</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="En revisión">En revisión</option>
+                <option value="Pagado">Pagado</option>
+                <option value="Vencido">Vencido</option>
+            </select>
+        </div>
+    </div>
+}
+
 }
 
 @if (Model.Any())
@@ -142,6 +202,18 @@
 
                             var detalleId = $"detalle-cargo-{c.TN_Id}";
                             var puedeEditar = c.EstadoCargo == "Pendiente";
+                            var estaVencido = c.EstadoCargo == "Vencido";
+
+                            <tr data-estado="@c.EstadoCargo">
+                                <td>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#@detalleId"
+                                            aria-expanded="false"
+                                            aria-controls="@detalleId"
+                                            title="Ver detalle">
+                                        <i class="bi bi-chevron-down"></i>
 
                             <tr data-estado="@c.EstadoCargo">
                                 <td>
@@ -180,6 +252,10 @@
                                 </td>
                             </tr>
 
+                            <tr class="collapse" id="@detalleId"
+                                data-estado="@c.EstadoCargo">
+                                <td></td>
+                                <td colspan="7" class="fin-detalle-panel">
                             <tr id="@detalleId" class="fila-detalle" style="display:none;"
                                 data-estado="@c.EstadoCargo">
                                 <td></td>
@@ -188,6 +264,9 @@
                                         <div class="col-md-6">
                                             <div class="fin-metrica-label mb-2">Datos del residente</div>
                                             <div><strong>Identificación:</strong> @c.IdentificacionResidente</div>
+                                            <div><strong>Nombre:</strong> @c.NombreResidente</div>
+                                            <div><strong>Teléfono:</strong> @(c.TelefonoResidente ?? "No registrado")</div>
+                                            <div><strong>Correo:</strong> @c.CorreoResidente</div>
                                             <div><strong>Correo:</strong> @c.CorreoResidente</div>
                                             <div><strong>Teléfono:</strong> @(c.TelefonoResidente ?? "No registrado")</div>
                                         </div>
@@ -208,6 +287,25 @@
                                                 <span class="fw-semibold">@c.TN_MontoTotal.ToString("C")</span>
                                             </div>
                                         </div>
+
+                                        @if (estaVencido && !c.TB_RecargoAplicado)
+                                        {
+                                            <div class="col-12">
+                                                <button type="button" class="btn btn-sm text-white btn-aplicar-recargo"
+                                                        style="background-color:#B02A37;"
+                                                        data-id="@c.TN_Id">
+                                                    <i class="bi bi-graph-up-arrow"></i> Aplicar recargo
+                                                </button>
+                                            </div>
+                                        }
+                                        else if (estaVencido && c.TB_RecargoAplicado)
+                                        {
+                                            <div class="col-12">
+                                                <span class="badge" style="background-color:#6c757d;">
+                                                    <i class="bi bi-check-circle"></i> Recargo ya aplicado
+                                                </span>
+                                            </div>
+                                        }
                                     </div>
                                 </td>
                             </tr>
@@ -221,8 +319,17 @@
 
 <!-- Modal confirmación de eliminación -->
 <div class="modal fade" id="modalEliminar" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
+            <div class="modal-body text-center pt-4">
+                <div class="modal-icon modal-icon-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+
+                <div class="modal-titulo">Eliminar cargo</div>
+                <p class="modal-desc">
+                    ¿Está seguro de que desea eliminar el cargo <strong id="eliminarDescripcion"></strong>?
+                    <br />
             <div class="modal-header">
                 <h5 class="modal-title">
                     <i class="bi bi-exclamation-triangle text-danger"></i> Confirmar eliminación
@@ -237,6 +344,8 @@
                 </p>
             </div>
 
+            <div class="modal-footer justify-content-center border-0 pb-4">
+                <form asp-action="Delete" method="post" id="formEliminar" class="d-flex gap-2">
             <div class="modal-footer">
                 <form asp-action="Delete" method="post" id="formEliminar">
                     @Html.AntiForgeryToken()
@@ -251,9 +360,152 @@
     </div>
 </div>
 
+<!-- Modal Aplicar recargo (contenido cargado vía AJAX desde Recargos/Modal/{id}) -->
+<div class="modal fade" id="modalRecargo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="modalRecargoContent">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-danger" role="status"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         (function () {
+
+            // ===== Expandir / contraer detalle (collapse nativo de Bootstrap, como en Accesos) =====
+            document.querySelectorAll('[data-bs-target^="#detalle-cargo-"]').forEach(function (btn) {
+                var target = document.querySelector(btn.getAttribute('data-bs-target'));
+                if (!target) return;
+
+                target.addEventListener('show.bs.collapse', function () {
+                    btn.querySelector('i').classList.replace('bi-chevron-down', 'bi-chevron-up');
+                });
+                target.addEventListener('hide.bs.collapse', function () {
+                    btn.querySelector('i').classList.replace('bi-chevron-up', 'bi-chevron-down');
+                });
+            });
+
+            // ===== Modal de eliminación =====
+            var modalEliminarEl = document.getElementById('modalEliminar');
+
+            if (modalEliminarEl && window.bootstrap) {
+                var modalEliminar = new bootstrap.Modal(modalEliminarEl);
+
+                document.querySelectorAll('.btn-eliminar').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        document.getElementById('eliminarId').value = btn.dataset.id;
+                        document.getElementById('eliminarDescripcion').innerText = btn.dataset.descripcion;
+                        modalEliminar.show();
+                    });
+                });
+            }
+
+            // ===== Modal Aplicar recargo (AJAX) =====
+            var modalRecargoEl = document.getElementById('modalRecargo');
+            var modalRecargoContent = document.getElementById('modalRecargoContent');
+            var modalRecargo = modalRecargoEl && window.bootstrap ? new bootstrap.Modal(modalRecargoEl) : null;
+
+            function cargarModalRecargo(id) {
+                modalRecargoContent.innerHTML = '<div class="modal-body text-center py-5"><div class="spinner-border text-danger" role="status"></div></div>';
+                modalRecargo.show();
+
+                fetch('@Url.Action("Modal", "Recargos")/' + id)
+                    .then(function (r) { return r.ok ? r.text() : Promise.reject(); })
+                    .then(function (html) {
+                        modalRecargoContent.innerHTML = html;
+                        vincularFormRecargo();
+                    })
+                    .catch(function () {
+                        modalRecargoContent.innerHTML = '<div class="modal-body text-center text-danger py-4">' +
+                            'No fue posible cargar la información del cargo.</div>';
+                    });
+            }
+
+            function vincularFormRecargo() {
+                var form = document.getElementById('formRecargo');
+                if (!form) return;
+
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    var formData = new FormData(form);
+
+                    fetch(form.action, { method: 'POST', body: formData })
+                        .then(function (r) {
+                            if (r.redirected) {
+                                window.location.href = r.url;
+                                return null;
+                            }
+                            return r.text();
+                        })
+                        .then(function (html) {
+                            if (html) {
+                                modalRecargoContent.innerHTML = html;
+                                vincularFormRecargo();
+                            }
+                        })
+                        .catch(function () {
+                            // deja el formulario como estaba para reintentar
+                        });
+                });
+            }
+
+            if (modalRecargo) {
+                document.querySelectorAll('.btn-aplicar-recargo').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        cargarModalRecargo(btn.dataset.id);
+                    });
+                });
+            }
+
+            // ===== Filtros =====
+            var buscar = document.getElementById('buscarCargo');
+            var filtro = document.getElementById('filtroEstadoCargo');
+            var tabla = document.getElementById('tablaCargos');
+
+            function aplicar() {
+                if (!tabla) return;
+
+                var texto = (buscar && buscar.value || '').toLowerCase();
+                var estado = filtro && filtro.value || '';
+
+                tabla.querySelectorAll('tbody tr:not(.collapse)').forEach(function (fila) {
+                    var coincideTexto = fila.textContent.toLowerCase().includes(texto);
+                    var coincideEstado = estado === '' || fila.dataset.estado === estado;
+                    var visible = coincideTexto && coincideEstado;
+
+                    fila.style.display = visible ? '' : 'none';
+
+                    var detalle = fila.nextElementSibling;
+                    if (detalle && detalle.classList.contains('collapse') && !visible) {
+                        var instancia = bootstrap.Collapse.getInstance(detalle);
+                        if (instancia) instancia.hide();
+                    }
+                });
+            }
+
+            if (buscar) buscar.addEventListener('input', aplicar);
+            if (filtro) filtro.addEventListener('change', aplicar);
+
+            // Clic en tarjetas de métricas también filtra
+            document.querySelectorAll('.fin-metrica').forEach(function (tarjeta) {
+                tarjeta.style.cursor = 'pointer';
+                tarjeta.addEventListener('click', function () {
+                    if (filtro) {
+                        filtro.value = tarjeta.dataset.filtro;
+                        aplicar();
+                    }
+                });
+            });
+
+            // Filtro inicial (llega por query string, ej. al volver de aplicar un recargo)
+            var estadoInicial = '@estadoInicial';
+            if (estadoInicial && filtro) {
+                filtro.value = estadoInicial;
+                aplicar();
+            }
 
             // ===== Expandir / contraer detalle =====
             document.querySelectorAll('.btn-expandir').forEach(function (btn) {

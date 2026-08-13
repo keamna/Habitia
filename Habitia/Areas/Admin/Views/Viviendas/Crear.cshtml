@@ -41,7 +41,7 @@
             </div>
             <div class="d-flex justify-content-end gap-2">
                 <a href="#" class="btn btn-secondary" onclick="confirmarCancelarVivienda(event)">Cancelar</a>
-                <button type="submit" class="btn btn-primary" id="btnGuardarVivienda">Guardar</button>
+                <button type="submit" class="btn-guardar-vivienda" id="btnGuardarVivienda">Guardar</button>
             </div>
         </form>
     </div>
@@ -79,14 +79,6 @@
 
         document.getElementById("btnConfirmarCancelarVivienda").addEventListener("click", function () {
             window.location.href = '@Url.Action("Index", "Viviendas", new { area = "Admin" })';
-        });
-
-        document.getElementById("formCrearVivienda").addEventListener("submit", function (e) {
-            if (!this.checkValidity || this.checkValidity()) {
-                const boton = document.getElementById("btnGuardarVivienda");
-                boton.disabled = true;
-                boton.innerHTML = "Guardando...";
-            }
         });
     </script>
 }
