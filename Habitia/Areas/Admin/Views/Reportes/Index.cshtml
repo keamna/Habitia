@@ -1,9 +1,9 @@
 ﻿@model Habitia.ViewModels.Reportes.ReporteIncidenciasViewModel
 @{
-    ViewData["Title"] = "Reportes de Incidencias y Mantenimiento";
+    ViewData["Title"] = "Reportes de incidencias y mantenimiento";
 }
 
-<h2>Reportes de Incidencias y Mantenimiento</h2>
+<h2>Reportes de incidencias y mantenimiento</h2>
 
 <form method="get" class="row g-2 mb-4">
     <div class="col-md-3">
@@ -52,7 +52,7 @@
 <div class="row g-3 mb-4">
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">Incidencias por Responsabilidad</div>
+            <div class="card-header">Incidencias por responsabilidad</div>
             @foreach (var item in Model.PorResponsabilidad)
             {
                 <div class="reporte-lista-item">
@@ -69,7 +69,7 @@
 
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">Incidencias por Tipo de Ubicación</div>
+            <div class="card-header">Incidencias por tipo de ubicación</div>
             @foreach (var item in Model.PorTipoUbicacion)
             {
                 <div class="reporte-lista-item">
@@ -88,7 +88,7 @@
 <div class="row g-3 mb-4">
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">Ubicaciones más Frecuentes (Top 5)</div>
+            <div class="card-header">Ubicaciones más frecuentes (top 5)</div>
             @foreach (var item in Model.UbicacionesMasFrecuentes)
             {
                 <div class="reporte-lista-item">
@@ -105,7 +105,7 @@
 
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">Mantenimientos por Tipo</div>
+            <div class="card-header">Mantenimientos por tipo</div>
             @foreach (var item in Model.MantenimientosPorTipo)
             {
                 <div class="reporte-lista-item">

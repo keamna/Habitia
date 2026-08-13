@@ -1,12 +1,12 @@
 ﻿@model Habitia.ViewModels.Incidencias.IncidenciaCreateViewModel
 @{
-    ViewData["Title"] = "Registrar Incidencia";
+    ViewData["Title"] = "Registrar incidencia";
 }
 
 <div class="incidencia-form-wrapper">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-1">Registrar Incidencia</h2>
+            <h2 class="mb-1">Registrar incidencia</h2>
             <p class="text-muted mb-0">Completa los datos y elige a quién corresponde la responsabilidad.</p>
         </div>
     </div>
@@ -106,7 +106,7 @@
                 <span asp-validation-for="Evidencia" class="text-danger d-block mt-1"></span>
 
                 <div class="mt-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Reportar Incidencia</button>
+                    <button type="submit" class="btn btn-primary">Reportar</button>
                     <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
                 </div>
             </div>

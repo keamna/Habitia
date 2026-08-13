@@ -1,6 +1,6 @@
 ﻿@model List<Habitia.ViewModels.Incidencias.IncidenciaListItemViewModel>
 @{
-    ViewData["Title"] = "Gestión de Incidencias";
+    ViewData["Title"] = "Gestión de incidencias";
     var filtro = ViewBag.Filtro as Habitia.ViewModels.Incidencias.IncidenciaFiltroViewModel;
 
     string ClaseBadgeEstado(Habitia.Enums.EstadoIncidenciaEnum e) => e switch
@@ -32,11 +32,11 @@
 
 <div class="index-header">
     <div>
-        <h2>Gestión de Incidencias</h2>
+        <h2>Gestión de incidencias</h2>
         <p>Consulta, filtra y da seguimiento a las incidencias reportadas en el condominio.</p>
     </div>
     <a asp-action="Create" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> Registrar Incidencia
+        <i class="bi bi-plus-lg"></i> Registrar incidencia
     </a>
 </div>
 

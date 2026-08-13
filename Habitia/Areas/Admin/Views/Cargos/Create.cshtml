@@ -7,7 +7,7 @@
 <h4 class="mb-3">Crear cargo</h4>
 <div class="fin-card">
     <div class="fin-card-body">
-        <form asp-action="Create" method="post">
+        <form asp-action="Create" method="post" novalidate>
             @Html.AntiForgeryToken()
             <div asp-validation-summary="All" class="alert alert-danger d-none" id="validationSummary"></div>
             <div class="row g-3">
