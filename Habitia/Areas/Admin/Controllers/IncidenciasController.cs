@@ -105,15 +105,7 @@ namespace Habitia.Areas.Admin.Controllers
             if (incidencia == null)
                 return NotFound();
 
-            var model = new IncidenciaPrioridadViewModel
-            {
-                Id = incidencia.TN_Id,
-                Titulo = incidencia.TC_Titulo,
-                Descripcion = incidencia.TC_Descripcion,
-                NombreUsuarioReporta = incidencia.Usuario?.UserName ?? "N/D",
-                FechaRegistro = incidencia.TF_FechaRegistro,
-                Responsabilidad = incidencia.TN_Responsabilidad
-            };
+            var model = ConstruirModeloPrioridad(incidencia);
 
             return View(model);
         }
@@ -124,7 +116,17 @@ namespace Habitia.Areas.Admin.Controllers
         public async Task<IActionResult> AsignarPrioridad(IncidenciaPrioridadViewModel model)
         {
             if (!ModelState.IsValid)
+            {
+                // Solo Id y Prioridad viajan desde el form; el resto de los datos
+                // de contexto (título, descripción, reportante, etc.) hay que
+                // recargarlos desde la BD para poder re-renderizar la vista.
+                var incidenciaContexto = await _incidenciaService.ObtenerPorIdAsync(model.Id);
+                if (incidenciaContexto == null)
+                    return NotFound();
+
+                model = ConstruirModeloPrioridad(incidenciaContexto, model.Prioridad);
                 return View(model);
+            }
 
             try
             {
@@ -135,6 +137,11 @@ namespace Habitia.Areas.Admin.Controllers
             catch (InvalidOperationException ex)
             {
                 ModelState.AddModelError(string.Empty, ex.Message);
+
+                var incidenciaContexto = await _incidenciaService.ObtenerPorIdAsync(model.Id);
+                if (incidenciaContexto != null)
+                    model = ConstruirModeloPrioridad(incidenciaContexto, model.Prioridad);
+
                 return View(model);
             }
         }
@@ -158,6 +165,23 @@ namespace Habitia.Areas.Admin.Controllers
             }
 
             return RedirectToAction(nameof(Details), new { id });
+        }
+
+        private static IncidenciaPrioridadViewModel ConstruirModeloPrioridad(Incidencia incidencia, PrioridadEnum? prioridadSeleccionada = null)
+        {
+            return new IncidenciaPrioridadViewModel
+            {
+                Id = incidencia.TN_Id,
+                Titulo = incidencia.TC_Titulo,
+                Descripcion = incidencia.TC_Descripcion,
+                NombreCompletoReporta = incidencia.Usuario != null
+                    ? $"{incidencia.Usuario.TC_Nombre} {incidencia.Usuario.TC_Apellido}"
+                    : "N/D",
+                IdentificacionReporta = incidencia.Usuario?.TC_Identificacion,
+                FechaRegistro = incidencia.TF_FechaRegistro,
+                Responsabilidad = incidencia.TN_Responsabilidad,
+                Prioridad = prioridadSeleccionada
+            };
         }
 
         private async Task CargarListasAsync(IncidenciaCreateViewModel model)
