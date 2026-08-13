@@ -22,12 +22,6 @@
     }
 }
 
-/* =========================
-   ENCABEZADO DE SECCIÓN
-   (usado en Admin/Incidencias/Create para separar
-   "Datos de la Incidencia", "Clasificación", "Tarea")
-========================= */
-
 .incidencia-form h5 {
     font-family: 'Poppins', sans-serif;
     font-size: 0.95rem;
@@ -43,9 +37,6 @@
     margin-bottom: 20px;
 }
 
-/* Sección condicional de mantenimiento: cuando se muestra,
-   se resalta con un borde izquierdo para diferenciarla
-   visualmente del resto del formulario */
 #seccionMantenimiento {
     background-color: var(--habitia-bg);
     border-left: 3px solid var(--habitia-green-active);
@@ -59,11 +50,6 @@
         padding: 16px;
     }
 }
-
-/* =========================
-   TARJETA DE CONTEXTO
-   (usada en Admin/Incidencias/Clasificar y en Details)
-========================= */
 
 .incidencia-contexto {
     background: #FFFFFF;
@@ -91,12 +77,6 @@
         font-size: 12.5px;
         color: var(--habitia-text-gray);
     }
-
-/* =========================
-   PASTILLAS DE RESPONSABILIDAD
-   (distintas de los badges de estado, para no confundir
-   "Pendiente/En proceso/Resuelta" con "Privado/Común/Mixto")
-========================= */
 
 .pill-responsabilidad {
     display: inline-flex;
@@ -128,10 +108,6 @@
     color: var(--habitia-text-gray);
 }
 
-/* =========================
-   EVIDENCIA (imagen adjunta)
-========================= */
-
 .evidencia-preview {
     display: block;
     max-width: 320px;
@@ -149,10 +125,6 @@
     font-style: italic;
 }
 
-/* =========================
-   TARJETAS DE REPORTES (Admin/Reportes)
-========================= */
-
 .reporte-stat-card {
     background: #FFFFFF;
     border: 1px solid var(--habitia-border);
@@ -161,11 +133,11 @@
     text-align: center;
 }
 
+    /* Formato oración (solo primera letra en mayúscula), sin uppercase forzado */
     .reporte-stat-card h6 {
         font-size: 12px;
         color: var(--habitia-text-gray);
-        text-transform: uppercase;
-        letter-spacing: .03em;
+        letter-spacing: .01em;
         margin-bottom: 6px;
     }
 
@@ -190,11 +162,6 @@
     .reporte-lista-item strong {
         color: var(--habitia-green-active);
     }
-
-/* =========================
-   TABS: Incidencias / Mantenimientos
-   Mismo lenguaje visual que .mantenimiento-tabs (ver mantenimiento.css)
-========================= */
 
 .incidencia-tabs {
     display: flex;
@@ -248,11 +215,6 @@
         display: none;
     }
 }
-
-/* =========================
-   TARJETAS DE RESPONSABILIDAD
-   (Create de Incidencia)
-========================= */
 
 .responsabilidad-cards {
     display: grid;
@@ -336,10 +298,6 @@
     }
 }
 
-/* =========================
-   DETALLE DE INCIDENCIA (rediseño)
-========================= */
-
 .detalle-volver {
     font-size: 13px;
     color: var(--habitia-text-gray);
@@ -367,10 +325,10 @@
     min-width: 0;
 }
 
+/* Formato oración (solo primera letra en mayúscula), sin uppercase forzado */
 .meta-label {
     font-size: 11.5px;
-    text-transform: uppercase;
-    letter-spacing: .04em;
+    letter-spacing: .01em;
     color: var(--habitia-text-gray);
     font-weight: 600;
 }
@@ -400,8 +358,6 @@
     font-size: 12.5px;
     color: #101010;
 }
-
-/* Badges de estado (reemplaza los bg-* de Bootstrap usados antes) */
 
 .badge-estado {
     display: inline-flex;
@@ -437,8 +393,6 @@
     color: var(--habitia-text-gray);
 }
 
-/* Badges de prioridad */
-
 .badge-prioridad {
     display: inline-flex;
     align-items: center;
@@ -462,10 +416,6 @@
     background-color: #F5F5F5;
     color: var(--habitia-text-gray);
 }
-
-/* =========================================================
-   REDISEÑO V2: elevación y micro-interacciones
-========================================================= */
 
 .incidencia-form-wrapper,
 .detalle-header,
@@ -498,10 +448,6 @@
         transition: none !important;
     }
 }
-
-/* =========================
-   LAYOUT DE DOS COLUMNAS (Create)
-========================= */
 
 .incidencia-form-wrapper {
     max-width: 1140px;
@@ -563,10 +509,6 @@
             box-shadow: 0 0 0 3px rgba(51, 99, 50, 0.12);
         }
 
-/* =========================
-   PANEL DE VISTA PREVIA (signature - Create)
-========================= */
-
 .preview-panel {
     position: sticky;
     top: 20px;
@@ -577,13 +519,13 @@
     box-shadow: var(--shadow-card);
 }
 
+/* Formato oración (solo primera letra en mayúscula), sin uppercase forzado */
 .preview-panel-label {
     display: flex;
     align-items: center;
     gap: 6px;
     font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: .06em;
+    letter-spacing: .01em;
     font-weight: 700;
     color: var(--habitia-text-gray);
     margin-bottom: 14px;
@@ -670,10 +612,6 @@
     display: none;
 }
 
-/* =========================
-   TARJETAS DE RESPONSABILIDAD v2
-========================= */
-
 .responsabilidad-card {
     border-radius: 16px;
     transition: transform .15s var(--ease-out), border-color .15s var(--ease-out), box-shadow .15s var(--ease-out);
@@ -710,8 +648,6 @@
     animation: fadeSlideUp .25s var(--ease-out) backwards;
 }
 
-/* Botones modernizados (compartidos por todo el módulo) */
-
 .btn-habitia-primary, .incidencia-form-card .btn-primary,
 .detalle-header .btn-primary, .incidencia-contexto .btn-primary,
 .index-header .btn-primary {
@@ -744,8 +680,6 @@
     .incidencia-form-card .btn-secondary:hover, .prioridad-wrapper .btn-secondary:hover {
         border-color: var(--habitia-text-gray);
     }
-
-/* Zona de evidencia estilo dropzone */
 
 .evidencia-dropzone {
     border: 1.5px dashed var(--habitia-border);
@@ -780,10 +714,6 @@
     margin-top: 8px;
     display: none;
 }
-
-/* =========================
-   TIMELINE DE ESTADO (signature - Details)
-========================= */
 
 .estado-timeline {
     display: flex;
@@ -858,10 +788,6 @@
         font-weight: 700;
     }
 
-/* =========================
-   DETAILS: layout de dos columnas
-========================= */
-
 .detalle-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 300px;
@@ -887,10 +813,10 @@
         margin-top: 18px;
     }
 
+/* Formato oración (solo primera letra en mayúscula), sin uppercase forzado */
 .detalle-sidebar-titulo {
     font-size: 11.5px;
-    text-transform: uppercase;
-    letter-spacing: .05em;
+    letter-spacing: .01em;
     font-weight: 700;
     color: var(--habitia-text-gray);
     margin-bottom: 12px;
@@ -909,10 +835,6 @@
 .responsabilidad-card:focus-within {
     box-shadow: 0 0 0 3px rgba(51, 99, 50, 0.25);
 }
-
-/* =========================================================
-   INDEX (listado) — rediseño
-========================================================= */
 
 .index-header {
     display: flex;
@@ -967,11 +889,6 @@
         font-size: 13.5px;
     }
 
-/* =========================
-   TABLA DE INCIDENCIAS
-   (sin scroll: layout fijo por columnas + fila expandible)
-========================= */
-
 .tabla-incidencias-card {
     background: #FFFFFF;
     border: 1px solid var(--habitia-border);
@@ -990,21 +907,20 @@
     border-collapse: collapse;
 }
 
+    /* Los encabezados van en formato oración: solo la primera letra en
+       mayúscula (sin text-transform: uppercase). El texto ya viene así
+       escrito en la vista (Título, Reportado por, Ubicación, etc.). */
     .tabla-incidencias thead th {
         background: #FFFFFF;
         color: var(--habitia-text-gray);
         font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: .04em;
+        letter-spacing: .02em;
         font-weight: 700;
         padding: 14px 12px;
         text-align: left;
         border-bottom: 1px solid var(--habitia-border);
     }
 
-    /* Anchos de columna reequilibrados: Título, Responsabilidad y
-       Prioridad necesitan más aire; Mantenimiento puede envolver texto
-       (white-space: normal más abajo) así que no necesita tanto ancho fijo. */
     .tabla-incidencias th.col-expandir {
         width: 34px;
     }
@@ -1054,8 +970,6 @@
         white-space: nowrap;
     }
 
-        /* La columna de Mantenimiento no debe truncar: el chip puede tener
-       texto largo (tipo + estado), así que se le permite envolver. */
         .tabla-incidencias td.col-mantenimiento {
             overflow: visible;
             white-space: normal;
@@ -1101,6 +1015,20 @@
     .mantenimiento-chip:hover {
         background: var(--habitia-green-active);
         color: #fff;
+    }
+
+/* Link "Incidencia" en el listado de Mis Tareas de Mantenimiento:
+   por defecto un <a> sale azul y subrayado; lo alineamos al resto
+   del sistema de diseño (negro, sin subrayado, hover en verde). */
+.mantenimiento-incidencia-link {
+    color: #101010;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .mantenimiento-incidencia-link:hover {
+        color: var(--habitia-green-active);
+        text-decoration: underline;
     }
 
 .tabla-incidencias td.celda-acciones {
@@ -1179,7 +1107,6 @@
         margin-bottom: 10px;
     }
 
-/* Botón flecha para expandir fila */
 .btn-expandir-fila {
     background: none;
     border: none;
@@ -1203,7 +1130,6 @@
         color: var(--habitia-green-active);
     }
 
-/* Fila secundaria con detalle expandido */
 .fila-detalle {
     display: none;
 }
@@ -1235,7 +1161,6 @@
         margin-bottom: 0;
     }
 
-/* Bloques de persona (Reportado por / Personal asignado) dentro de la fila expandida */
 .fila-detalle-bloque {
     display: flex;
     flex-direction: column;
@@ -1243,6 +1168,7 @@
     min-width: 240px;
 }
 
+/* Formato oración (solo primera letra en mayúscula), sin uppercase forzado */
 .fila-detalle-persona-titulo {
     display: flex;
     align-items: center;
@@ -1250,8 +1176,7 @@
     font-size: 11.5px;
     font-weight: 700;
     color: var(--habitia-green-deep);
-    text-transform: uppercase;
-    letter-spacing: .04em;
+    letter-spacing: .01em;
 }
 
     .fila-detalle-persona-titulo i {
@@ -1266,10 +1191,6 @@
         display: none;
     }
 }
-
-/* =========================================================
-   ASIGNAR PRIORIDAD — rediseño
-========================================================= */
 
 .prioridad-wrapper {
     max-width: 620px;
@@ -1368,11 +1289,6 @@
         font-size: 14px;
         color: inherit;
     }
-
-/* =========================
-   ÍCONOS DE MODALES DE CONFIRMACIÓN
-   (Suspender / Eliminar / Reactivar)
-========================= */
 
 .modal-icon-warning,
 .modal-icon-danger,

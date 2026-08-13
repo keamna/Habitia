@@ -1,10 +1,43 @@
 ﻿@model List<Habitia.Models.Mantenimiento>
 @{
-    ViewData["Title"] = "Mis Tareas de Mantenimiento";
+    ViewData["Title"] = "Mis tareas de mantenimiento";
+
+    string ClaseBadgePrioridad(Habitia.Enums.PrioridadEnum? p) => p switch
+    {
+        Habitia.Enums.PrioridadEnum.Alta => "badge-prioridad-alta",
+        Habitia.Enums.PrioridadEnum.Media => "badge-prioridad-media",
+        Habitia.Enums.PrioridadEnum.Baja => "badge-prioridad-baja",
+        _ => "badge-prioridad-baja"
+    };
+
+    string TextoPrioridad(Habitia.Enums.PrioridadEnum? p) => p switch
+    {
+        Habitia.Enums.PrioridadEnum.Alta => "Alta",
+        Habitia.Enums.PrioridadEnum.Media => "Media",
+        Habitia.Enums.PrioridadEnum.Baja => "Baja",
+        _ => "N/D"
+    };
+
+    string TextoEstado(Habitia.Enums.EstadoMantenimientoEnum e) => e switch
+    {
+        Habitia.Enums.EstadoMantenimientoEnum.Programado => "Programado",
+        Habitia.Enums.EstadoMantenimientoEnum.EnProceso => "En proceso",
+        Habitia.Enums.EstadoMantenimientoEnum.Completado => "Completado",
+        Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "Cancelado",
+        _ => e.ToString()
+    };
+
+    // El controlador ya filtra por tipo/prioridad/estado; acá solo ordenamos
+    // (prioridad alta primero; las tareas sin prioridad asignada quedan al final).
+    var tareasOrdenadas = Model.OrderByDescending(m => m.Incidencia?.TN_Prioridad).ToList();
+
+    var tiposDisponibles = (IEnumerable<Habitia.Models.Catalogos.TipoMantenimiento>)(ViewBag.TiposDisponibles ?? new List<Habitia.Models.Catalogos.TipoMantenimiento>());
+    int? filtroTipoId = ViewBag.FiltroTipoId;
+    Habitia.Enums.PrioridadEnum? filtroPrioridad = ViewBag.FiltroPrioridad;
+    Habitia.Enums.EstadoMantenimientoEnum? filtroEstado = ViewBag.FiltroEstado;
+    bool huboFiltro = ViewBag.HuboFiltro ?? false;
 }
-
 <h2>Mis Tareas de Mantenimiento</h2>
-
 @if (TempData["Success"] != null)
 {
     <div class="alert alert-success">@TempData["Success"]</div>
@@ -14,9 +47,65 @@
     <div class="alert alert-danger">@TempData["Error"]</div>
 }
 
-@if (!Model.Any())
+@* ── Filtros ── *@
+<form method="get" asp-action="Index" class="index-filtros-card">
+    <div class="row g-2 align-items-end">
+        <div class="col-auto">
+            <label class="form-label small mb-1">Tipo de mantenimiento</label>
+            <select name="tipoId" class="form-select form-select-sm filtro-select" onchange="this.form.submit()">
+                <option value="">Todos</option>
+                @foreach (var tipo in tiposDisponibles)
+                {
+                    <option value="@tipo.TN_Id" selected="@(filtroTipoId == tipo.TN_Id)">@tipo.TC_Nombre</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <label class="form-label small mb-1">Prioridad</label>
+            <select name="prioridad" class="form-select form-select-sm filtro-select" onchange="this.form.submit()">
+                <option value="">Todas</option>
+                <option value="Alta" selected="@(filtroPrioridad == Habitia.Enums.PrioridadEnum.Alta)">Alta</option>
+                <option value="Media" selected="@(filtroPrioridad == Habitia.Enums.PrioridadEnum.Media)">Media</option>
+                <option value="Baja" selected="@(filtroPrioridad == Habitia.Enums.PrioridadEnum.Baja)">Baja</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <label class="form-label small mb-1">Estado</label>
+            <select name="estado" class="form-select form-select-sm filtro-select" onchange="this.form.submit()">
+                <option value="">Todos</option>
+                <option value="Programado" selected="@(filtroEstado == Habitia.Enums.EstadoMantenimientoEnum.Programado)">Programado</option>
+                <option value="EnProceso" selected="@(filtroEstado == Habitia.Enums.EstadoMantenimientoEnum.EnProceso)">En proceso</option>
+                <option value="Completado" selected="@(filtroEstado == Habitia.Enums.EstadoMantenimientoEnum.Completado)">Completado</option>
+                <option value="Cancelado" selected="@(filtroEstado == Habitia.Enums.EstadoMantenimientoEnum.Cancelado)">Cancelado</option>
+            </select>
+        </div>
+        @if (huboFiltro)
+        {
+            <div class="col-auto">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Limpiar filtros</a>
+            </div>
+        }
+    </div>
+</form>
+
+@* La flecha nativa del <select> necesita espacio propio: si el select se
+   achica al ancho del texto más corto (p. ej. "Todas"), la flecha queda
+   encima de la palabra. Se le da un ancho mínimo y se refuerza el padding
+   derecho reservado para el ícono. *@
+<style>
+    .filtro-select {
+        min-width: 170px;
+        padding-right: 2.25rem !important;
+    }
+</style>
+
+@if (!tareasOrdenadas.Any())
 {
-    <div class="alert alert-info">No tenés tareas de mantenimiento asignadas.</div>
+    <div class="alert alert-info">
+        @(huboFiltro
+            ? "No se encontraron tareas con los filtros seleccionados."
+            : "No tenés tareas de mantenimiento asignadas.")
+    </div>
 }
 else
 {
@@ -27,18 +116,17 @@ else
                 <th>Descripción</th>
                 <th>Tipo</th>
                 <th>Fecha de creación</th>
+                <th>Prioridad</th>
                 <th>Estado</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var m in Model)
+            @foreach (var m in tareasOrdenadas)
             {
                 <tr>
                     <td>
-                        <a asp-controller="Incidencias" asp-action="Details" asp-route-id="@m.TN_IdIncidencia">
-                            @m.Incidencia?.TC_Titulo
-                        </a>
+                        <span class="titulo-incidencia-celda">@m.Incidencia?.TC_Titulo</span>
                         <div class="text-muted small">
                             @(m.Incidencia?.TN_Tipo == Habitia.Enums.TipoIncidenciaEnum.Vivienda
                                 ? $"Vivienda: {m.Incidencia?.Vivienda?.TC_Numero}"
@@ -49,6 +137,18 @@ else
                     <td>@m.Tipo?.TC_Nombre</td>
                     <td>@m.TF_FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</td>
                     <td>
+                        @if (m.Incidencia?.TN_Prioridad != null)
+                        {
+                            <span class="badge-prioridad @ClaseBadgePrioridad(m.Incidencia.TN_Prioridad)">
+                                @TextoPrioridad(m.Incidencia.TN_Prioridad)
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sin asignar</span>
+                        }
+                    </td>
+                    <td>
                         <span class="badge @(m.TN_Estado switch {
                             Habitia.Enums.EstadoMantenimientoEnum.Programado => "bg-secondary",
                             Habitia.Enums.EstadoMantenimientoEnum.EnProceso => "bg-info text-dark",
@@ -56,7 +156,7 @@ else
                             Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "bg-danger",
                             _ => "bg-secondary"
                         })">
-                            @m.TN_Estado
+                            @TextoEstado(m.TN_Estado)
                         </span>
                     </td>
                     <td>

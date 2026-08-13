@@ -1,83 +1,166 @@
 ﻿@model Habitia.Models.Incidencia
 @{
     ViewData["Title"] = "Detalle de Incidencia";
+
+    string ClaseBadgeEstado(Habitia.Enums.EstadoIncidenciaEnum e) => e switch
+    {
+        Habitia.Enums.EstadoIncidenciaEnum.Pendiente => "badge-estado-pendiente",
+        Habitia.Enums.EstadoIncidenciaEnum.EnProceso => "badge-estado-proceso",
+        Habitia.Enums.EstadoIncidenciaEnum.Resuelta => "badge-estado-resuelta",
+        _ => "badge-estado-default"
+    };
+
+    string TextoEstado(Habitia.Enums.EstadoIncidenciaEnum e) => e switch
+    {
+        Habitia.Enums.EstadoIncidenciaEnum.Pendiente => "Pendiente",
+        Habitia.Enums.EstadoIncidenciaEnum.EnProceso => "En proceso",
+        Habitia.Enums.EstadoIncidenciaEnum.Resuelta => "Resuelta",
+        _ => e.ToString()
+    };
+
+    string ClasePillResponsabilidad(Habitia.Enums.ResponsabilidadEnum r) => r switch
+    {
+        Habitia.Enums.ResponsabilidadEnum.Privado => "pill-privado",
+        Habitia.Enums.ResponsabilidadEnum.Comun => "pill-comun",
+        Habitia.Enums.ResponsabilidadEnum.Mixto => "pill-mixto",
+        _ => "pill-sin-clasificar"
+    };
+
+    string TextoResponsabilidad(Habitia.Enums.ResponsabilidadEnum r) => r switch
+    {
+        Habitia.Enums.ResponsabilidadEnum.Privado => "Privado",
+        Habitia.Enums.ResponsabilidadEnum.Comun => "Común",
+        Habitia.Enums.ResponsabilidadEnum.Mixto => "Mixto",
+        _ => r.ToString()
+    };
+
+    string ClaseBadgePrioridad(Habitia.Enums.PrioridadEnum p) => p switch
+    {
+        Habitia.Enums.PrioridadEnum.Alta => "badge-prioridad-alta",
+        Habitia.Enums.PrioridadEnum.Media => "badge-prioridad-media",
+        Habitia.Enums.PrioridadEnum.Baja => "badge-prioridad-baja",
+        _ => "badge-prioridad-baja"
+    };
+
+    string TextoPrioridad(Habitia.Enums.PrioridadEnum p) => p switch
+    {
+        Habitia.Enums.PrioridadEnum.Alta => "Alta",
+        Habitia.Enums.PrioridadEnum.Media => "Media",
+        Habitia.Enums.PrioridadEnum.Baja => "Baja",
+        _ => p.ToString()
+    };
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Detalle de Incidencia</h2>
-    <a asp-controller="Tareas" asp-action="Details" asp-route-id="@Model.Mantenimiento!.TN_Id" class="btn btn-secondary">
-        Volver a la tarea
-    </a>
+<div class="detalle-header d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a asp-controller="Tareas" asp-action="Details" asp-route-id="@Model.Mantenimiento!.TN_Id" class="detalle-volver">
+            <i class="bi bi-arrow-left"></i> Volver a la tarea
+        </a>
+        <h2 class="mb-0 mt-1">Detalle de incidencia</h2>
+    </div>
 </div>
 
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-            <h5 class="card-title mb-0">@Model.TC_Titulo</h5>
-            <span class="badge @(Model.TN_Estado switch {
-                Habitia.Enums.EstadoIncidenciaEnum.Pendiente => "bg-warning text-dark",
-                Habitia.Enums.EstadoIncidenciaEnum.EnProceso => "bg-info text-dark",
-                Habitia.Enums.EstadoIncidenciaEnum.Resuelta => "bg-success",
-                _ => "bg-secondary"
-            })">
-                @Model.TN_Estado
-            </span>
+<div class="detalle-layout">
+    <div>
+        <div class="incidencia-contexto mb-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                <h5 class="mb-0">@Model.TC_Titulo</h5>
+                <span class="badge-estado @ClaseBadgeEstado(Model.TN_Estado)">
+                    @TextoEstado(Model.TN_Estado)
+                </span>
+            </div>
+
+            <p class="mb-2">@Model.TC_Descripcion</p>
+
+            <div class="incidencia-meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">Nombre</span>
+                    <span class="meta-valor">
+                        @(Model.Usuario != null ? $"{Model.Usuario.TC_Nombre} {Model.Usuario.TC_Apellido}" : "N/D")
+                    </span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Identificación</span>
+                    <span class="meta-valor">@(Model.Usuario?.TC_Identificacion ?? "N/D")</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Teléfono</span>
+                    <span class="meta-valor">@(Model.Usuario?.TC_Telefono ?? "N/D")</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Número de vivienda</span>
+                    @if (Model.Vivienda != null)
+                    {
+                        <span class="meta-valor">@Model.Vivienda.TC_Numero</span>
+                    }
+                    else
+                    {
+                        <span class="meta-valor text-muted fst-italic">Sin vivienda</span>
+                    }
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-label">Fecha de registro</span>
+                    <span class="meta-valor">@Model.TF_FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</span>
+                </div>
+
+                <div class="meta-item">
+                    <span class="meta-label">Responsabilidad</span>
+                    <span class="pill-responsabilidad @ClasePillResponsabilidad(Model.TN_Responsabilidad)">
+                        @TextoResponsabilidad(Model.TN_Responsabilidad)
+                    </span>
+                </div>
+            </div>
+
+            <div class="ubicacion-detalle mt-3">
+                <span class="meta-label d-block mb-2">Ubicación</span>
+                <div class="ubicacion-chips">
+                    @if (Model.TN_Tipo == Habitia.Enums.TipoIncidenciaEnum.Vivienda)
+                    {
+                        <span class="ubicacion-chip">
+                            <i class="bi bi-house-door"></i> Vivienda: @(Model.Vivienda?.TC_Numero ?? "N/D")
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="ubicacion-chip">
+                            <i class="bi bi-buildings"></i> Área común: @(Model.AreaComun?.TC_Nombre ?? "N/D")
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="detalle-sidebar-card">
+            <div class="detalle-sidebar-titulo">Prioridad</div>
+            @if (Model.TN_Prioridad.HasValue)
+            {
+                <span class="badge-prioridad @ClaseBadgePrioridad(Model.TN_Prioridad.Value)">
+                    @TextoPrioridad(Model.TN_Prioridad.Value)
+                </span>
+            }
+            else
+            {
+                <span class="text-muted small">Sin asignar</span>
+            }
         </div>
 
-        <p class="card-text">@Model.TC_Descripcion</p>
-
-        <dl class="row mb-0">
-            <dt class="col-sm-3">Reportado por</dt>
-            <dd class="col-sm-9">@Model.Usuario?.UserName</dd>
-
-            <dt class="col-sm-3">Fecha de registro</dt>
-            <dd class="col-sm-9">@Model.TF_FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</dd>
-
-            <dt class="col-sm-3">Ubicación</dt>
-            <dd class="col-sm-9">
-                @if (Model.TN_Tipo == Habitia.Enums.TipoIncidenciaEnum.Vivienda)
-                {
-                    <text>Vivienda: @(Model.Vivienda?.TC_Numero ?? "N/D")</text>
-                }
-                else
-                {
-                    <text>Área común: @(Model.AreaComun?.TC_Nombre ?? "N/D")</text>
-                }
-            </dd>
-
-            <dt class="col-sm-3">Responsabilidad</dt>
-            <dd class="col-sm-9">
-                <span class="badge bg-secondary">@Model.TN_Responsabilidad</span>
-            </dd>
-
-            <dt class="col-sm-3">Prioridad</dt>
-            <dd class="col-sm-9">
-                @if (Model.TN_Prioridad.HasValue)
-                {
-                    <span class="badge @(Model.TN_Prioridad switch {
-                        Habitia.Enums.PrioridadEnum.Alta => "bg-danger",
-                        Habitia.Enums.PrioridadEnum.Media => "bg-warning text-dark",
-                        Habitia.Enums.PrioridadEnum.Baja => "bg-secondary",
-                        _ => "bg-secondary"
-                    })">
-                        @Model.TN_Prioridad
-                    </span>
-                }
-                else
-                {
-                    <span class="text-muted">Sin asignar</span>
-                }
-            </dd>
-
+        <div class="detalle-sidebar-card">
+            <div class="detalle-sidebar-titulo">Evidencia</div>
             @if (!string.IsNullOrEmpty(Model.TC_ImagenUrl))
             {
-                <dt class="col-sm-3">Evidencia</dt>
-                <dd class="col-sm-9">
-                    <a href="@Model.TC_ImagenUrl" target="_blank">
-                        <img src="@Model.TC_ImagenUrl" alt="Evidencia" class="img-thumbnail" style="max-width: 220px;" />
-                    </a>
-                </dd>
+                <a href="@Model.TC_ImagenUrl" target="_blank">
+                    <img src="@Model.TC_ImagenUrl" alt="Evidencia" class="evidencia-preview" />
+                </a>
             }
-        </dl>
+            else
+            {
+                <div class="evidencia-vacia">
+                    <i class="bi bi-image"></i> No se adjuntó evidencia.
+                </div>
+            }
+        </div>
     </div>
 </div>
