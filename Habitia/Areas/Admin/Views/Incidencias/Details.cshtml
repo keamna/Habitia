@@ -1,6 +1,6 @@
 ﻿@model Habitia.Models.Incidencia
 @{
-    ViewData["Title"] = "Detalle de Incidencia";
+    ViewData["Title"] = "Detalle de incidencia";
 
     string ClasePillResponsabilidad(Habitia.Enums.ResponsabilidadEnum r) => r switch
     {
@@ -10,12 +10,45 @@
         _ => "pill-sin-clasificar"
     };
 
+    string TextoResponsabilidad(Habitia.Enums.ResponsabilidadEnum r) => r switch
+    {
+        Habitia.Enums.ResponsabilidadEnum.Privado => "Privado",
+        Habitia.Enums.ResponsabilidadEnum.Comun => "Común",
+        Habitia.Enums.ResponsabilidadEnum.Mixto => "Mixto",
+        _ => "Sin clasificar"
+    };
+
     string ClaseBadgePrioridad(Habitia.Enums.PrioridadEnum p) => p switch
     {
         Habitia.Enums.PrioridadEnum.Alta => "badge-prioridad-alta",
         Habitia.Enums.PrioridadEnum.Media => "badge-prioridad-media",
         Habitia.Enums.PrioridadEnum.Baja => "badge-prioridad-baja",
         _ => "badge-prioridad-baja"
+    };
+
+    string TextoPrioridad(Habitia.Enums.PrioridadEnum p) => p switch
+    {
+        Habitia.Enums.PrioridadEnum.Alta => "Alta",
+        Habitia.Enums.PrioridadEnum.Media => "Media",
+        Habitia.Enums.PrioridadEnum.Baja => "Baja",
+        _ => p.ToString()
+    };
+
+    string TextoEstado(Habitia.Enums.EstadoIncidenciaEnum e) => e switch
+    {
+        Habitia.Enums.EstadoIncidenciaEnum.Pendiente => "Pendiente",
+        Habitia.Enums.EstadoIncidenciaEnum.EnProceso => "En proceso",
+        Habitia.Enums.EstadoIncidenciaEnum.Resuelta => "Resuelta",
+        _ => e.ToString()
+    };
+
+    string TextoEstadoMantenimiento(Habitia.Enums.EstadoMantenimientoEnum m) => m switch
+    {
+        Habitia.Enums.EstadoMantenimientoEnum.Programado => "Programado",
+        Habitia.Enums.EstadoMantenimientoEnum.EnProceso => "En proceso",
+        Habitia.Enums.EstadoMantenimientoEnum.Completado => "Completado",
+        Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "Cancelado",
+        _ => m.ToString()
     };
 
     var pasos = new[] { Habitia.Enums.EstadoIncidenciaEnum.Pendiente, Habitia.Enums.EstadoIncidenciaEnum.EnProceso, Habitia.Enums.EstadoIncidenciaEnum.Resuelta };
@@ -27,7 +60,7 @@
         <a asp-action="Index" class="detalle-volver">
             <i class="bi bi-arrow-left"></i> Volver a incidencias
         </a>
-        <h2 class="mb-0 mt-1">Detalle de Incidencia</h2>
+        <h2 class="mb-0 mt-1">Detalle de incidencia</h2>
     </div>
 </div>
 
@@ -58,7 +91,7 @@
                     <div class="estado-timeline-step @clase">
                         <div class="linea"></div>
                         <div class="dot"></div>
-                        <div class="label">@pasos[i]</div>
+                        <div class="label">@TextoEstado(pasos[i])</div>
                     </div>
                 }
             </div>
@@ -89,7 +122,7 @@
                 <div class="meta-item">
                     <span class="meta-label">Responsabilidad</span>
                     <span class="pill-responsabilidad @ClasePillResponsabilidad(Model.TN_Responsabilidad)">
-                        @Model.TN_Responsabilidad
+                        @TextoResponsabilidad(Model.TN_Responsabilidad)
                     </span>
                 </div>
 
@@ -128,7 +161,7 @@
 
             <div class="incidencia-contexto mantenimiento-embebido mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0"><i class="bi bi-tools me-2"></i>Tarea de Mantenimiento</h5>
+                    <h5 class="mb-0"><i class="bi bi-tools me-2"></i>Tarea de mantenimiento</h5>
                     <span class="badge-estado @(m.TN_Estado switch {
                         Habitia.Enums.EstadoMantenimientoEnum.Programado => "badge-estado-default",
                         Habitia.Enums.EstadoMantenimientoEnum.EnProceso => "badge-estado-proceso",
@@ -136,7 +169,7 @@
                         Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "badge-estado-cancelado",
                         _ => "badge-estado-default"
                     })">
-                        @m.TN_Estado
+                        @TextoEstadoMantenimiento(m.TN_Estado)
                     </span>
                 </div>
 
@@ -224,7 +257,7 @@
             @if (Model.TN_Prioridad.HasValue)
             {
                 <span class="badge-prioridad @ClaseBadgePrioridad(Model.TN_Prioridad.Value)">
-                    @Model.TN_Prioridad
+                    @TextoPrioridad(Model.TN_Prioridad.Value)
                 </span>
             }
             else

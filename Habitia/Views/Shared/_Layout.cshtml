@@ -139,13 +139,13 @@
                             <a class="habitia-nav-item @(esAreaComunAdmin ? "active" : "")"
                                asp-area="Admin" asp-controller="AreaComun" asp-action="Index">
                                 <i class="bi bi-building"></i>
-                                <span>Áreas Comunes</span>
+                                <span>Áreas comunes</span>
                             </a>
 
                             <a class="habitia-nav-item @(esAccesoAdmin ? "active" : "")"
                                asp-area="Admin" asp-controller="Accesos" asp-action="Index">
                                 <i class="bi bi-shield-check"></i>
-                                <span>Control de Accesos</span>
+                                <span>Control de accesos</span>
                             </a>
 
                             <a class="habitia-nav-item @(esIncidenciasAdmin ? "active" : "")"
@@ -175,7 +175,7 @@
                             <a class="habitia-nav-item @(esDocumentosAdmin ? "active" : "")"
                                asp-area="Admin" asp-controller="Documentos" asp-action="Index">
                                 <i class="bi bi-folder-fill"></i>
-                                <span>Documentos y Asambleas</span>
+                                <span>Documentos y asambleas</span>
                             </a>
                         </div>
                     }
@@ -187,7 +187,7 @@
                             <a class="habitia-nav-item @(EsActivo("Residente", "Vivienda") ? "active" : "")"
                                asp-area="Residente" asp-controller="Vivienda" asp-action="Index">
                                 <i class="bi bi-house-door-fill"></i>
-                                <span>Mi Vivienda</span>
+                                <span>Mi vivienda</span>
                             </a>
 
                             <a class="habitia-nav-item @(EsActivo("Residente", "Reservas") ? "active" : "")"
@@ -199,25 +199,25 @@
                             <a class="habitia-nav-item @(EsActivo("Residente", "Autorizaciones") ? "active" : "")"
                                asp-area="Residente" asp-controller="Autorizaciones" asp-action="Index">
                                 <i class="bi bi-person-badge"></i>
-                                <span>Visitas y Autorizaciones</span>
+                                <span>Visitas y autorizaciones</span>
                             </a>
 
                             <a class="habitia-nav-item @(EsActivo("Residente", "Incidencias") ? "active" : "")"
                                asp-area="Residente" asp-controller="Incidencias" asp-action="Index">
                                 <i class="bi bi-exclamation-triangle-fill"></i>
-                                <span>Mis Incidencias</span>
+                                <span>Mis incidencias</span>
                             </a>
 
                             <a class="habitia-nav-item @(EsActivo("Residente", "Cargos") ? "active" : "")"
                                asp-area="Residente" asp-controller="Cargos" asp-action="Index">
                                 <i class="bi bi-receipt"></i>
-                                <span>Mis Cargos</span>
+                                <span>Mis cargos</span>
                             </a>
 
                             <a class="habitia-nav-item @(EsActivo("Residente", "HistorialFinanciero") ? "active" : "")"
                                asp-area="Residente" asp-controller="HistorialFinanciero" asp-action="Index">
                                 <i class="bi bi-clock-history"></i>
-                                <span>Historial Financiero</span>
+                                <span>Historial financiero</span>
                             </a>
 
                             <a class="habitia-nav-item @(esMarketplace && string.Equals(areaActual, "Residente", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
@@ -248,7 +248,7 @@
                             <a class="habitia-nav-item @(EsActivo("Seguridad", "Accesos") ? "active" : "")"
                                asp-area="Seguridad" asp-controller="Accesos" asp-action="Index">
                                 <i class="bi bi-shield-check"></i>
-                                <span>Control de Accesos</span>
+                                <span>Control de accesos</span>
                             </a>
 
                             <a class="habitia-nav-item @(EsActivo("Seguridad", "Reservas") ? "active" : "")"
@@ -272,7 +272,7 @@
                             <a class="habitia-nav-item @(EsActivo("Mantenimiento", "Tareas") ? "active" : "")"
                                asp-area="Mantenimiento" asp-controller="Tareas" asp-action="Index">
                                 <i class="bi bi-tools"></i>
-                                <span>Mis Tareas</span>
+                                <span>Mis tareas</span>
                             </a>
                         </div>
                     }
