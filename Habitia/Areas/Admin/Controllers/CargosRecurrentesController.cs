@@ -51,12 +51,24 @@ namespace Habitia.Areas.Admin.Controllers
             if (vm.TB_RecargoProgramado && (vm.TN_IdTipoRecargo == null || vm.TN_ValorRecargo == null))
                 ModelState.AddModelError(nameof(vm.TN_ValorRecargo), "Complete el tipo y valor del recargo programado.");
 
+            // <-- NUEVO: validación de la frecuencia del recargo
+            if (vm.TB_RecargoProgramado &&
+                (string.IsNullOrWhiteSpace(vm.TC_FrecuenciaRecargo)
+                 || (vm.TC_FrecuenciaRecargo != "Unico" && vm.TC_FrecuenciaRecargo != "PorDia")))
+            {
+                ModelState.AddModelError(nameof(vm.TC_FrecuenciaRecargo), "Seleccione la frecuencia del recargo.");
+            }
+
             if (!ModelState.IsValid)
             {
+                // NOTA: aquí NO se usa TempData porque no hay redirección — devolvemos
+                // la misma vista en el mismo request. TempData sobrevive a la SIGUIENTE
+                // request, así que si se usara aquí, el mensaje "colgado" terminaría
+                // apareciendo luego en el Index sin que el usuario haya hecho nada allí.
+                // Los errores ya se muestran en el formulario vía asp-validation-summary.
                 vm.TiposCargo = await ObtenerTiposCargo();
                 vm.TiposRecargo = await ObtenerTiposRecargo();
                 vm.Residentes = await ObtenerResidentesBusqueda();
-                TempData["Error"] = "Debe completar todos los campos obligatorios.";
                 return View(vm);
             }
 
@@ -83,6 +95,7 @@ namespace Habitia.Areas.Admin.Controllers
                     TB_RecargoProgramado = vm.TB_RecargoProgramado,
                     TN_IdTipoRecargo = vm.TB_RecargoProgramado ? vm.TN_IdTipoRecargo : null,
                     TN_ValorRecargo = vm.TB_RecargoProgramado ? vm.TN_ValorRecargo : null,
+                    TC_FrecuenciaRecargo = vm.TB_RecargoProgramado ? vm.TC_FrecuenciaRecargo : null, // <-- NUEVO
                     TF_FechaInicio = vm.TF_FechaInicio,
                     TB_Estado = true
                 };
@@ -140,9 +153,9 @@ namespace Habitia.Areas.Admin.Controllers
                 }).ToListAsync();
 
 
-    // ============ EDIT ============
+        // ============ EDIT ============
 
-public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
             var plantilla = await _context.CargosRecurrentes
                 .Include(cr => cr.TipoCargo)
@@ -168,6 +181,7 @@ public async Task<IActionResult> Edit(int id)
                 TB_RecargoProgramado = plantilla.TB_RecargoProgramado,
                 TN_IdTipoRecargo = plantilla.TN_IdTipoRecargo,
                 TN_ValorRecargo = plantilla.TN_ValorRecargo,
+                TC_FrecuenciaRecargo = plantilla.TC_FrecuenciaRecargo, // <-- NUEVO
                 TF_FechaInicio = plantilla.TF_FechaInicio,
                 TF_UltimaGeneracion = plantilla.TF_UltimaGeneracion,
                 TiposCargo = await ObtenerTiposCargo(),
@@ -188,12 +202,20 @@ public async Task<IActionResult> Edit(int id)
             if (vm.TB_RecargoProgramado && (vm.TN_IdTipoRecargo == null || vm.TN_ValorRecargo == null))
                 ModelState.AddModelError(nameof(vm.TN_ValorRecargo), "Complete el tipo y valor del recargo programado.");
 
+            // <-- NUEVO: validación de la frecuencia del recargo
+            if (vm.TB_RecargoProgramado &&
+                (string.IsNullOrWhiteSpace(vm.TC_FrecuenciaRecargo)
+                 || (vm.TC_FrecuenciaRecargo != "Unico" && vm.TC_FrecuenciaRecargo != "PorDia")))
+            {
+                ModelState.AddModelError(nameof(vm.TC_FrecuenciaRecargo), "Seleccione la frecuencia del recargo.");
+            }
+
             if (!ModelState.IsValid)
             {
+                // Igual que en Create: sin TempData aquí, porque no hay redirección.
                 vm.TiposCargo = await ObtenerTiposCargo();
                 vm.TiposRecargo = await ObtenerTiposRecargo();
                 vm.Residentes = await ObtenerResidentesBusqueda();
-                TempData["Error"] = "Debe completar todos los campos obligatorios.";
                 return View(vm);
             }
 
@@ -228,6 +250,7 @@ public async Task<IActionResult> Edit(int id)
                 plantilla.TB_RecargoProgramado = vm.TB_RecargoProgramado;
                 plantilla.TN_IdTipoRecargo = vm.TB_RecargoProgramado ? vm.TN_IdTipoRecargo : null;
                 plantilla.TN_ValorRecargo = vm.TB_RecargoProgramado ? vm.TN_ValorRecargo : null;
+                plantilla.TC_FrecuenciaRecargo = vm.TB_RecargoProgramado ? vm.TC_FrecuenciaRecargo : null; // <-- NUEVO
 
                 // Reemplazar la lista de residentes destino
                 _context.CargosRecurrentesResidentes.RemoveRange(plantilla.Residentes);

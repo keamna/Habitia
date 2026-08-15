@@ -63,7 +63,8 @@ namespace Habitia.Services
                         TB_Estado = true,
                         TB_RecargoProgramado = plantilla.TB_RecargoProgramado,
                         TN_IdTipoRecargo = plantilla.TN_IdTipoRecargo,
-                        TN_ValorRecargo = plantilla.TN_ValorRecargo
+                        TN_ValorRecargo = plantilla.TN_ValorRecargo,
+                        TC_FrecuenciaRecargo = plantilla.TC_FrecuenciaRecargo // <-- NUEVO: se hereda de la plantilla
                     });
                 }
 

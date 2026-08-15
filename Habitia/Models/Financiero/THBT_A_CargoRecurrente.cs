@@ -35,9 +35,13 @@ namespace Habitia.Models.Financiero
         public int? TN_IdTipoRecargo { get; set; }
         public decimal? TN_ValorRecargo { get; set; }
 
+        [MaxLength(10)]
+        public string? TC_FrecuenciaRecargo { get; set; }
+
         [Required]
         public DateTime TF_FechaInicio { get; set; }
         public DateTime? TF_UltimaGeneracion { get; set; }
+
 
         [Required]
         public bool TB_Estado { get; set; } // activa / pausada

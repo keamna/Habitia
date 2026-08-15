@@ -225,7 +225,14 @@
                                 </td>
 
                                 <td class="fw-semibold">@c.NombreResidente</td>
-                                <td>@c.TipoCargo</td>
+                                <td>
+                                    @c.TipoCargo
+                                    @if (c.TB_RecargoProgramado)
+                                    {
+                                        <i class="bi bi-arrow-repeat text-muted ms-1"
+                                           title="Tiene recargo automático configurado"></i>
+                                    }
+                                </td>
                                 <td class="text-end fw-semibold">@c.TN_MontoTotal.ToString("C")</td>
                                 <td class="text-nowrap">@c.TF_FechaEmision.ToString("dd/MM/yyyy")</td>
                                 <td class="text-nowrap">@c.TF_FechaVencimiento.ToString("dd/MM/yyyy")</td>
@@ -288,7 +295,20 @@
                                             </div>
                                         </div>
 
-                                        @if (estaVencido && !c.TB_RecargoAplicado)
+                                        @if (estaVencido && c.TB_RecargoProgramado)
+                                        {
+                                            <div class="col-12">
+                                                <span class="badge" style="background-color:#0C5460;">
+                                                    <i class="bi bi-arrow-repeat"></i>
+                                                    Recargo automático configurado
+                                                    @if (c.TB_RecargoAplicado)
+                                                    {
+                                                        <text> · ya aplicado</text>
+                                                    }
+                                                </span>
+                                            </div>
+                                        }
+                                        else if (estaVencido && !c.TB_RecargoAplicado)
                                         {
                                             <div class="col-12">
                                                 <button type="button" class="btn btn-sm text-white btn-aplicar-recargo"

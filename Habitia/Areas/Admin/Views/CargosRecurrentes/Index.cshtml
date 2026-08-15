@@ -70,7 +70,8 @@
                                     @if (p.TB_RecargoProgramado)
                                     {
                                         <span class="badge" style="background-color:#B02A37;">
-                                            <i class="bi bi-graph-up-arrow"></i> Sí
+                                            <i class="bi bi-graph-up-arrow"></i>
+                                            @(p.TC_FrecuenciaRecargo == "PorDia" ? "Por día" : "Único")
                                         </span>
                                     }
                                     else

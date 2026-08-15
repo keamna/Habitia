@@ -1,6 +1,6 @@
 ﻿@model Habitia.Models.Mantenimiento
 @{
-    ViewData["Title"] = "Detalle de Tarea de Mantenimiento";
+    ViewData["Title"] = "Detalle de tarea de mantenimiento";
 
     string ClaseBadgeEstadoMantenimiento(Habitia.Enums.EstadoMantenimientoEnum e) => e switch
     {
@@ -9,6 +9,15 @@
         Habitia.Enums.EstadoMantenimientoEnum.Completado => "badge-estado-resuelta",
         Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "badge-estado-cancelado",
         _ => "badge-estado-default"
+    };
+
+    string TextoEstadoMantenimiento(Habitia.Enums.EstadoMantenimientoEnum e) => e switch
+    {
+        Habitia.Enums.EstadoMantenimientoEnum.Programado => "Programado",
+        Habitia.Enums.EstadoMantenimientoEnum.EnProceso => "En proceso",
+        Habitia.Enums.EstadoMantenimientoEnum.Completado => "Completado",
+        Habitia.Enums.EstadoMantenimientoEnum.Cancelado => "Cancelado",
+        _ => e.ToString()
     };
 
     var pasos = new[] { Habitia.Enums.EstadoMantenimientoEnum.Programado, Habitia.Enums.EstadoMantenimientoEnum.EnProceso, Habitia.Enums.EstadoMantenimientoEnum.Completado };
@@ -21,7 +30,7 @@
         <a asp-action="Index" class="detalle-volver">
             <i class="bi bi-arrow-left"></i> Volver a mantenimientos
         </a>
-        <h2 class="mb-0 mt-1">Detalle de Tarea de Mantenimiento</h2>
+        <h2 class="mb-0 mt-1">Detalle de tarea de mantenimiento</h2>
     </div>
 </div>
 
@@ -41,7 +50,7 @@
             <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
                 <h5 class="mb-0">@Model.TC_Descripcion</h5>
                 <span class="badge-estado @ClaseBadgeEstadoMantenimiento(Model.TN_Estado)">
-                    @Model.TN_Estado
+                    @TextoEstadoMantenimiento(Model.TN_Estado)
                 </span>
             </div>
 
@@ -55,7 +64,7 @@
                         <div class="estado-timeline-step @clase">
                             <div class="linea"></div>
                             <div class="dot"></div>
-                            <div class="label">@pasos[i]</div>
+                            <div class="label">@TextoEstadoMantenimiento(pasos[i])</div>
                         </div>
                     }
                 </div>

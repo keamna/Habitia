@@ -37,7 +37,7 @@
     Habitia.Enums.EstadoMantenimientoEnum? filtroEstado = ViewBag.FiltroEstado;
     bool huboFiltro = ViewBag.HuboFiltro ?? false;
 }
-<h2>Mis Tareas de Mantenimiento</h2>
+<h2>Mis tareas de mantenimiento</h2>
 @if (TempData["Success"] != null)
 {
     <div class="alert alert-success">@TempData["Success"]</div>
@@ -109,7 +109,7 @@
 }
 else
 {
-    <table class="table table-hover align-middle">
+    <table class="table table-hover align-middle tabla-mantenimiento-tareas">
         <thead>
             <tr>
                 <th>Incidencia</th>

@@ -127,6 +127,58 @@
                     <textarea asp-for="TC_Descripcion" class="form-control" rows="3"></textarea>
                     <span asp-validation-for="TC_Descripcion" class="text-danger small"></span>
                 </div>
+
+                <!-- ===== Recargo programado ===== -->
+                <div class="col-12">
+                    <hr />
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" asp-for="TB_RecargoProgramado" id="recargoProgramado" />
+                        <label class="form-check-label fw-semibold" for="recargoProgramado">
+                            Aplicar recargo automático si vence
+                        </label>
+                    </div>
+                    <div class="form-text">
+                        Si lo activa, el sistema aplicará el recargo configurado automáticamente cuando el cargo pase a estado "Vencido", sin necesidad de hacerlo manualmente.
+                    </div>
+                </div>
+
+                <div class="col-12 d-none" id="recargoProgramadoWrapper">
+                    <div class="fin-card mb-2" style="background-color:#FAFAFA;">
+                        <div class="fin-card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Frecuencia del recargo</label>
+                                    <select asp-for="TC_FrecuenciaRecargo" class="form-select" id="frecuenciaRecargo">
+                                        <option value="">-- Seleccione --</option>
+                                        <option value="Unico">Monto único (se aplica una sola vez al vencer)</option>
+                                        <option value="PorDia">Por día de atraso (se acumula cada día vencido)</option>
+                                    </select>
+                                    <span asp-validation-for="TC_FrecuenciaRecargo" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label">Tipo de recargo</label>
+                                    <select asp-for="TN_IdTipoRecargo" asp-items="Model.TiposRecargo"
+                                            class="form-select" id="tipoRecargo">
+                                        <option value="">-- Seleccione --</option>
+                                    </select>
+                                    <span asp-validation-for="TN_IdTipoRecargo" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label">Valor (₡ si es fijo, % si es porcentaje)</label>
+                                    <input asp-for="TN_ValorRecargo" type="number" step="0.01" min="0.01"
+                                           class="form-control" id="valorRecargo" placeholder="0.00" />
+                                    <span asp-validation-for="TN_ValorRecargo" class="text-danger small"></span>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-text" id="explicacionRecargo"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="mt-4">
@@ -187,7 +239,6 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
     <script>
         // ================== Utilidad: fecha local en formato YYYY-MM-DD (sin desfase por UTC) ==================
         function fechaLocalYMD(fecha) {
@@ -316,6 +367,32 @@
             });
         });
 
+        // ================== Recargo programado ==================
+        const chkRecargoProgramado = document.getElementById('recargoProgramado');
+        const recargoProgramadoWrapper = document.getElementById('recargoProgramadoWrapper');
+        const frecuenciaRecargo = document.getElementById('frecuenciaRecargo');
+        const tipoRecargo = document.getElementById('tipoRecargo');
+        const valorRecargo = document.getElementById('valorRecargo');
+        const explicacionRecargo = document.getElementById('explicacionRecargo');
+
+        chkRecargoProgramado.addEventListener('change', function () {
+            recargoProgramadoWrapper.classList.toggle('d-none', !this.checked);
+            if (!this.checked) {
+                frecuenciaRecargo.value = '';
+                tipoRecargo.value = '';
+                valorRecargo.value = '';
+                explicacionRecargo.innerText = '';
+            }
+        });
+
+        frecuenciaRecargo.addEventListener('change', function () {
+            explicacionRecargo.innerText = this.value === 'PorDia'
+                ? 'El monto/porcentaje configurado se aplicará automáticamente cada día que el cargo permanezca vencido.'
+                : this.value === 'Unico'
+                    ? 'El recargo se aplicará una única vez, el día que el cargo pase a estado "Vencido".'
+                    : '';
+        });
+
         // ================== Validación al enviar ==================
         document.querySelector('form').addEventListener('submit', function (e) {
             let errores = [];
@@ -351,6 +428,20 @@
                 hoyComparar.setHours(0, 0, 0, 0);
                 if (fechaSeleccionada < hoyComparar) {
                     errores.push('La fecha límite de pago no puede ser anterior a la fecha actual.');
+                }
+            }
+
+            // Recargo programado (solo si el checkbox está marcado)
+            if (chkRecargoProgramado.checked) {
+                if (!frecuenciaRecargo.value) {
+                    errores.push('Debe seleccionar la frecuencia del recargo automático.');
+                }
+                if (!tipoRecargo.value) {
+                    errores.push('Debe seleccionar el tipo de recargo automático.');
+                }
+                const valorRecargoVal = parseFloat(valorRecargo.value);
+                if (isNaN(valorRecargoVal) || valorRecargoVal <= 0) {
+                    errores.push('Debe ingresar un valor válido para el recargo automático.');
                 }
             }
 

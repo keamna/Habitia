@@ -20,7 +20,7 @@
         <form asp-action="Edit" method="post" novalidate>
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="TN_Id" />
-            <div asp-validation-summary="All" class="alert alert-danger d-none" id="validationSummary"></div>
+            <div asp-validation-summary="All" class="alert alert-danger @(ViewData.ModelState.IsValid ? "d-none" : "")" id="validationSummary"></div>
 
             <div class="row g-3">
                 <div class="col-md-6">
@@ -142,6 +142,15 @@
                     </div>
                 </div>
 
+                <div class="col-md-4 @(Model.TB_RecargoProgramado ? "" : "d-none")" id="frecuenciaRecargoWrapper">
+                    <label class="form-label">Frecuencia del recargo</label>
+                    <select asp-for="TC_FrecuenciaRecargo" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                        <option value="Unico">Monto único (se aplica una sola vez al vencer)</option>
+                        <option value="PorDia">Por día de atraso (se acumula cada día vencido)</option>
+                    </select>
+                    <span asp-validation-for="TC_FrecuenciaRecargo" class="text-danger small"></span>
+                </div>
                 <div class="col-md-4 @(Model.TB_RecargoProgramado ? "" : "d-none")" id="tipoRecargoWrapper">
                     <label class="form-label">Tipo de recargo</label>
                     <select asp-for="TN_IdTipoRecargo" asp-items="Model.TiposRecargo" class="form-select">
@@ -165,7 +174,6 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
     <script>
         // ================== Tipo de cargo ==================
         const tipoCargoSelect = document.getElementById('tipoCargoSelect');
@@ -219,10 +227,12 @@
 
         // ================== Recargo programado ==================
         const chkRecargoProgramado = document.getElementById('recargoProgramado');
+        const frecuenciaRecargoWrapper = document.getElementById('frecuenciaRecargoWrapper');
         const tipoRecargoWrapper = document.getElementById('tipoRecargoWrapper');
         const valorRecargoWrapper = document.getElementById('valorRecargoWrapper');
 
         chkRecargoProgramado.addEventListener('change', function () {
+            frecuenciaRecargoWrapper.classList.toggle('d-none', !this.checked);
             tipoRecargoWrapper.classList.toggle('d-none', !this.checked);
             valorRecargoWrapper.classList.toggle('d-none', !this.checked);
         });
@@ -242,6 +252,7 @@
             }
 
             if (chkRecargoProgramado.checked) {
+                if (!document.querySelector('[name="TC_FrecuenciaRecargo"]').value) errores.push('Seleccione la frecuencia del recargo.');
                 if (!document.querySelector('[name="TN_IdTipoRecargo"]').value) errores.push('Seleccione el tipo de recargo.');
                 const valorRecargo = parseFloat(document.querySelector('[name="TN_ValorRecargo"]').value);
                 if (isNaN(valorRecargo) || valorRecargo <= 0) errores.push('Ingrese el valor del recargo.');
