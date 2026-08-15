@@ -15,15 +15,18 @@ namespace Habitia.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
         public MiPerfilController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IWebHostEnvironment env)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
+            _env = env;
         }
 
         // GET: /MiPerfil
@@ -166,7 +169,7 @@ namespace Habitia.Controllers
                 return Redirect(returnUrl ?? Url.Action(nameof(Index))!);
             }
 
-            var carpeta = Path.Combine("wwwroot", "uploads", "perfiles");
+            var carpeta = Path.Combine(_env.WebRootPath, "uploads", "perfiles");
             Directory.CreateDirectory(carpeta);
 
             var nombreArchivo = $"{Guid.NewGuid()}{extension}";

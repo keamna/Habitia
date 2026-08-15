@@ -163,19 +163,30 @@
             <div class="modal-body text-center">
                 <h5 class="mb-2">Eliminar vivienda</h5>
 
-                <div id="eliminarViviendaConfirmacionTexto" style="display:none;">
+                <!-- El texto se muestra apenas abre el modal. Solo se oculta si
+                     la verificación devuelve que la vivienda NO se puede eliminar. -->
+                <div id="eliminarViviendaConfirmacionTexto">
                     <p class="text-muted mb-3">
-                        ¿Está seguro de eliminar esta vivienda
+                        ¿Deseas eliminar la vivienda
                         <strong id="eliminarViviendaNumero"></strong>?
                         <br />
                         Esta acción no se puede deshacer.
                     </p>
                 </div>
 
+                <div id="eliminarViviendaVerificando" class="text-muted small mb-2">
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                    Verificando...
+                </div>
+
                 <div class="alert alert-danger text-start" id="eliminarViviendaError" style="display:none;"></div>
 
                 <input type="hidden" id="eliminarViviendaId" />
 
+                <!-- OJO: sin la clase "d-flex". Bootstrap la define como
+                     display:flex !important y le gana al style="display:none",
+                     así que los botones nunca se ocultaban. El JS ya pone
+                     display flex/none por inline. -->
                 <div class="justify-content-center gap-2 mt-3" id="eliminarViviendaBotonesConfirmar" style="display:none;">
                     <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button class="btn btn-danger" id="btnConfirmarEliminarVivienda" onclick="confirmarEliminarVivienda()">

@@ -1,100 +1,229 @@
-﻿@model Habitia.ViewModels.EditarUsuarioVM
+﻿@model Habitia.ViewModels.Usuario.MiPerfilViewModel
 @{
     ViewData["Title"] = "Mi perfil";
+
+    // Pantalla interna: usa el layout de la app (sidebar). El _ViewStart de
+    // /Views apunta a _PublicLayout, que no carga habitia.css.
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Si el POST volvió con errores de validación, la pantalla debe abrir ya
+    // en modo edición para que se vean los mensajes y se puedan corregir.
+    var abrirEnEdicion = !ViewData.ModelState.IsValid;
 }
 
-<link rel="stylesheet" href="~/css/admin/miperfil.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/perfil/miperfil.css" asp-append-version="true" />
 
 <div class="miperfil-page">
+
     <div class="miperfil-header">
         <h2 class="miperfil-titulo">Mi perfil</h2>
         <p class="miperfil-subtitulo">Actualizá tus datos de contacto.</p>
     </div>
 
+    @if (TempData["Success"] != null)
+    {
+        <div class="miperfil-alerta miperfil-alerta-exito">@TempData["Success"]</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="miperfil-alerta miperfil-alerta-error">@TempData["Error"]</div>
+    }
+
+    <!-- ===================== FOTO + DATOS FIJOS ===================== -->
     <div class="miperfil-card">
-        <div id="miperfilAlerta" class="miperfil-alerta" style="display:none;"></div>
 
-        <form id="formMiPerfil">
-            <input type="hidden" id="perfilId" value="@Model.Id" />
+        <div class="miperfil-identidad">
 
-            <div class="miperfil-grupo">
-                <label for="perfilNombre">Nombre</label>
-                <input type="text" id="perfilNombre" value="@Model.Nombre" placeholder="Ingrese su nombre" />
-                <span class="miperfil-error" id="errorNombre"></span>
+            <form asp-area="" asp-controller="MiPerfil" asp-action="SubirFoto"
+                  method="post" enctype="multipart/form-data" id="formFotoPerfil">
+
+                @Html.AntiForgeryToken()
+
+                <div class="miperfil-avatar">
+                    @if (!string.IsNullOrWhiteSpace(Model.FotoPerfil))
+                    {
+                        <img src="@Model.FotoPerfil" alt="Foto de perfil" />
+                    }
+                    else
+                    {
+                        <img src="~/img/usuario-default.png" alt="Foto de perfil" />
+                    }
+
+                    <label class="miperfil-avatar-editar" title="Cambiar foto de perfil">
+                        <i class="bi bi-camera-fill"></i>
+                        <input type="file" name="foto" id="inputFotoPerfil"
+                               accept=".jpg,.jpeg,.png,.webp" hidden />
+                    </label>
+                </div>
+            </form>
+
+            <div class="miperfil-identidad-datos">
+                <div class="miperfil-identidad-nombre">@Model.Nombre @Model.Apellido</div>
+                <span class="miperfil-rol-badge">@Model.Rol</span>
             </div>
+        </div>
 
-            <div class="miperfil-grupo">
-                <label for="perfilEmail">Correo</label>
-                <input type="email" id="perfilEmail" value="@Model.Email" placeholder="correo@ejemplo.com" />
-                <span class="miperfil-error" id="errorEmail"></span>
+        <div class="miperfil-solo-lectura">
+            <div>
+                <span class="miperfil-dato-etiqueta">Tipo de identificación</span>
+                <span class="miperfil-dato-valor">@Model.TipoIdentificacion</span>
             </div>
+            <div>
+                <span class="miperfil-dato-etiqueta">Número de identificación</span>
+                <span class="miperfil-dato-valor">@Model.NumeroIdentificacion</span>
+            </div>
+        </div>
 
-            <div class="miperfil-grupo">
-                <label for="perfilTelefono">Teléfono <span class="miperfil-obligatorio">*</span></label>
-                <input type="text" id="perfilTelefono" value="@Model.Telefono" placeholder="8888-8888" />
-                <span class="miperfil-error" id="errorTelefono"></span>
+        @if (Model.Viviendas != null && Model.Viviendas.Any())
+        {
+            <div class="miperfil-viviendas">
+                <span class="miperfil-dato-etiqueta">Viviendas asociadas</span>
+
+                <div class="miperfil-viviendas-lista">
+                    @foreach (var vivienda in Model.Viviendas)
+                    {
+                        <div class="miperfil-vivienda-pill">
+                            <i class="bi bi-house-door-fill"></i>
+                            <strong>@vivienda.Codigo</strong>
+                            <span>
+                                @vivienda.TipoRelacion &middot; @vivienda.Estado@(vivienda.ViveAhi ? " · Vive ahí" : "")
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+    </div>
+
+    <!-- ===================== DATOS EDITABLES ===================== -->
+    <div class="miperfil-card">
+
+        <form asp-area="" asp-controller="MiPerfil" asp-action="Editar"
+              method="post" id="formMiPerfil">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="miperfil-alerta miperfil-alerta-error"></div>
+
+            <div class="miperfil-form-grid">
+
+                <div class="miperfil-grupo">
+                    <label asp-for="Nombre">Nombre <span class="miperfil-obligatorio">*</span></label>
+                    <input asp-for="Nombre" class="miperfil-editable" readonly="@(!abrirEnEdicion)" placeholder="Ingrese su nombre" />
+                    <span asp-validation-for="Nombre" class="miperfil-error"></span>
+                </div>
+
+                <div class="miperfil-grupo">
+                    <label asp-for="Apellido">Apellido <span class="miperfil-obligatorio">*</span></label>
+                    <input asp-for="Apellido" class="miperfil-editable" readonly="@(!abrirEnEdicion)" placeholder="Ingrese su apellido" />
+                    <span asp-validation-for="Apellido" class="miperfil-error"></span>
+                </div>
+
+                <div class="miperfil-grupo">
+                    <label asp-for="Email">Correo <span class="miperfil-obligatorio">*</span></label>
+                    <input asp-for="Email" type="email" class="miperfil-editable" readonly="@(!abrirEnEdicion)" placeholder="correo@ejemplo.com" />
+                    <span asp-validation-for="Email" class="miperfil-error"></span>
+                </div>
+
+                <div class="miperfil-grupo">
+                    <label asp-for="Telefono">Teléfono <span class="miperfil-obligatorio">*</span></label>
+                    <input asp-for="Telefono" class="miperfil-editable" readonly="@(!abrirEnEdicion)" placeholder="8888-8888" />
+                    <span asp-validation-for="Telefono" class="miperfil-error"></span>
+                </div>
+
             </div>
 
             <div class="miperfil-acciones">
-                <button type="submit" class="miperfil-btn-guardar" id="btnGuardarPerfil">Guardar cambios</button>
+                <button type="button" class="miperfil-btn-secundario" id="btnCancelarPerfil"
+                        style="display:@(abrirEnEdicion ? "inline-block" : "none");">
+                    Cancelar
+                </button>
+
+                <button type="submit" class="miperfil-btn-guardar" id="btnGuardarPerfil"
+                        style="display:@(abrirEnEdicion ? "inline-block" : "none");">
+                    Guardar cambios
+                </button>
+
+                <button type="button" class="miperfil-btn-guardar" id="btnEditarPerfil"
+                        style="display:@(abrirEnEdicion ? "none" : "inline-block");">
+                    <i class="bi bi-pencil"></i> Editar
+                </button>
             </div>
+
         </form>
+
     </div>
 </div>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
     <script>
-        document.getElementById('formMiPerfil').addEventListener('submit', async function (e) {
-            e.preventDefault();
+        // Al elegir una foto se envía sola, sin necesidad de otro botón.
+        (function () {
+            var input = document.getElementById("inputFotoPerfil");
+            var form = document.getElementById("formFotoPerfil");
 
-            var alerta = document.getElementById('miperfilAlerta');
-            var errorTelefono = document.getElementById('errorTelefono');
-            var boton = document.getElementById('btnGuardarPerfil');
+            if (!input || !form) return;
 
-            alerta.style.display = 'none';
-            errorTelefono.textContent = '';
+            input.addEventListener("change", function () {
+                if (input.files.length > 0) form.submit();
+            });
+        })();
 
-            var telefono = document.getElementById('perfilTelefono').value.trim();
+        // Modo lectura / modo edición.
+        (function () {
+            var form = document.getElementById("formMiPerfil");
+            var btnEditar = document.getElementById("btnEditarPerfil");
+            var btnCancelar = document.getElementById("btnCancelarPerfil");
+            var btnGuardar = document.getElementById("btnGuardarPerfil");
 
-            if (!telefono) {
-                errorTelefono.textContent = 'El teléfono es obligatorio';
-                return;
-            }
+            if (!form || !btnEditar) return;
 
-            var payload = {
-                id: document.getElementById('perfilId').value,
-                nombre: document.getElementById('perfilNombre').value.trim(),
-                email: document.getElementById('perfilEmail').value.trim(),
-                telefono: telefono
-            };
+            var campos = form.querySelectorAll(".miperfil-editable");
 
-            boton.disabled = true;
+            // Se guardan los valores originales para poder revertir con Cancelar.
+            var originales = {};
+            campos.forEach(function (campo) {
+                originales[campo.id] = campo.value;
+            });
 
-            try {
-                var response = await fetch('/Admin/Usuarios/Editar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+            function aplicarModo(enEdicion) {
+                campos.forEach(function (campo) {
+                    campo.readOnly = !enEdicion;
                 });
 
-                var result = await response.json();
+                btnEditar.style.display = enEdicion ? "none" : "inline-block";
+                btnCancelar.style.display = enEdicion ? "inline-block" : "none";
+                btnGuardar.style.display = enEdicion ? "inline-block" : "none";
 
-                if (result.success) {
-                    alerta.className = 'miperfil-alerta miperfil-alerta-exito';
-                    alerta.textContent = 'Perfil actualizado correctamente.';
-                    alerta.style.display = 'block';
-                } else {
-                    alerta.className = 'miperfil-alerta miperfil-alerta-error';
-                    alerta.textContent = result.message || 'No fue posible guardar los cambios.';
-                    alerta.style.display = 'block';
-                }
-            } catch (err) {
-                alerta.className = 'miperfil-alerta miperfil-alerta-error';
-                alerta.textContent = 'No fue posible completar la operación. Intente nuevamente.';
-                alerta.style.display = 'block';
-            } finally {
-                boton.disabled = false;
+                if (enEdicion && campos.length > 0) campos[0].focus();
             }
-        });
+
+            btnEditar.addEventListener("click", function () {
+                aplicarModo(true);
+            });
+
+            btnCancelar.addEventListener("click", function () {
+                // Revierte lo tecleado y limpia los mensajes de error visibles.
+                campos.forEach(function (campo) {
+                    campo.value = originales[campo.id];
+                });
+
+                form.querySelectorAll(".miperfil-error").forEach(function (span) {
+                    span.textContent = "";
+                });
+
+                aplicarModo(false);
+            });
+
+            // Evita doble envío.
+            form.addEventListener("submit", function () {
+                btnGuardar.disabled = true;
+                btnGuardar.textContent = "Guardando...";
+            });
+        })();
     </script>
 }

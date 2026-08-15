@@ -6,6 +6,7 @@ async function abrirEliminarVivienda(id, numero) {
     const numeroSpan = modalEl.querySelector("#eliminarViviendaNumero");
     const errorBox = modalEl.querySelector("#eliminarViviendaError");
     const idInput = modalEl.querySelector("#eliminarViviendaId");
+    const verificando = modalEl.querySelector("#eliminarViviendaVerificando");
     const botonesConfirmar = modalEl.querySelector("#eliminarViviendaBotonesConfirmar");
     const botonEntendido = modalEl.querySelector("#eliminarViviendaBotonEntendido");
     const btnConfirmar = modalEl.querySelector("#btnConfirmarEliminarVivienda");
@@ -16,27 +17,31 @@ async function abrirEliminarVivienda(id, numero) {
     errorBox.style.display = "none";
     errorBox.textContent = "";
 
-    // Reset visual antes de verificar
-    confirmacionTexto.style.display = "none";
+    // El texto de confirmación se ve desde el inicio; mientras se verifica
+    // solo se ocultan los botones, para que no se pueda confirmar antes de
+    // saber si la vivienda realmente se puede eliminar.
+    confirmacionTexto.style.display = "block";
+    verificando.style.display = "block";
     botonesConfirmar.style.display = "none";
     botonEntendido.style.display = "none";
 
     modalEliminarViviendaInstance = new bootstrap.Modal(modalEl);
     modalEliminarViviendaInstance.show();
 
-    // Verificar antes de mostrar los botones correctos
     try {
         const response = await fetch(`/Admin/Viviendas/VerificarEliminacion?id=${id}`);
         const result = await response.json();
 
+        verificando.style.display = "none";
+
         if (result.puedeEliminar) {
-            confirmacionTexto.style.display = "block";
             botonesConfirmar.style.display = "flex";
             btnConfirmar.disabled = false;
         } else {
             mostrarErrorEliminarVivienda(result.message);
         }
     } catch (error) {
+        verificando.style.display = "none";
         mostrarErrorEliminarVivienda("No fue posible completar la operación. Intente nuevamente.");
     }
 }
@@ -89,14 +94,17 @@ function mostrarErrorEliminarVivienda(mensaje) {
     const modalEl = document.getElementById("modalEliminarVivienda");
     const errorBox = modalEl.querySelector("#eliminarViviendaError");
     const confirmacionTexto = modalEl.querySelector("#eliminarViviendaConfirmacionTexto");
+    const verificando = modalEl.querySelector("#eliminarViviendaVerificando");
     const botonesConfirmar = modalEl.querySelector("#eliminarViviendaBotonesConfirmar");
     const botonEntendido = modalEl.querySelector("#eliminarViviendaBotonEntendido");
 
     errorBox.textContent = mensaje;
     errorBox.style.display = "block";
 
-    // Ocultar el texto de confirmación y Cancelar/Eliminar; mostrar solo "Entendido"
+    // Si no se puede eliminar, la pregunta ya no aplica: se deja solo el
+    // motivo y el botón "Entendido".
     confirmacionTexto.style.display = "none";
+    verificando.style.display = "none";
     botonesConfirmar.style.display = "none";
     botonEntendido.style.display = "flex";
 }

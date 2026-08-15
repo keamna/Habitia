@@ -4,10 +4,10 @@ namespace Habitia.ViewModels.Usuario
 {
     public class MiPerfilViewModel
     {
-        // ── Solo lectura ──
-        public string TipoIdentificacion { get; set; }
-        public string NumeroIdentificacion { get; set; }
-        public string Rol { get; set; }
+       
+        public string? TipoIdentificacion { get; set; }
+        public string? NumeroIdentificacion { get; set; }
+        public string? Rol { get; set; }
         public string? FotoPerfil { get; set; }
         public List<ViviendaResumenViewModel> Viviendas { get; set; } = new();
 

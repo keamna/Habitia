@@ -36,7 +36,10 @@ namespace Habitia.Helpers
         public static ReservaViewModel MapToVM(Habitia.Models.Reserva r, bool mostrarDatosResidente, bool esAdmin)
         {
             var inicio = r.Disponibilidad.TF_Fecha.Date.Add(r.Disponibilidad.TF_HoraInicio);
-            var minutosAnticipacion = r.Disponibilidad.AreaComun.TN_AnticipacionMinima;
+
+            // La anticipación mínima ahora vive en el horario, no en el área común.
+            var minutosAnticipacion = r.Disponibilidad.TN_AnticipacionMinima;
+
             bool puedeCancelar;
             if (esAdmin)
             {

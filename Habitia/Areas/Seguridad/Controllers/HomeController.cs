@@ -7,11 +7,12 @@ namespace Habitia.Areas.Seguridad.Controllers
     [Authorize(Roles = "Seguridad")]
     public class HomeController : Controller
     {
-
+        // La antigua vista Home/Index era solo un título de bienvenida.
+        // Ahora la portada del rol es el Panel (Dashboard), así que se
+        // redirige para no dejar dos páginas de inicio distintas.
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction("Index", "Dashboard", new { area = "Seguridad" });
         }
-
     }
 }

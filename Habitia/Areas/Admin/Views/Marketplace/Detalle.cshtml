@@ -25,15 +25,22 @@
                 <div class="card-body p-3">
                     @if (imagenes.Any())
                     {
+                        @* Si falta el archivo, se oculta la foto y aparece el marcador. *@
                         <img id="imagenPrincipal" src="@imagenes.First().TC_Url" alt="@Model.TC_Titulo"
-                             class="mk-detalle-img" />
+                             class="mk-detalle-img"
+                             onerror="this.style.display='none'; var ph=document.getElementById('imagenPrincipalPh'); if (ph) ph.style.display='flex';" />
+
+                        <div id="imagenPrincipalPh" class="mk-detalle-img-ph" style="display:none;">
+                            <i class="bi @(esServicio ? "bi-tools" : "bi-box-seam")"></i>
+                        </div>
                         @if (imagenes.Count > 1)
                         {
                             <div class="d-flex flex-wrap gap-2 mt-3">
                                 @for (int i = 0; i < imagenes.Count; i++)
                                 {
                                     <img src="@imagenes[i].TC_Url" alt="Imagen @(i + 1)"
-                                         class="mk-mini @(i == 0 ? "activa" : "")" />
+                                         class="mk-mini @(i == 0 ? "activa" : "")"
+                                         onerror="this.remove();" />
                                 }
                             </div>
                         }
@@ -90,7 +97,7 @@
                                 @if (Model.TT_HoraInicioServicio.HasValue && Model.TT_HoraFinServicio.HasValue)
                                 {
                                     <br />
-                            
+
                                     @:De @Model.TT_HoraInicioServicio.Value.ToString(@"hh\:mm") a @Model.TT_HoraFinServicio.Value.ToString(@"hh\:mm")
                                 }
                             </p>

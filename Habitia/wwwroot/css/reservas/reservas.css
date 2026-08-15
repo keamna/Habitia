@@ -252,3 +252,55 @@
         font-size: .6rem;
     }
 }
+/* ============================================
+   MARCADOR CUANDO EL AREA NO TIENE FOTO
+   Se dibuja con CSS, sin depender de ningun
+   archivo de imagen.
+============================================ */
+.area-sin-foto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #EEF1EE;
+    color: #A9B4A9;
+    border-radius: var(--bs-border-radius, 8px);
+    flex-shrink: 0;
+}
+
+/* Contenedor: el marcador queda de fondo y la foto se apoya encima.
+   Si la foto falla, onerror la elimina y el marcador queda a la vista. */
+.area-foto-celda {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+}
+
+.area-foto-encima {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Miniatura de tabla (listado admin) */
+.area-sin-foto-sm {
+    width: 56px;
+    height: 56px;
+    font-size: 1.35rem;
+}
+
+/* Cabecera de tarjeta (tarjetas del residente) */
+.area-sin-foto-card {
+    width: 100%;
+    height: 180px;
+    font-size: 2.6rem;
+    border-radius: var(--bs-border-radius, 8px) var(--bs-border-radius, 8px) 0 0;
+}
+
+/* Bloque grande de "sin fotos cargadas" */
+.area-sin-foto-grande {
+    width: 110px;
+    height: 110px;
+    font-size: 2.6rem;
+    margin: 0 auto 10px;
+    border-radius: 16px;
+}

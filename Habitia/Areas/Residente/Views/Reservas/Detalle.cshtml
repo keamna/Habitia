@@ -40,7 +40,9 @@
             @if (fotos == null || !fotos.Any(f => f.TB_Estado))
             {
                 <div class="text-center text-secondary py-4">
-                    <img src="~/img/area-default.png" style="max-width:120px;" class="mb-2 d-block mx-auto" />
+                    <div class="area-sin-foto area-sin-foto-grande">
+                        <i class="bi bi-house-door"></i>
+                    </div>
                     Sin fotos cargadas
                 </div>
             }
@@ -100,10 +102,10 @@
                                             data-bs-toggle="modal"
                                             data-bs-target="#modalReserva"
                                             onclick="abrirModalReserva(
-                                                @h.TN_Id,
-                                                '@h.TF_Fecha.ToString("dd/MM/yyyy")',
-                                                '@DateTime.Today.Add(h.TF_HoraInicio).ToString("hh:mm tt")',
-                                                '@DateTime.Today.Add(h.TF_HoraFin).ToString("hh:mm tt")')">
+                                                        @h.TN_Id,
+                                                        '@h.TF_Fecha.ToString("dd/MM/yyyy")',
+                                                        '@DateTime.Today.Add(h.TF_HoraInicio).ToString("hh:mm tt")',
+                                                        '@DateTime.Today.Add(h.TF_HoraFin).ToString("hh:mm tt")')">
                                         Reservar
                                     </button>
                                 </td>
