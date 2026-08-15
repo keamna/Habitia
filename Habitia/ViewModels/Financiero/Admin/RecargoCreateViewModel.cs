@@ -1,14 +1,13 @@
 ﻿// RecargoCreateViewModel.cs
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
-
 namespace Habitia.ViewModels.Financiero.Admin
 {
-    // Aplicar recargo a un cargo vencido. El cargo llega precargado (ya no se elige de un select).
+    // Aplicar recargo a un cargo vencido. El cargo puede llegar precargado (modal)
+    // o elegirse de una lista (página completa).
     public class RecargoCreateViewModel
     {
         public int TN_IdCargo { get; set; }
-
         // ===== Datos de solo lectura para la tarjeta de contexto en el modal =====
         public string NombreResidente { get; set; }
         public string IdentificacionResidente { get; set; }
@@ -22,15 +21,14 @@ namespace Habitia.ViewModels.Financiero.Admin
         public decimal TN_MontoTotal { get; set; }
         public DateTime TF_FechaVencimiento { get; set; }
         public int DiasVencido { get; set; }
-
         // ===== Datos del formulario =====
         [Required(ErrorMessage = "Debe completar los campos obligatorios")]
         public int TN_IdTipoRecargo { get; set; }
-
         [Required(ErrorMessage = "Debe completar los campos obligatorios")]
         [Range(0.01, double.MaxValue, ErrorMessage = "Debe completar los campos obligatorios")]
         public decimal TN_Valor { get; set; }
-
         public List<SelectListItem> TiposRecargo { get; set; } = new();
+        // ===== Lista de cargos vencidos disponibles (solo para la vista de página completa) =====
+        public List<SelectListItem> CargosVencidos { get; set; } = new();
     }
 }

@@ -32,7 +32,18 @@ namespace Habitia.Areas.Admin.Controllers
             return PartialView("_RecargoModalContent", vm);
         }
 
-        // ============ CREATE ============
+        // ============ CREATE (página completa) ============
+        [HttpGet]
+        public async Task<IActionResult> Create()
+        {
+            var vm = new RecargoCreateViewModel
+            {
+                TiposRecargo = await ObtenerTiposRecargo(),
+                CargosVencidos = await ObtenerCargosVencidos()
+            };
+            return View(vm);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(RecargoCreateViewModel vm)
@@ -46,6 +57,7 @@ namespace Habitia.Areas.Admin.Controllers
                 var vmError = await MapearVm(cargo);
                 vmError.TN_IdTipoRecargo = vm.TN_IdTipoRecargo;
                 vmError.TN_Valor = vm.TN_Valor;
+                vmError.CargosVencidos = await ObtenerCargosVencidos();
                 return PartialView("_RecargoModalContent", vmError);
             }
 
@@ -123,6 +135,26 @@ namespace Habitia.Areas.Admin.Controllers
         {
             return await _context.TiposRecargo
                 .Select(t => new SelectListItem { Value = t.TN_Id.ToString(), Text = t.TC_Nombre })
+                .ToListAsync();
+        }
+
+        private async Task<List<SelectListItem>> ObtenerCargosVencidos()
+        {
+            return await _context.Cargos
+                .Include(c => c.Residente)
+                .Include(c => c.TipoCargo)
+                .Include(c => c.EstadoCargo)
+                .Where(c => c.TB_Estado
+                         && c.EstadoCargo.TC_Nombre == ESTADO_VENCIDO
+                         && !c.TB_RecargoAplicado)
+                .OrderBy(c => c.TF_FechaVencimiento)
+                .Select(c => new SelectListItem
+                {
+                    Value = c.TN_Id.ToString(),
+                    Text = c.Residente.TC_Nombre + " " + c.Residente.TC_Apellido
+                           + " — " + c.TipoCargo.TC_Nombre
+                           + " (" + c.TF_FechaVencimiento.ToString("dd/MM/yyyy") + ")"
+                })
                 .ToListAsync();
         }
     }

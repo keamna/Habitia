@@ -96,65 +96,6 @@
     </div>
 }
 
-}
-
-@if (Model.Any())
-{
-    <div class="row g-3 mb-3">
-        <div class="col-6 col-md-3">
-            <div class="fin-card h-100">
-                <div class="fin-card-body">
-                    <div class="fin-metrica-label">Por cobrar</div>
-                    <div class="fin-monto-total" style="color:#856404;">@totalPendiente.ToString("C")</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-6 col-md-3">
-            <div class="fin-card h-100">
-                <div class="fin-card-body">
-                    <div class="fin-metrica-label">Cobrado</div>
-                    <div class="fin-monto-total">@totalPagado.ToString("C")</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-6 col-md-3">
-            <div class="fin-card h-100">
-                <div class="fin-card-body">
-                    <div class="fin-metrica-label">En revisión</div>
-                    <div class="fin-monto-total" style="color:#0C5460;">@enRevision</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-6 col-md-3">
-            <div class="fin-card h-100">
-                <div class="fin-card-body">
-                    <div class="fin-metrica-label">Vencidos</div>
-                    <div class="fin-monto-total" style="color:#842029;">@vencidos</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-2 mb-3">
-        <div class="col-md-5">
-            <input type="text" id="buscarCargo" class="form-control"
-                   placeholder="Buscar por residente o tipo de cargo..." />
-        </div>
-        <div class="col-md-3">
-            <select id="filtroEstadoCargo" class="form-select">
-                <option value="">Todos los estados</option>
-                <option value="Pendiente">Pendiente</option>
-                <option value="En revisión">En revisión</option>
-                <option value="Pagado">Pagado</option>
-                <option value="Vencido">Vencido</option>
-            </select>
-        </div>
-    </div>
-}
-
 <div class="fin-card">
     <div class="fin-card-header">
         <i class="bi bi-receipt-cutoff"></i>
@@ -214,13 +155,6 @@
                                             aria-controls="@detalleId"
                                             title="Ver detalle">
                                         <i class="bi bi-chevron-down"></i>
-
-                            <tr data-estado="@c.EstadoCargo">
-                                <td>
-                                    <button type="button" class="btn btn-sm p-0 btn-expandir"
-                                            style="border:none; background:none; color:#848484;"
-                                            data-target="@detalleId" title="Ver detalle">
-                                        <i class="bi bi-caret-right-fill"></i>
                                     </button>
                                 </td>
 
@@ -259,14 +193,9 @@
                                 </td>
                             </tr>
 
-                            <tr class="collapse" id="@detalleId"
-                                data-estado="@c.EstadoCargo">
+                            <tr class="collapse" id="@detalleId" data-estado="@c.EstadoCargo">
                                 <td></td>
                                 <td colspan="7" class="fin-detalle-panel">
-                            <tr id="@detalleId" class="fila-detalle" style="display:none;"
-                                data-estado="@c.EstadoCargo">
-                                <td></td>
-                                <td colspan="7" style="background-color:#F8F9FA;">
                                     <div class="row g-3 py-2">
                                         <div class="col-md-6">
                                             <div class="fin-metrica-label mb-2">Datos del residente</div>
@@ -274,8 +203,6 @@
                                             <div><strong>Nombre:</strong> @c.NombreResidente</div>
                                             <div><strong>Teléfono:</strong> @(c.TelefonoResidente ?? "No registrado")</div>
                                             <div><strong>Correo:</strong> @c.CorreoResidente</div>
-                                            <div><strong>Correo:</strong> @c.CorreoResidente</div>
-                                            <div><strong>Teléfono:</strong> @(c.TelefonoResidente ?? "No registrado")</div>
                                         </div>
 
                                         <div class="col-md-6">
@@ -341,15 +268,6 @@
 <div class="modal fade" id="modalEliminar" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-body text-center pt-4">
-                <div class="modal-icon modal-icon-danger">
-                    <i class="bi bi-exclamation-triangle"></i>
-                </div>
-
-                <div class="modal-titulo">Eliminar cargo</div>
-                <p class="modal-desc">
-                    ¿Está seguro de que desea eliminar el cargo <strong id="eliminarDescripcion"></strong>?
-                    <br />
             <div class="modal-header">
                 <h5 class="modal-title">
                     <i class="bi bi-exclamation-triangle text-danger"></i> Confirmar eliminación
@@ -364,8 +282,6 @@
                 </p>
             </div>
 
-            <div class="modal-footer justify-content-center border-0 pb-4">
-                <form asp-action="Delete" method="post" id="formEliminar" class="d-flex gap-2">
             <div class="modal-footer">
                 <form asp-action="Delete" method="post" id="formEliminar">
                     @Html.AntiForgeryToken()
@@ -395,7 +311,7 @@
     <script>
         (function () {
 
-            // ===== Expandir / contraer detalle (collapse nativo de Bootstrap, como en Accesos) =====
+            // ===== Expandir / contraer detalle =====
             document.querySelectorAll('[data-bs-target^="#detalle-cargo-"]').forEach(function (btn) {
                 var target = document.querySelector(btn.getAttribute('data-bs-target'));
                 if (!target) return;
@@ -526,68 +442,6 @@
                 filtro.value = estadoInicial;
                 aplicar();
             }
-
-            // ===== Expandir / contraer detalle =====
-            document.querySelectorAll('.btn-expandir').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    var fila = document.getElementById(btn.dataset.target);
-                    if (!fila) return;
-
-                    var icono = btn.querySelector('i');
-                    var abierta = fila.style.display !== 'none';
-
-                    fila.style.display = abierta ? 'none' : '';
-
-                    if (icono) {
-                        icono.classList.toggle('bi-caret-right-fill', abierta);
-                        icono.classList.toggle('bi-caret-down-fill', !abierta);
-                    }
-                });
-            });
-
-            // ===== Modal de eliminación =====
-            var modalEl = document.getElementById('modalEliminar');
-
-            if (modalEl && window.bootstrap) {
-                var modal = new bootstrap.Modal(modalEl);
-
-                document.querySelectorAll('.btn-eliminar').forEach(function (btn) {
-                    btn.addEventListener('click', function () {
-                        document.getElementById('eliminarId').value = btn.dataset.id;
-                        document.getElementById('eliminarDescripcion').innerText = btn.dataset.descripcion;
-                        modal.show();
-                    });
-                });
-            }
-
-            // ===== Filtros =====
-            var buscar = document.getElementById('buscarCargo');
-            var filtro = document.getElementById('filtroEstadoCargo');
-            var tabla = document.getElementById('tablaCargos');
-
-            function aplicar() {
-                if (!tabla) return;
-
-                var texto = (buscar && buscar.value || '').toLowerCase();
-                var estado = filtro && filtro.value || '';
-
-                tabla.querySelectorAll('tbody tr:not(.fila-detalle)').forEach(function (fila) {
-                    var coincideTexto = fila.textContent.toLowerCase().includes(texto);
-                    var coincideEstado = estado === '' || fila.dataset.estado === estado;
-                    var visible = coincideTexto && coincideEstado;
-
-                    fila.style.display = visible ? '' : 'none';
-
-                    // Si se oculta la fila, ocultar también su detalle
-                    var detalle = fila.nextElementSibling;
-                    if (detalle && detalle.classList.contains('fila-detalle') && !visible) {
-                        detalle.style.display = 'none';
-                    }
-                });
-            }
-
-            if (buscar) buscar.addEventListener('input', aplicar);
-            if (filtro) filtro.addEventListener('change', aplicar);
 
         })();
     </script>
