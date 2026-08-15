@@ -1,0 +1,47 @@
+﻿@model Habitia.ViewModels.Dashboard.PanelListaViewModel
+@*
+    Tarjeta de lista reutilizable por los cuatro paneles
+    (Admin, Residente, Seguridad y Mantenimiento).
+*@
+
+<div class="panel-lista-card">
+
+    <div class="panel-lista-header">
+        <h6>@Model.Titulo</h6>
+
+        @if (!string.IsNullOrWhiteSpace(Model.VerTodoUrl))
+        {
+            <a href="@Model.VerTodoUrl">Ver todo</a>
+        }
+    </div>
+
+    @if (Model.Items == null || !Model.Items.Any())
+    {
+        <div class="panel-lista-vacia">
+            <i class="bi @Model.IconoVacio"></i>
+            @Model.TextoVacio
+        </div>
+    }
+    else
+    {
+        foreach (var item in Model.Items)
+        {
+            <div class="panel-lista-item">
+                <div>
+                    <div class="panel-item-titulo">@item.Titulo</div>
+
+                    @if (!string.IsNullOrWhiteSpace(item.Detalle))
+                    {
+                        <div class="panel-item-detalle">@item.Detalle</div>
+                    }
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(item.Etiqueta))
+                {
+                    <span class="panel-badge panel-badge-@item.EtiquetaEstilo">@item.Etiqueta</span>
+                }
+            </div>
+        }
+    }
+
+</div>

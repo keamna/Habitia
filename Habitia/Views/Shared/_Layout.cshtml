@@ -85,6 +85,7 @@
     <link rel="stylesheet" href="~/css/admin/usuarios.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin/viviendas.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/dashboard/areas-comunes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/dashboard/panel.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin/tipos-mantenimiento.css" asp-append-version="true" />
 
     <link rel="stylesheet" href="~/css/habitia-bootstrap-theme.css" asp-append-version="true" />
@@ -114,8 +115,11 @@
                 <nav class="habitia-nav">
 
                     <!-- PANEL -->
+                    @* Se usa el área del ROL, no la de la página actual: antes,
+                       estando en Mi perfil (área vacía) o en un área sin Dashboard,
+                       este enlace daba 404. *@
                     <a class="habitia-nav-item @(esPanelActivo ? "active" : "")"
-                       asp-area="@areaActual" asp-controller="Dashboard" asp-action="Index">
+                       asp-area="@rolActual" asp-controller="Dashboard" asp-action="Index">
                         <i class="bi bi-grid-1x2-fill"></i>
                         <span>Panel</span>
                     </a>
@@ -284,24 +288,24 @@
             <div class="habitia-sidebar-footer">
                 <div class="habitia-user">
 
-                <div class="habitia-user-avatar mk-avatar-sidebar">
+                    <div class="habitia-user-avatar mk-avatar-sidebar">
 
-                @if (!string.IsNullOrWhiteSpace(fotoPerfil))
-                {
-                    <img src="@fotoPerfil" alt="Foto de perfil" />
-                }
-                else
-                {
-                    <i class="bi bi-person-fill"></i>
-                }
+                        @if (!string.IsNullOrWhiteSpace(fotoPerfil))
+                        {
+                            <img src="@fotoPerfil" alt="Foto de perfil" />
+                        }
+                        else
+                        {
+                            <i class="bi bi-person-fill"></i>
+                        }
 
-                <label class="mk-avatar-editar" title="Cambiar foto de perfil">
-                    <i class="bi bi-camera-fill"></i>
-                    <input type="file" id="inputFotoSidebar"
-                           accept=".jpg,.jpeg,.png,.webp" hidden />
-                </label>
+                        <label class="mk-avatar-editar" title="Cambiar foto de perfil">
+                            <i class="bi bi-camera-fill"></i>
+                            <input type="file" id="inputFotoSidebar"
+                                   accept=".jpg,.jpeg,.png,.webp" hidden />
+                        </label>
 
-            </div>
+                    </div>
 
                     <div>
                         <div class="habitia-user-name">@nombreUsuario</div>

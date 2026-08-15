@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Detalle de vivienda";
 }
+
 <style>
     .flecha-detalle {
         transition: transform 0.2s ease;
@@ -17,16 +18,18 @@
         gap: 8px;
     }
 
+        /* max-* y flex evitan que una foto grande estire la fila */
         .usuario-info-mini img {
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
+            max-width: 40px;
+            max-height: 40px;
+            flex: 0 0 40px;
+            display: block;
             border-radius: 50%;
             object-fit: cover;
-        }
-
-        .usuario-info-mini i {
-            font-size: 32px;
-            color: #ccc;
+            border: 1px solid #ECECEC;
+            background-color: #F1F3F5;
         }
 
     .fila-detalle-expandida td {
@@ -36,47 +39,35 @@
 </style>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Detalle de vivienda</h2>
-    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+    <h2>Vivienda @Model.Numero</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
 </div>
-@if (TempData["MensajeExito"] != null)
-{
-    <div class="alert alert-success">@TempData["MensajeExito"]</div>
-}
 
-<div class="card mb-4">
+<div class="card mb-3">
     <div class="card-body">
-        <div class="row align-items-start">
+        <div class="row">
             <div class="col-md-3">
-                <strong>Código:</strong><br />
-                @Model.Numero
+                <small class="text-muted">Código</small><br />
+                <strong>@Model.Numero</strong>
             </div>
             <div class="col-md-3">
-                <strong>Tipo:</strong><br />
+                <small class="text-muted">Tipo</small><br />
                 @(Model.Tipo == Habitia.Enums.TipoViviendaEnum.Apartamento ? "Departamento" : Model.Tipo.ToString())
             </div>
             <div class="col-md-3">
-                <strong>Propietario:</strong><br />
-                @if (Model.Propietario != null)
+                <small class="text-muted">Estado</small><br />
+                @Model.Estado
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted">@Model.EtiquetaInquilinos</small><br />
+                @if (Model.CantidadInquilinos > 0)
                 {
-                    <button class="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-1"
-                            type="button" data-bs-toggle="collapse" data-bs-target="#detallePropietario"
-                            onclick="this.querySelector('i').classList.toggle('rotada')">
-                        @Model.Propietario.Nombre
-                        <i class="bi bi-chevron-down flecha-detalle"></i>
-                    </button>
+                    <span>@Model.CantidadInquilinos</span>
                 }
                 else
                 {
-                    <span class="text-muted">Sin propietario</span>
-                }
-            </div>
-            <div class="col-md-3">
-                <strong>@Model.EtiquetaInquilinos permitidos:</strong><br />
-                @Model.CantidadInquilinos
-                @if (Model.CantidadInquilinos == 0)
-                {
-                    <br />
                     <small class="text-warning">Aún sin configurar por el propietario</small>
                 }
             </div>
@@ -87,33 +78,29 @@
             <div class="collapse mt-3" id="detallePropietario">
                 <div class="border rounded p-3 bg-light">
                     <div class="usuario-info-mini mb-3">
-                        @if (!string.IsNullOrWhiteSpace(Model.Propietario.FotoPerfil))
-                        {
-                            <img src="@Model.Propietario.FotoPerfil" alt="Foto de perfil" />
-                        }
-                        else
-                        {
-                            <i class="bi bi-person-circle"></i>
-                        }
-                        <strong>@Model.Propietario.Nombre</strong>
+                        <img src="@(!string.IsNullOrWhiteSpace(Model.Propietario.FotoPerfil)
+                                                                 ? Model.Propietario.FotoPerfil
+                                                                 : Url.Content("~/img/usuario-default.png"))"
+                         alt="Foto de perfil" />
+                    <strong>@Model.Propietario.Nombre</strong>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <small class="text-muted">Identificación</small><br />
+                        @Model.Propietario.Identificacion
                     </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <small class="text-muted">Identificación</small><br />
-                            @Model.Propietario.Identificacion
-                        </div>
-                        <div class="col-md-4">
-                            <small class="text-muted">Correo</small><br />
-                            @(Model.Propietario.Email ?? "No registrado")
-                        </div>
-                        <div class="col-md-4">
-                            <small class="text-muted">Teléfono</small><br />
-                            @(Model.Propietario.Telefono ?? "No registrado")
-                        </div>
+                    <div class="col-md-4">
+                        <small class="text-muted">Correo</small><br />
+                        @(Model.Propietario.Email ?? "No registrado")
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted">Teléfono</small><br />
+                        @(Model.Propietario.Telefono ?? "No registrado")
                     </div>
                 </div>
             </div>
-        }
+        </div>
+                }
     </div>
 </div>
 
@@ -156,47 +143,41 @@
                                 <div class="collapse" id="@targetId">
                                     <div class="p-3">
                                         <div class="usuario-info-mini mb-3">
-                                            @if (!string.IsNullOrWhiteSpace(u.FotoPerfil))
-                                            {
-                                                <img src="@u.FotoPerfil" alt="Foto de perfil" />
-                                            }
-                                            else
-                                            {
-                                                <i class="bi bi-person-circle"></i>
-                                            }
-                                            <strong>@u.Nombre</strong>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-3">
-                                                <small class="text-muted">Correo</small><br />
-                                                @(u.Email ?? "No registrado")
-                                            </div>
-                                            <div class="col-md-3">
-                                                <small class="text-muted">Teléfono</small><br />
-                                                @(u.Telefono ?? "No registrado")
-                                            </div>
-                                            <div class="col-md-3">
-                                                <small class="text-muted">¿Vive ahí?</small><br />
-                                                @(u.ViveAhi ? "Sí" : "No")
-                                            </div>
-                                            <div class="col-md-3">
-                                                <small class="text-muted">Estado</small><br />
-                                                @u.Estado
-                                            </div>
-                                        </div>
+                                            <img src="@(!string.IsNullOrWhiteSpace(u.FotoPerfil)
+                                                                                                         ? u.FotoPerfil
+                                                                                                         : Url.Content("~/img/usuario-default.png"))"
+                                         alt="Foto de perfil" />
+                                    <strong>@u.Nombre</strong>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <small class="text-muted">Correo</small><br />
+                                        @(u.Email ?? "No registrado")
+                                    </div>
+                                    <div class="col-md-3">
+                                        <small class="text-muted">Teléfono</small><br />
+                                        @(u.Telefono ?? "No registrado")
+                                    </div>
+                                    <div class="col-md-3">
+                                        <small class="text-muted">¿Vive ahí?</small><br />
+                                        @(u.ViveAhi ? "Sí" : "No")
+                                    </div>
+                                    <div class="col-md-3">
+                                        <small class="text-muted">Estado</small><br />
+                                        @u.Estado
                                     </div>
                                 </div>
-                            </td>
-                        </tr>
-                    }
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                                }
                 }
                 else
                 {
                     <tr>
-                        <td colspan="5">
-                            <div class="text-center text-muted py-3">
-                                No hay usuarios asociados a esta vivienda.
-                            </div>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            Esta vivienda no tiene usuarios asociados.
                         </td>
                     </tr>
                 }

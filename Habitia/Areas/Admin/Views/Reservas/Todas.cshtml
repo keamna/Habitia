@@ -214,7 +214,10 @@
                                                 <form asp-controller="Reservas"
                                                       asp-action="CancelarAdmin"
                                                       method="post"
-                                                      class="form-cancelar-reserva d-inline">
+                                                      class="form-cancelar-reserva d-inline"
+                                                      data-area="@r.NombreAreaComun"
+                                                      data-cuando="@r.FechaHorario.ToString("dd/MM/yyyy") a las @DateTime.Today.Add(r.HoraInicio).ToString("hh:mm tt")"
+                                                      data-quien="Vivienda @r.NumeroVivienda">
 
                                                     @Html.AntiForgeryToken()
 
@@ -261,6 +264,37 @@
 
     </div>
 
+</div>
+
+<!-- MODAL CANCELAR RESERVA -->
+<div class="modal fade" id="modalCancelarReserva" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+            <div class="modal-body text-center">
+                <div class="mb-2" style="font-size:2rem; color:#B02A37;">
+                    <i class="bi bi-calendar-x"></i>
+                </div>
+
+                <h5 class="mb-2">Cancelar reserva</h5>
+
+                <p class="text-muted mb-1">
+                    ¿Deseas cancelar esta reserva? El horario volverá a quedar disponible
+                    para otros residentes.
+                </p>
+
+                <p class="fw-semibold mb-3" id="cancelarReservaResumen"></p>
+
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Volver
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarCancelarReserva">
+                        Sí, cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
@@ -438,7 +472,10 @@
                     html += '<td class="text-end">';
                     if (r.puedeCancelar) {
                         html += '<form method="post" action="/Admin/Reservas/CancelarAdmin" '
-                              + 'class="form-cancelar-reserva d-inline">'
+                              + 'class="form-cancelar-reserva d-inline" '
+                              + 'data-area="' + escapar(r.area || '') + '" '
+                              + 'data-cuando="' + fechaTexto + ' a las ' + (r.horaInicio || '') + '" '
+                              + 'data-quien="Vivienda ' + escapar(r.vivienda || '') + '">'
                               + '<input type="hidden" name="__RequestVerificationToken" value="' + TOKEN + '" />'
                               + '<input type="hidden" name="id" value="' + r.id + '" />'
                               + '<button type="submit" class="btn btn-sm btn-outline-danger">Cancelar</button>'
@@ -453,14 +490,46 @@
             html += '</tbody></table></div>';
             cont.innerHTML = html;
 
-            cont.querySelectorAll('.form-cancelar-reserva').forEach(f => {
-                f.addEventListener('submit', e => {
-                    if (!confirm('¿Está seguro de cancelar esta reserva?')) e.preventDefault();
-                });
-            });
+            engancharCancelacion(cont);
 
             bajarAlDetalle();
         }
+
+        // ===== Cancelación de reservas (modal, en vez del confirm() del navegador) =====
+        let formularioCancelacionPendiente = null;
+
+        function engancharCancelacion(contenedor) {
+            if (!contenedor) return;
+
+            contenedor.querySelectorAll('.form-cancelar-reserva').forEach(form => {
+                if (form.dataset.enganchado === '1') return;
+                form.dataset.enganchado = '1';
+
+                form.addEventListener('submit', e => {
+                    e.preventDefault();
+                    formularioCancelacionPendiente = form;
+
+                    const partes = [
+                        form.dataset.area,
+                        form.dataset.cuando,
+                        form.dataset.quien
+                    ].filter(t => t && t.trim() !== '' && t.trim() !== 'Vivienda');
+
+                    document.getElementById('cancelarReservaResumen').textContent =
+                        partes.join(' · ');
+
+                    new bootstrap.Modal(document.getElementById('modalCancelarReserva')).show();
+                });
+            });
+        }
+
+        document.getElementById('btnConfirmarCancelarReserva').addEventListener('click', function () {
+            if (!formularioCancelacionPendiente) return;
+
+            this.disabled = true;
+            this.textContent = 'Cancelando...';
+            formularioCancelacionPendiente.submit();
+        });
 
         // ===== Eventos =====
         document.getElementById('calAnterior').addEventListener('click', () => {
@@ -509,11 +578,7 @@
             });
         });
 
-        document.querySelectorAll('#vistaLista .form-cancelar-reserva').forEach(form => {
-            form.addEventListener('submit', e => {
-                if (!confirm('¿Está seguro de cancelar esta reserva?')) e.preventDefault();
-            });
-        });
+        engancharCancelacion(document.getElementById('vistaLista'));
 
         // ===== Inicio =====
         render();

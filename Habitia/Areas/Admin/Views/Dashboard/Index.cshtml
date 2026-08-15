@@ -1,8 +1,154 @@
-﻿<h1>
-Panel Administrador
-</h1>
+﻿@model Habitia.ViewModels.Dashboard.PanelAdminViewModel
+@using Habitia.ViewModels.Dashboard
+@{
+    ViewData["Title"] = "Panel Administrador";
 
+    var listaSolicitudes = new PanelListaViewModel
+    {
+        Titulo = "Solicitudes pendientes de aprobación",
+        VerTodoUrl = Url.Action("Index", "Usuarios", new { area = "Admin" }),
+        TextoVacio = "No hay solicitudes pendientes.",
+        IconoVacio = "bi-check2-circle",
+        Items = Model.SolicitudesRecientes
+    };
 
-<p>
-Bienvenido al sistema Habitia.
-</p>
+    var listaReservas = new PanelListaViewModel
+    {
+        Titulo = "Próximas reservas",
+        VerTodoUrl = Url.Action("Todas", "Reservas", new { area = "Admin" }),
+        TextoVacio = "No hay reservas próximas.",
+        IconoVacio = "bi-calendar-x",
+        Items = Model.ProximasReservas
+    };
+}
+
+<div class="panel-page">
+
+    <div class="panel-encabezado">
+        <div class="panel-saludo">
+            <h2>Hola, @Model.NombreUsuario</h2>
+            <p>Este es el resumen general del condominio.</p>
+        </div>
+
+        <span class="panel-fecha-chip">
+            <i class="bi bi-calendar3"></i>
+            @DateTime.Now.ToString("dd/MM/yyyy · hh:mm tt")
+        </span>
+    </div>
+
+    <!-- ===================== CIFRAS ===================== -->
+    <div class="panel-seccion">
+        <div class="panel-seccion-titulo">Resumen</div>
+
+        <div class="panel-cifras" style="--cols:3;">
+
+            <a class="panel-cifra" asp-area="Admin" asp-controller="Usuarios" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-verde">
+                        <i class="bi bi-people-fill"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.UsuariosActivos</div>
+                <div class="panel-cifra-titulo">Usuarios activos</div>
+                <div class="panel-cifra-meta">Cuentas habilitadas en el sistema</div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Admin" asp-controller="Usuarios" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-ambar">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.SolicitudesPendientes</div>
+                <div class="panel-cifra-titulo">Solicitudes pendientes</div>
+                <div class="panel-cifra-meta">Esperando aprobación</div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Admin" asp-controller="Viviendas" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-verde">
+                        <i class="bi bi-house-fill"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">
+                    @Model.ViviendasOcupadas <small>/ @Model.TotalViviendas</small>
+                </div>
+                <div class="panel-cifra-titulo">Viviendas ocupadas</div>
+                <div class="panel-cifra-meta">@Model.ViviendasDisponibles disponibles</div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Admin" asp-controller="Reservas" asp-action="Todas">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-azul">
+                        <i class="bi bi-calendar-check"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.ReservasActivas</div>
+                <div class="panel-cifra-titulo">Reservas activas</div>
+                <div class="panel-cifra-meta">
+                    @Model.ReservasHoy para hoy · @Model.AreasComunesActivas áreas activas
+                </div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Admin" asp-controller="Accesos" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-azul">
+                        <i class="bi bi-shield-check"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.VisitantesDentro</div>
+                <div class="panel-cifra-titulo">Visitantes dentro</div>
+                <div class="panel-cifra-meta">@Model.AccesosHoy ingresos registrados hoy</div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Admin" asp-controller="Incidencias" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-rojo">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.IncidenciasPendientes</div>
+                <div class="panel-cifra-titulo">Incidencias pendientes</div>
+                <div class="panel-cifra-meta">Todavía sin resolver</div>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- ===================== ACCESOS RÁPIDOS ===================== -->
+    <div class="panel-seccion">
+        <div class="panel-seccion-titulo">Accesos rápidos</div>
+
+        <div class="panel-accesos-rapidos">
+            <a class="panel-acceso-rapido" asp-area="Admin" asp-controller="Viviendas" asp-action="Crear">
+                <i class="bi bi-plus-lg"></i> Nueva vivienda
+            </a>
+            <a class="panel-acceso-rapido" asp-area="Admin" asp-controller="AreaComun" asp-action="Create">
+                <i class="bi bi-building-add"></i> Nueva área común
+            </a>
+            <a class="panel-acceso-rapido" asp-area="Admin" asp-controller="Usuarios" asp-action="Crear">
+                <i class="bi bi-person-plus"></i> Nuevo usuario
+            </a>
+            <a class="panel-acceso-rapido" asp-area="Admin" asp-controller="Reportes" asp-action="Index">
+                <i class="bi bi-bar-chart-fill"></i> Ver reportes
+            </a>
+        </div>
+    </div>
+
+    <!-- ===================== LISTAS ===================== -->
+    <div class="panel-seccion">
+        <div class="panel-seccion-titulo">Actividad</div>
+
+        <div class="panel-columnas">
+            <partial name="_PanelLista" model="listaSolicitudes" />
+            <partial name="_PanelLista" model="listaReservas" />
+        </div>
+    </div>
+
+</div>

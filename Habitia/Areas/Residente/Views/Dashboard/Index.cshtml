@@ -1,0 +1,121 @@
+﻿@model Habitia.ViewModels.Dashboard.PanelResidenteViewModel
+@using Habitia.ViewModels.Dashboard
+@{
+    ViewData["Title"] = "Panel Residente";
+
+    var listaReservas = new PanelListaViewModel
+    {
+        Titulo = "Mis próximas reservas",
+        VerTodoUrl = Url.Action("MisReservas", "Reservas", new { area = "Residente" }),
+        TextoVacio = "No tenés reservas próximas.",
+        IconoVacio = "bi-calendar-x",
+        Items = Model.ProximasReservas
+    };
+
+    var listaVisitas = new PanelListaViewModel
+    {
+        Titulo = "Visitas autorizadas",
+        VerTodoUrl = Url.Action("Index", "Autorizaciones", new { area = "Residente" }),
+        TextoVacio = "No tenés visitas autorizadas vigentes.",
+        IconoVacio = "bi-person-badge",
+        Items = Model.ProximasVisitas
+    };
+
+    var listaViviendas = new PanelListaViewModel
+    {
+        Titulo = "Mis viviendas",
+        VerTodoUrl = Url.Action("Index", "Vivienda", new { area = "Residente" }),
+        TextoVacio = "Todavía no tenés una vivienda asociada.",
+        IconoVacio = "bi-house-slash",
+        Items = Model.MisViviendas
+    };
+}
+
+<div class="panel-page">
+
+    <div class="panel-encabezado">
+        <div class="panel-saludo">
+            <h2>Hola, @Model.NombreUsuario</h2>
+            <p>Este es el resumen de tu actividad en el condominio.</p>
+        </div>
+
+        <span class="panel-fecha-chip">
+            <i class="bi bi-calendar3"></i>
+            @DateTime.Now.ToString("dd/MM/yyyy")
+        </span>
+    </div>
+
+    <div class="panel-seccion">
+        <div class="panel-seccion-titulo">Resumen</div>
+
+        <div class="panel-cifras" style="--cols:3;">
+
+            <a class="panel-cifra" asp-area="Residente" asp-controller="Reservas" asp-action="MisReservas">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-verde">
+                        <i class="bi bi-calendar-check"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.ReservasActivas</div>
+                <div class="panel-cifra-titulo">Reservas activas</div>
+                <div class="panel-cifra-meta">Áreas comunes que reservaste</div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Residente" asp-controller="Autorizaciones" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-azul">
+                        <i class="bi bi-person-badge"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.AutorizacionesVigentes</div>
+                <div class="panel-cifra-titulo">Visitas autorizadas</div>
+                <div class="panel-cifra-meta">Códigos todavía vigentes</div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Residente" asp-controller="Incidencias" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-ambar">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.IncidenciasAbiertas</div>
+                <div class="panel-cifra-titulo">Incidencias abiertas</div>
+                <div class="panel-cifra-meta">Pendientes o en proceso</div>
+            </a>
+
+        </div>
+    </div>
+
+    <div class="panel-seccion">
+        <div class="panel-seccion-titulo">Accesos rápidos</div>
+
+        <div class="panel-accesos-rapidos">
+            <a class="panel-acceso-rapido" asp-area="Residente" asp-controller="Reservas" asp-action="Index">
+                <i class="bi bi-plus-lg"></i> Reservar área común
+            </a>
+            <a class="panel-acceso-rapido" asp-area="Residente" asp-controller="Autorizaciones" asp-action="Index">
+                <i class="bi bi-person-plus"></i> Autorizar visita
+            </a>
+            <a class="panel-acceso-rapido" asp-area="Residente" asp-controller="Incidencias" asp-action="Index">
+                <i class="bi bi-megaphone"></i> Reportar incidencia
+            </a>
+            <a class="panel-acceso-rapido" asp-area="Residente" asp-controller="Documentos" asp-action="Index">
+                <i class="bi bi-folder-fill"></i> Documentos
+            </a>
+        </div>
+    </div>
+
+    <div class="panel-seccion">
+        <div class="panel-seccion-titulo">Actividad</div>
+
+        <div class="panel-columnas">
+            <partial name="_PanelLista" model="listaReservas" />
+            <partial name="_PanelLista" model="listaVisitas" />
+            <partial name="_PanelLista" model="listaViviendas" />
+        </div>
+    </div>
+
+</div>

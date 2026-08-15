@@ -79,7 +79,9 @@
                                         <form asp-controller="Reservas"
                                               asp-action="Cancelar"
                                               method="post"
-                                              class="form-cancelar-reserva d-inline">
+                                              class="form-cancelar-reserva d-inline"
+                                              data-area="@r.NombreAreaComun"
+                                              data-cuando="@r.FechaHorario.ToString("dd/MM/yyyy") a las @DateTime.Today.Add(r.HoraInicio).ToString("hh:mm tt")">
 
                                             @Html.AntiForgeryToken()
 
@@ -102,15 +104,63 @@
 
 </div>
 
+<!-- MODAL CANCELAR RESERVA -->
+<div class="modal fade" id="modalCancelarReserva" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+            <div class="modal-body text-center">
+                <div class="mb-2" style="font-size:2rem; color:#B02A37;">
+                    <i class="bi bi-calendar-x"></i>
+                </div>
+
+                <h5 class="mb-2">Cancelar reserva</h5>
+
+                <p class="text-muted mb-1">
+                    ¿Deseas cancelar esta reserva? El horario volverá a quedar
+                    disponible para otros residentes.
+                </p>
+
+                <p class="fw-semibold mb-3" id="cancelarReservaResumen"></p>
+
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Volver
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarCancelarReserva">
+                        Sí, cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
-        document.querySelectorAll('.form-cancelar-reserva')
-            .forEach(form => {
-                form.addEventListener('submit', e => {
-                    if (!confirm('¿Está seguro de cancelar esta reserva?')) {
-                        e.preventDefault();
-                    }
-                });
+        // Modal propio en vez del confirm() del navegador.
+        let formularioCancelacionPendiente = null;
+
+        document.querySelectorAll('.form-cancelar-reserva').forEach(form => {
+            form.addEventListener('submit', e => {
+                e.preventDefault();
+                formularioCancelacionPendiente = form;
+
+                const partes = [form.dataset.area, form.dataset.cuando]
+                    .filter(t => t && t.trim() !== '');
+
+                document.getElementById('cancelarReservaResumen').textContent =
+                    partes.join(' · ');
+
+                new bootstrap.Modal(document.getElementById('modalCancelarReserva')).show();
             });
+        });
+
+        document.getElementById('btnConfirmarCancelarReserva').addEventListener('click', function () {
+            if (!formularioCancelacionPendiente) return;
+
+            this.disabled = true;
+            this.textContent = 'Cancelando...';
+            formularioCancelacionPendiente.submit();
+        });
     </script>
 }

@@ -6,6 +6,8 @@
 
 <div class="container py-4">
 
+    @Html.AntiForgeryToken()
+
     <partial name="_AreaComunTabs" />
 
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -61,15 +63,28 @@
                         foreach (var area in Model)
                         {
                             var foto = area.Fotos?
-                                .Where(f => f.TB_Estado)
-                                .OrderBy(f => f.TN_Orden)
-                                .FirstOrDefault();
+                            .Where(f => f.TB_Estado)
+                            .OrderBy(f => f.TN_Orden)
+                            .FirstOrDefault();
 
                             <tr>
                                 <td>
-                                    <img src="@(foto != null ? foto.TC_Url : "/img/area-default.png")"
-                                         alt="@area.TC_Nombre"
-                                         class="rounded reserva-thumb-sm" />
+                                    @* El marcador va siempre; la foto se dibuja encima.
+                                       Si el archivo no existe en disco (subido desde otra
+                                       máquina), onerror la quita y queda el marcador. *@
+                                    <div class="area-foto-celda">
+                                        <div class="area-sin-foto area-sin-foto-sm" title="Sin foto">
+                                            <i class="bi bi-house-door"></i>
+                                        </div>
+
+                                        @if (foto != null)
+                                        {
+                                            <img src="@foto.TC_Url"
+                                                 alt="@area.TC_Nombre"
+                                                 class="rounded reserva-thumb-sm area-foto-encima"
+                                                 onerror="this.remove();" />
+                                        }
+                                    </div>
                                 </td>
 
                                 <td>@area.TC_Codigo</td>
@@ -100,9 +115,15 @@
                                        asp-controller="AreaComun"
                                        asp-action="Edit"
                                        asp-route-id="@area.TN_Id"
-                                       class="btn btn-sm btn-outline-secondary">
+                                       class="btn btn-sm btn-outline-secondary me-1">
                                         Editar
                                     </a>
+
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            onclick='abrirEliminarArea(@area.TN_Id, @Html.Raw(Json.Serialize(area.TC_Nombre)))'>
+                                        Eliminar
+                                    </button>
                                 </td>
                             </tr>
                         }
@@ -114,3 +135,48 @@
     </div>
 
 </div>
+
+<!-- MODAL ELIMINAR AREA COMUN -->
+<div class="modal fade" id="modalEliminarArea" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+            <div class="modal-body text-center">
+                <h5 class="mb-2">Eliminar área común</h5>
+
+                <div id="eliminarAreaConfirmacionTexto">
+                    <p class="text-muted mb-3">
+                        ¿Deseas eliminar el área común
+                        <strong id="eliminarAreaNombre"></strong>?
+                        <br />
+                        Se eliminarán también sus horarios y fotos.
+                        Esta acción no se puede deshacer.
+                    </p>
+                </div>
+
+                <div id="eliminarAreaVerificando" class="text-muted small mb-2">
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                    Verificando...
+                </div>
+
+                <div class="alert alert-danger text-start" id="eliminarAreaError" style="display:none;"></div>
+
+                <input type="hidden" id="eliminarAreaId" />
+
+                <div class="justify-content-center gap-2 mt-3" id="eliminarAreaBotones" style="display:none;">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-danger" id="btnConfirmarEliminarArea" onclick="confirmarEliminarArea()">
+                        Eliminar
+                    </button>
+                </div>
+
+                <div class="justify-content-center mt-3" id="eliminarAreaEntendido" style="display:none;">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Entendido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin/areas-comunes.js" asp-append-version="true"></script>
+}

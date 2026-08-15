@@ -1,0 +1,95 @@
+﻿@model Habitia.ViewModels.Dashboard.PanelMantenimientoViewModel
+@using Habitia.ViewModels.Dashboard
+@{
+    ViewData["Title"] = "Panel Mantenimiento";
+
+    var listaTareas = new PanelListaViewModel
+    {
+        Titulo = "Tareas por atender",
+        VerTodoUrl = Url.Action("Index", "Tareas", new { area = "Mantenimiento" }),
+        TextoVacio = "No tenés tareas pendientes.",
+        IconoVacio = "bi-check2-circle",
+        Items = Model.TareasPendientes
+    };
+}
+
+<div class="panel-page">
+
+    <div class="panel-encabezado">
+        <div class="panel-saludo">
+            <h2>Hola, @Model.NombreUsuario</h2>
+            <p>Este es el estado de las tareas que tenés asignadas.</p>
+        </div>
+
+        <span class="panel-fecha-chip">
+            <i class="bi bi-calendar3"></i>
+            @DateTime.Now.ToString("dd/MM/yyyy")
+        </span>
+    </div>
+
+    <div class="panel-seccion">
+        <div class="panel-seccion-titulo">Resumen</div>
+
+        <div class="panel-cifras" style="--cols:3;">
+
+            <a class="panel-cifra" asp-area="Mantenimiento" asp-controller="Tareas" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-ambar">
+                        <i class="bi bi-clipboard-check"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.TareasProgramadas</div>
+                <div class="panel-cifra-titulo">Programadas</div>
+                <div class="panel-cifra-meta">Todavía sin iniciar</div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Mantenimiento" asp-controller="Tareas" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-azul">
+                        <i class="bi bi-tools"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.TareasEnProceso</div>
+                <div class="panel-cifra-titulo">En proceso</div>
+                <div class="panel-cifra-meta">Trabajos ya iniciados</div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Mantenimiento" asp-controller="Tareas" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-verde">
+                        <i class="bi bi-check2-all"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.TareasCompletadasMes</div>
+                <div class="panel-cifra-titulo">Completadas</div>
+                <div class="panel-cifra-meta">En el mes en curso</div>
+            </a>
+
+        </div>
+    </div>
+
+    <div class="panel-seccion">
+        <div class="panel-seccion-titulo">Accesos rápidos</div>
+
+        <div class="panel-accesos-rapidos">
+            <a class="panel-acceso-rapido" asp-area="Mantenimiento" asp-controller="Tareas" asp-action="Index">
+                <i class="bi bi-list-task"></i> Ver mis tareas
+            </a>
+            <a class="panel-acceso-rapido" asp-area="Mantenimiento" asp-controller="Incidencias" asp-action="Index">
+                <i class="bi bi-exclamation-triangle-fill"></i> Incidencias
+            </a>
+        </div>
+    </div>
+
+    <div class="panel-seccion">
+        <div class="panel-seccion-titulo">Actividad</div>
+
+        <div class="panel-columnas">
+            <partial name="_PanelLista" model="listaTareas" />
+        </div>
+    </div>
+
+</div>

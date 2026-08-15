@@ -1,35 +1,174 @@
 ﻿/* =========================================================
    MI PERFIL
+   Todos los var() llevan color de respaldo, para que la
+   pantalla no se rompa si habitia.css no llegó a cargar.
 ========================================================= */
 
 .miperfil-page {
-    max-width: 560px;
+    max-width: 880px;
     margin: 0 auto;
-    padding: 24px 16px;
+    padding: 8px 4px 40px;
 }
 
 .miperfil-header {
-    margin-bottom: 18px;
+    margin-bottom: 20px;
 }
 
 .miperfil-titulo {
-    font-size: 1.4rem;
+    font-size: 1.45rem;
     font-weight: 700;
     color: #1a1a1a;
     margin-bottom: 4px;
 }
 
 .miperfil-subtitulo {
-    color: var(--habitia-text-gray);
+    color: var(--habitia-text-gray, #848484);
     font-size: 0.9rem;
     margin: 0;
 }
 
 .miperfil-card {
     background-color: #FFFFFF;
-    border: 1px solid var(--habitia-border);
+    border: 1px solid var(--habitia-border, #ECECEC);
     border-radius: 14px;
     padding: 24px;
+    margin-bottom: 16px;
+}
+
+/* ===================== CABECERA: FOTO + NOMBRE ===================== */
+
+.miperfil-identidad {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+/* El contenedor manda el tamaño; la foto nunca puede desbordarlo. */
+.miperfil-avatar {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    min-width: 96px;
+    flex: 0 0 96px;
+}
+
+    .miperfil-avatar img {
+        width: 96px;
+        height: 96px;
+        max-width: 96px;
+        max-height: 96px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+        border: 2px solid var(--habitia-border, #ECECEC);
+        background-color: #F1F3F5;
+    }
+
+.miperfil-avatar-editar {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: var(--habitia-green-active, #336332);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: 2px solid #FFFFFF;
+    transition: .15s ease;
+}
+
+    .miperfil-avatar-editar:hover {
+        background-color: #2b552a;
+    }
+
+.miperfil-identidad-nombre {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 6px;
+}
+
+.miperfil-rol-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 999px;
+    background-color: #E8F0E8;
+    color: var(--habitia-green-active, #336332);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* ===================== DATOS NO EDITABLES ===================== */
+
+.miperfil-solo-lectura {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding-top: 20px;
+    margin-top: 20px;
+    border-top: 1px solid var(--habitia-border, #ECECEC);
+}
+
+.miperfil-dato-etiqueta {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--habitia-text-gray, #848484);
+    margin-bottom: 4px;
+}
+
+.miperfil-dato-valor {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.miperfil-viviendas {
+    padding-top: 20px;
+    margin-top: 20px;
+    border-top: 1px solid var(--habitia-border, #ECECEC);
+}
+
+.miperfil-viviendas-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.miperfil-vivienda-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    border-radius: 10px;
+    background-color: #F6F9F6;
+    border: 1px solid var(--habitia-border, #ECECEC);
+    font-size: 0.85rem;
+}
+
+    .miperfil-vivienda-pill i {
+        color: var(--habitia-green-active, #336332);
+    }
+
+    .miperfil-vivienda-pill strong {
+        font-weight: 700;
+    }
+
+    .miperfil-vivienda-pill span {
+        color: var(--habitia-text-gray, #848484);
+    }
+
+/* ===================== FORMULARIO ===================== */
+
+.miperfil-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 18px;
 }
 
 .miperfil-grupo {
@@ -47,7 +186,7 @@
     .miperfil-grupo input {
         width: 100%;
         padding: 10px 14px;
-        border: 1px solid var(--habitia-border);
+        border: 1px solid var(--habitia-border, #ECECEC);
         border-radius: 10px;
         font-size: 0.9rem;
         transition: .15s ease;
@@ -55,17 +194,30 @@
 
         .miperfil-grupo input:focus {
             outline: none;
-            border-color: var(--habitia-green-active);
+            border-color: var(--habitia-green-active, #336332);
             box-shadow: 0 0 0 3px rgba(51,99,50,0.12);
         }
 
+        /* Campos en modo lectura: se ven apagados y sin borde marcado. */
+        .miperfil-grupo input[readonly] {
+            background-color: #F7F8F9;
+            color: #4a4a4a;
+            border-color: transparent;
+            cursor: default;
+        }
+
+            .miperfil-grupo input[readonly]:focus {
+                box-shadow: none;
+                border-color: transparent;
+            }
+
 .miperfil-obligatorio {
-    color: var(--fin-danger, #B02A37);
+    color: #B02A37;
 }
 
 .miperfil-error {
     display: block;
-    color: var(--fin-danger, #B02A37);
+    color: #B02A37;
     font-size: 0.8rem;
     margin-top: 4px;
     min-height: 1em;
@@ -74,15 +226,31 @@
 .miperfil-acciones {
     display: flex;
     justify-content: flex-end;
+    gap: 10px;
     margin-top: 6px;
 }
 
+.miperfil-btn-secundario {
+    background-color: #FFFFFF;
+    color: #4a4a4a;
+    border: 1px solid var(--habitia-border, #ECECEC);
+    border-radius: 10px;
+    padding: 11px 22px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: .15s ease;
+}
+
+    .miperfil-btn-secundario:hover {
+        background-color: #F1F3F5;
+    }
+
 .miperfil-btn-guardar {
-    background-color: var(--habitia-green-active);
+    background-color: var(--habitia-green-active, #336332);
     color: #FFFFFF;
     border: none;
     border-radius: 10px;
-    padding: 10px 22px;
+    padding: 11px 26px;
     font-weight: 600;
     font-size: 0.9rem;
     transition: .15s ease;
@@ -96,6 +264,8 @@
         opacity: .7;
         cursor: not-allowed;
     }
+
+/* ===================== ALERTAS ===================== */
 
 .miperfil-alerta {
     padding: 12px 16px;
@@ -116,8 +286,24 @@
     border: 1px solid #F1AEB5;
 }
 
-@media (max-width: 576px) {
+.miperfil-alerta:empty {
+    display: none;
+}
+
+/* ===================== RESPONSIVE ===================== */
+
+@media (max-width: 700px) {
+    .miperfil-form-grid,
+    .miperfil-solo-lectura {
+        grid-template-columns: 1fr;
+    }
+
     .miperfil-card {
         padding: 18px;
+    }
+
+    .miperfil-identidad {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
