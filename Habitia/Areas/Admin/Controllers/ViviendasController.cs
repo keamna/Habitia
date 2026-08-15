@@ -356,7 +356,53 @@ namespace Habitia.Areas.Admin.Controllers
                 });
             }
 
+            // La vivienda tampoco se puede eliminar si tiene reservas de áreas
+            // comunes activas (todavía por realizarse) hechas a su nombre.
+            var mensajeReservas = await ValidarReservasAsync(id);
+
+            if (mensajeReservas != null)
+            {
+                return Json(new
+                {
+                    puedeEliminar = false,
+                    message = mensajeReservas
+                });
+            }
+
             return Json(new { puedeEliminar = true });
+        }
+
+
+        // VALIDAR RESERVAS ACTIVAS O PENDIENTES DE LA VIVIENDA
+        //
+        // Devuelve el mensaje de error si la vivienda no se puede eliminar,
+        // o null si no tiene reservas que lo impidan. Se usa tanto en
+        // VerificarEliminacion (antes de mostrar el modal) como en Eliminar
+        // (por si el estado cambió entre que se abrió el modal y se confirmó).
+
+        private async Task<string?> ValidarReservasAsync(int idVivienda)
+        {
+            var ahora = DateTime.Now;
+
+            var reservas = await _context.Reservas
+                .Include(r => r.Disponibilidad)
+                .Where(r => r.TN_IdVivienda == idVivienda &&
+                            r.TN_Estado == EstadoReservaEnum.Activa)
+                .ToListAsync();
+
+            // Una reserva sigue "viva" si su horario todavía no terminó.
+            var cantidadVigentes = reservas
+                .Count(r => r.Disponibilidad != null &&
+                            r.Disponibilidad.TF_Fecha.Date.Add(r.Disponibilidad.TF_HoraFin) > ahora);
+
+            if (cantidadVigentes > 0)
+            {
+                return cantidadVigentes == 1
+                    ? "No se puede eliminar la vivienda porque tiene 1 reserva de área común activa. Cancele esa reserva primero."
+                    : $"No se puede eliminar la vivienda porque tiene {cantidadVigentes} reservas de áreas comunes activas. Cancele esas reservas primero.";
+            }
+
+            return null;
         }
 
         // ELIMINAR VIVIENDA
@@ -399,6 +445,30 @@ namespace Habitia.Areas.Admin.Controllers
                     success = false,
                     message = "No se puede eliminar la vivienda porque tiene usuarios asociados (activos o suspendidos). Elimine o reasigne esos usuarios primero."
                 });
+            }
+
+            // Se revalida acá también: entre que se abrió el modal y se confirmó,
+            // pudo haberse creado una reserva nueva para esta vivienda.
+            var mensajeReservas = await ValidarReservasAsync(model.Id);
+
+            if (mensajeReservas != null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = mensajeReservas
+                });
+            }
+
+            // Reservas ya finalizadas o canceladas: no bloquean la eliminación,
+            // pero referencian la vivienda por FK, así que se limpian antes.
+            var reservasHistoricas = await _context.Reservas
+                .Where(r => r.TN_IdVivienda == model.Id)
+                .ToListAsync();
+
+            if (reservasHistoricas.Any())
+            {
+                _context.Reservas.RemoveRange(reservasHistoricas);
             }
 
             // Solo quedan relaciones Rechazadas (o ninguna): se limpian antes de

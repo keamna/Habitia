@@ -387,22 +387,21 @@
 
 
                             <div class="mk-card-img">
+                                @* Si el archivo de la imagen no existe en disco, onerror la quita
+                                   y muestra el marcador segun sea producto o servicio. *@
                                 @if (imagen != null)
                                 {
-                                    <img src="@imagen.TC_Url" alt="@pub.TC_Titulo" />
+                                    <img src="@imagen.TC_Url" alt="@pub.TC_Titulo"
+                                         onerror="var p=this.parentElement; this.remove(); var ph=p.querySelector('.mk-card-img-ph'); if (ph) ph.style.display='flex';" />
+
+                                    <div class="mk-card-img-ph" style="display:none;">
+                                        <i class="bi @(esServicio ? "bi-tools" : "bi-box-seam")"></i>
+                                    </div>
                                 }
                                 else
                                 {
                                     <div class="mk-card-img-ph">
                                         <i class="bi @(esServicio ? "bi-tools" : "bi-box-seam")"></i>
-                                    </div>
-                                }
-
-                                @if (noDisponible)
-                                {
-                                    <div class="mk-card-overlay">
-                                        <i class="bi bi-slash-circle"></i>
-                                        <span>No disponible</span>
                                     </div>
                                 }
 

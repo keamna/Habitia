@@ -1,0 +1,127 @@
+﻿@model Habitia.ViewModels.Dashboard.PanelSeguridadViewModel
+@using Habitia.ViewModels.Dashboard
+@{
+    ViewData["Title"] = "Panel Seguridad";
+
+    var listaDentro = new PanelListaViewModel
+    {
+        Titulo = "Visitantes dentro ahora",
+        VerTodoUrl = Url.Action("Index", "Accesos", new { area = "Seguridad" }),
+        TextoVacio = "No hay visitantes dentro del condominio.",
+        IconoVacio = "bi-door-closed",
+        Items = Model.DentroAhora
+    };
+
+    var listaAutorizaciones = new PanelListaViewModel
+    {
+        Titulo = "Visitas autorizadas para hoy",
+        VerTodoUrl = Url.Action("Index", "Accesos", new { area = "Seguridad" }),
+        TextoVacio = "No hay visitas autorizadas para hoy.",
+        IconoVacio = "bi-person-badge",
+        Items = Model.AutorizacionesDeHoy
+    };
+}
+
+<div class="panel-page">
+
+    <div class="panel-encabezado">
+        <div class="panel-saludo">
+            <h2>Hola, @Model.NombreUsuario</h2>
+            <p>Movimiento de entradas y salidas del día.</p>
+        </div>
+
+        <span class="panel-fecha-chip">
+            <i class="bi bi-clock"></i>
+            @DateTime.Now.ToString("dd/MM/yyyy · hh:mm tt")
+        </span>
+    </div>
+
+    <div class="panel-seccion">
+        <div class="panel-seccion-titulo">Resumen del día</div>
+
+        <div class="panel-cifras" style="--cols:5;">
+
+            <a class="panel-cifra" asp-area="Seguridad" asp-controller="Accesos" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-azul">
+                        <i class="bi bi-people-fill"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.VisitantesDentro</div>
+                <div class="panel-cifra-titulo">Dentro ahora</div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Seguridad" asp-controller="Accesos" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-verde">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.IngresosHoy</div>
+                <div class="panel-cifra-titulo">Ingresos hoy</div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Seguridad" asp-controller="Accesos" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-secundario">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.SalidasHoy</div>
+                <div class="panel-cifra-titulo">Salidas hoy</div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Seguridad" asp-controller="Accesos" asp-action="ValidarCodigo">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-ambar">
+                        <i class="bi bi-person-badge"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.AutorizacionesVigentesHoy</div>
+                <div class="panel-cifra-titulo">Autorizadas hoy</div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Seguridad" asp-controller="Reservas" asp-action="Todas">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-verde">
+                        <i class="bi bi-calendar-check"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.ReservasHoy</div>
+                <div class="panel-cifra-titulo">Reservas de hoy</div>
+            </a>
+
+        </div>
+    </div>
+
+    <div class="panel-seccion">
+        <div class="panel-seccion-titulo">Accesos rápidos</div>
+
+        <div class="panel-accesos-rapidos">
+            <a class="panel-acceso-rapido" asp-area="Seguridad" asp-controller="Accesos" asp-action="ValidarCodigo">
+                <i class="bi bi-qr-code-scan"></i> Validar código
+            </a>
+            <a class="panel-acceso-rapido" asp-area="Seguridad" asp-controller="Accesos" asp-action="RegistroManual">
+                <i class="bi bi-pencil-square"></i> Registro manual
+            </a>
+            <a class="panel-acceso-rapido" asp-area="Seguridad" asp-controller="Incidencias" asp-action="Index">
+                <i class="bi bi-exclamation-triangle-fill"></i> Incidencias
+            </a>
+        </div>
+    </div>
+
+    <div class="panel-seccion">
+        <div class="panel-seccion-titulo">Actividad</div>
+
+        <div class="panel-columnas">
+            <partial name="_PanelLista" model="listaDentro" />
+            <partial name="_PanelLista" model="listaAutorizaciones" />
+        </div>
+    </div>
+
+</div>

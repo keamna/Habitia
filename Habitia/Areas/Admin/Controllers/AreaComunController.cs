@@ -1,4 +1,5 @@
 ﻿using Habitia.Data;
+using Habitia.Enums;
 using Habitia.Models;
 using Habitia.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -62,18 +63,36 @@ namespace Habitia.Areas.Admin.Controllers
         public async Task<IActionResult> Create(AreaComunViewModel vm)
         {
 
+            // Antes faltaba el "return": aunque el modelo fuera inválido, el área
+            // se guardaba igual y nunca se veían los mensajes de validación.
             if (!ModelState.IsValid)
             {
                 ViewBag.Tipos = new SelectList(_context.TiposArea, "Id", "Nombre", vm.IdTipo);
+                return View(vm);
             }
 
 
 
+            var codigoNormalizado = vm.Codigo.Trim();
+
+            // El código de área común debe ser único.
+            var codigoRepetido = await _context.AreasComunes
+                .AnyAsync(a => a.TC_Codigo.ToLower() == codigoNormalizado.ToLower());
+
+            if (codigoRepetido)
+            {
+                ModelState.AddModelError(nameof(vm.Codigo),
+                    "Ya existe un área común con ese código.");
+
+                ViewBag.Tipos = new SelectList(_context.TiposArea, "Id", "Nombre", vm.IdTipo);
+                return View(vm);
+            }
+
             var area = new AreaComun
             {
-                TC_Nombre = vm.Nombre,
-                TC_Codigo = vm.Codigo,
-                TN_IdTipo = vm.IdTipo,
+                TC_Nombre = vm.Nombre.Trim(),
+                TC_Codigo = codigoNormalizado,
+                TN_IdTipo = vm.IdTipo!.Value,
                 TN_Capacidad = vm.Capacidad,
                 TB_Estado = true
             };
@@ -169,9 +188,26 @@ namespace Habitia.Areas.Admin.Controllers
 
 
 
-            area.TC_Nombre = vm.Nombre;
-            area.TC_Codigo = vm.Codigo;
-            area.TN_IdTipo = vm.IdTipo;
+            var codigoNormalizado = vm.Codigo.Trim();
+
+            // El código debe ser único, sin contarse a sí misma.
+            var codigoRepetido = await _context.AreasComunes
+                .AnyAsync(a => a.TC_Codigo.ToLower() == codigoNormalizado.ToLower() &&
+                               a.TN_Id != vm.Id);
+
+            if (codigoRepetido)
+            {
+                ModelState.AddModelError(nameof(vm.Codigo),
+                    "Ya existe un área común con ese código.");
+
+                ViewBag.Tipos = new SelectList(_context.TiposArea, "Id", "Nombre", vm.IdTipo);
+                vm.FotosExistentes = area.Fotos.Where(f => f.TB_Estado).ToList();
+                return View(vm);
+            }
+
+            area.TC_Nombre = vm.Nombre.Trim();
+            area.TC_Codigo = codigoNormalizado;
+            area.TN_IdTipo = vm.IdTipo!.Value;
             area.TN_Capacidad = vm.Capacidad;
             area.TB_Estado = vm.Estado;
 
@@ -208,9 +244,10 @@ namespace Habitia.Areas.Admin.Controllers
 
 
 
+            // Solo los horarios vigentes: los eliminados quedan con TB_Estado = false.
             ViewBag.Disponibilidades =
                 _context.Disponibilidades
-                .Where(d => d.TN_IdAreaComun == id)
+                .Where(d => d.TN_IdAreaComun == id && d.TB_Estado)
                 .OrderBy(d => d.TF_Fecha)
                 .ThenBy(d => d.TF_HoraInicio)
                 .ToList();
@@ -347,9 +384,23 @@ namespace Habitia.Areas.Admin.Controllers
             // Validar que la fecha/hora no sea un momento ya pasado (5.1.5)
             var fechaHoraInicio = vm.Fecha.Date.Add(horaInicio);
 
+            if (vm.Fecha.Date < DateTime.Today)
+            {
+                TempData["Error"] = "No se puede registrar un horario en una fecha que ya pasó.";
+                return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
+            }
+
             if (fechaHoraInicio <= DateTime.Now)
             {
-                TempData["Error"] = "No se puede registrar un horario en una fecha u hora ya pasada.";
+                TempData["Error"] = "La hora de inicio ya pasó. Indique una hora posterior a la actual.";
+                return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
+            }
+
+            // La anticipación mínima no puede ser mayor al tiempo que falta para
+            // que inicie el horario: si no, nadie podría cancelar nunca.
+            if (vm.AnticipacionEnMinutos > (fechaHoraInicio - DateTime.Now).TotalMinutes)
+            {
+                TempData["Error"] = "La anticipación mínima es mayor al tiempo que falta para que inicie el horario.";
                 return RedirectToAction(nameof(Detalle), new { id = vm.IdAreaComun });
             }
 
@@ -375,6 +426,7 @@ namespace Habitia.Areas.Admin.Controllers
                 TF_HoraInicio = horaInicio,
                 TF_HoraFin = horaFin,
                 TN_Cantidad = vm.Cantidad,
+                TN_AnticipacionMinima = vm.AnticipacionEnMinutos,
                 TB_Estado = true
             };
 
@@ -412,12 +464,27 @@ namespace Habitia.Areas.Admin.Controllers
 
 
 
-            if (disponibilidad != null)
+            if (disponibilidad == null)
             {
-                disponibilidad.TB_Estado = false;
-
-                await _context.SaveChangesAsync();
+                TempData["Error"] = "No se encontró el horario indicado.";
+                return RedirectToAction(nameof(Detalle), new { id = areaId });
             }
+
+            // Si un residente ya reservó este horario, no se puede eliminar.
+            var tieneReservaActiva = await _context.Reservas
+                .AnyAsync(r => r.TN_IdDisponibilidad == id &&
+                               r.TN_Estado == EstadoReservaEnum.Activa);
+
+            if (disponibilidad.TB_Reservado || tieneReservaActiva)
+            {
+                TempData["Error"] = "No se puede eliminar este horario porque ya fue reservado por un residente. Cancele la reserva primero.";
+                return RedirectToAction(nameof(Detalle), new { id = areaId });
+            }
+
+            disponibilidad.TB_Estado = false;
+            await _context.SaveChangesAsync();
+
+            TempData["Exito"] = "Horario eliminado correctamente.";
 
 
 
@@ -432,6 +499,157 @@ namespace Habitia.Areas.Admin.Controllers
 
 
 
+
+
+
+        // =========================
+        // VERIFICAR SI EL AREA SE PUEDE ELIMINAR
+        // =========================
+        [HttpGet]
+        public async Task<IActionResult> VerificarEliminacion(int id)
+        {
+            var area = await _context.AreasComunes
+                .FirstOrDefaultAsync(a => a.TN_Id == id);
+
+            if (area == null)
+            {
+                return Json(new { puedeEliminar = false, message = "Área común no encontrada." });
+            }
+
+            var mensaje = await ValidarEliminacionAreaAsync(id);
+
+            if (mensaje != null)
+            {
+                return Json(new { puedeEliminar = false, message = mensaje });
+            }
+
+            return Json(new { puedeEliminar = true });
+        }
+
+
+        // Devuelve el motivo por el que el área NO se puede eliminar,
+        // o null si sí se puede.
+        private async Task<string?> ValidarEliminacionAreaAsync(int idArea)
+        {
+            var ahora = DateTime.Now;
+
+            // 1) Reservas activas cuyo horario todavía no terminó.
+            var reservas = await _context.Reservas
+                .Include(r => r.Disponibilidad)
+                .Where(r => r.Disponibilidad.TN_IdAreaComun == idArea &&
+                            r.TN_Estado == EstadoReservaEnum.Activa)
+                .ToListAsync();
+
+            var vigentes = reservas
+                .Count(r => r.Disponibilidad.TF_Fecha.Date.Add(r.Disponibilidad.TF_HoraFin) > ahora);
+
+            if (vigentes > 0)
+            {
+                return vigentes == 1
+                    ? "No se puede eliminar el área común porque tiene 1 reserva activa. Cancele esa reserva primero."
+                    : $"No se puede eliminar el área común porque tiene {vigentes} reservas activas. Cancele esas reservas primero.";
+            }
+
+            // 2) Incidencias reportadas sobre el área.
+            //    La FK está configurada con DeleteBehavior.Restrict, así que sin
+            //    esta validación SQL Server rechazaba el DELETE y el usuario solo
+            //    veía "No fue posible completar la operación".
+            var incidencias = await _context.Incidencias
+                .CountAsync(i => i.TN_IdAreaComun == idArea);
+
+            if (incidencias > 0)
+            {
+                return incidencias == 1
+                    ? "No se puede eliminar el área común porque tiene 1 incidencia asociada. El historial de incidencias no se puede borrar; puede desactivar el área desde Editar."
+                    : $"No se puede eliminar el área común porque tiene {incidencias} incidencias asociadas. El historial de incidencias no se puede borrar; puede desactivar el área desde Editar.";
+            }
+
+            // 3) Tareas de mantenimiento sobre el área (misma FK Restrict).
+            var mantenimientos = await _context.Mantenimientos
+                .CountAsync(m => m.TN_IdAreaComun == idArea);
+
+            if (mantenimientos > 0)
+            {
+                return mantenimientos == 1
+                    ? "No se puede eliminar el área común porque tiene 1 tarea de mantenimiento asociada. Puede desactivar el área desde Editar."
+                    : $"No se puede eliminar el área común porque tiene {mantenimientos} tareas de mantenimiento asociadas. Puede desactivar el área desde Editar.";
+            }
+
+            return null;
+        }
+
+
+        // =========================
+        // ELIMINAR AREA COMUN
+        // =========================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Eliminar([FromBody] IdAreaComunVM model)
+        {
+            var area = await _context.AreasComunes
+                .Include(a => a.Fotos)
+                .Include(a => a.Disponibilidades)
+                .FirstOrDefaultAsync(a => a.TN_Id == model.Id);
+
+            if (area == null)
+            {
+                return Json(new { success = false, message = "Área común no encontrada." });
+            }
+
+            // Se revalida: pudo entrar una reserva nueva mientras el modal estaba abierto.
+            var mensaje = await ValidarEliminacionAreaAsync(model.Id);
+
+            if (mensaje != null)
+            {
+                return Json(new { success = false, message = mensaje });
+            }
+
+            var idsDisponibilidades = area.Disponibilidades
+                .Select(d => d.TN_Id)
+                .ToList();
+
+            // Reservas históricas (finalizadas o canceladas): no bloquean, pero
+            // referencian los horarios por FK, así que se limpian antes.
+            var reservasHistoricas = await _context.Reservas
+                .Where(r => idsDisponibilidades.Contains(r.TN_IdDisponibilidad))
+                .ToListAsync();
+
+            if (reservasHistoricas.Any())
+                _context.Reservas.RemoveRange(reservasHistoricas);
+
+            // Archivos físicos de las fotos.
+            foreach (var foto in area.Fotos)
+            {
+                var ruta = Path.Combine(_env.WebRootPath, foto.TC_Url.TrimStart('/')
+                    .Replace('/', Path.DirectorySeparatorChar));
+
+                if (System.IO.File.Exists(ruta))
+                {
+                    try { System.IO.File.Delete(ruta); } catch { /* si falla, se ignora */ }
+                }
+            }
+
+            _context.AreaComunFotos.RemoveRange(area.Fotos);
+            _context.Disponibilidades.RemoveRange(area.Disponibilidades);
+            _context.AreasComunes.Remove(area);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                // Red de seguridad: si quedó algún otro registro apuntando al área,
+                // se avisa en vez de devolver un error 500 sin explicación.
+                return Json(new
+                {
+                    success = false,
+                    message = "No se puede eliminar el área común porque tiene información asociada en otras secciones del sistema. Puede desactivarla desde Editar."
+                });
+            }
+
+            return Json(new { success = true });
+        }
 
 
         // =========================

@@ -23,8 +23,10 @@ namespace Habitia.Areas.Admin.Controllers
         {
             await ReservaHelper.FinalizarReservasVencidasAsync(_context);
 
+            // El ThenInclude de Fotos faltaba: sin él las fotos del área
+            // llegaban siempre vacías a la vista.
             var reservas = await _context.Reservas
-                .Include(r => r.Disponibilidad).ThenInclude(d => d.AreaComun)
+                .Include(r => r.Disponibilidad).ThenInclude(d => d.AreaComun).ThenInclude(a => a.Fotos)
                 .Include(r => r.Usuario)
                 .Include(r => r.Vivienda)
                 .OrderByDescending(r => r.Disponibilidad.TF_Fecha)

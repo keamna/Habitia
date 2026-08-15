@@ -18,7 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Areas\Admin\Views\Home\" />
     <Folder Include="Areas\Identity\" />
+    <Folder Include="Areas\Mantenimiento\Views\Home\" />
+    <Folder Include="Areas\Residente\Views\Home\" />
+    <Folder Include="Areas\Seguridad\Views\Home\" />
   </ItemGroup>
 
 </Project>

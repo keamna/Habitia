@@ -1,0 +1,379 @@
+﻿/* =========================================================
+   PANEL (dashboard) - Admin, Residente, Seguridad, Mantenimiento
+========================================================= */
+
+.panel-page {
+    max-width: 1280px;
+    padding: 4px 4px 40px;
+}
+
+/* ===================== ENCABEZADO ===================== */
+
+.panel-encabezado {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+}
+
+.panel-saludo h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #14261a;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+}
+
+.panel-saludo p {
+    color: var(--habitia-text-gray, #848484);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.panel-fecha-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 999px;
+    background-color: #FFFFFF;
+    border: 1px solid var(--habitia-border, #ECECEC);
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #4a5a4a;
+    white-space: nowrap;
+}
+
+    .panel-fecha-chip i {
+        color: var(--habitia-green-active, #336332);
+    }
+
+/* ===================== TÍTULOS DE SECCIÓN ===================== */
+
+.panel-seccion {
+    margin-bottom: 30px;
+}
+
+.panel-seccion-titulo {
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #9aa39a;
+    margin-bottom: 12px;
+}
+
+/* ===================== TARJETAS DE CIFRAS ===================== */
+
+/* El número de columnas lo define cada panel con style="--cols:N",
+   así ninguna tarjeta queda huérfana en una fila sola. */
+.panel-cifras {
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+    gap: 14px;
+}
+
+.panel-cifra {
+    position: relative;
+    background-color: #FFFFFF;
+    border: 1px solid var(--habitia-border, #ECECEC);
+    border-radius: 16px;
+    padding: 20px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    overflow: hidden;
+    transition: .18s ease;
+}
+
+    /* Franja de color arriba, que se pinta al pasar el mouse */
+    .panel-cifra::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background-color: transparent;
+        transition: .18s ease;
+    }
+
+a.panel-cifra:hover {
+    color: inherit;
+    border-color: #D6E2D6;
+    box-shadow: 0 6px 20px rgba(20, 38, 26, .07);
+    transform: translateY(-2px);
+}
+
+    a.panel-cifra:hover::before {
+        background-color: var(--habitia-green-active, #336332);
+    }
+
+.panel-cifra-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.panel-cifra-icono {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    background-color: #E8F0E8;
+    color: var(--habitia-green-active, #336332);
+}
+
+.panel-cifra-flecha {
+    color: #C7CFC7;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: .18s ease;
+}
+
+a.panel-cifra:hover .panel-cifra-flecha {
+    opacity: 1;
+    color: var(--habitia-green-active, #336332);
+}
+
+.panel-cifra-icono-verde {
+    background-color: #E8F0E8;
+    color: var(--habitia-green-active, #336332);
+}
+
+.panel-cifra-icono-ambar {
+    background-color: #FDF3DD;
+    color: #8A6100;
+}
+
+.panel-cifra-icono-azul {
+    background-color: #E4EEF8;
+    color: #1B4F8A;
+}
+
+.panel-cifra-icono-secundario {
+    background-color: #EFEFEF;
+    color: #5A5A5A;
+}
+
+.panel-cifra-icono-rojo {
+    background-color: #FBE4E4;
+    color: #A32020;
+}
+
+.panel-cifra-valor {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #14261a;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+}
+
+    .panel-cifra-valor small {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #9aa39a;
+    }
+
+.panel-cifra-titulo {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #3d493d;
+}
+
+.panel-cifra-meta {
+    font-size: 0.78rem;
+    color: var(--habitia-text-gray, #848484);
+    margin-top: 3px;
+}
+
+/* ===================== ACCESOS RÁPIDOS ===================== */
+
+.panel-accesos-rapidos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.panel-acceso-rapido {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 18px;
+    border-radius: 12px;
+    background-color: #FFFFFF;
+    border: 1px solid var(--habitia-border, #ECECEC);
+    color: #3d493d;
+    font-size: 0.86rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: .15s ease;
+}
+
+    .panel-acceso-rapido:hover {
+        background-color: var(--habitia-green-active, #336332);
+        border-color: var(--habitia-green-active, #336332);
+        color: #FFFFFF;
+        transform: translateY(-1px);
+    }
+
+    .panel-acceso-rapido i {
+        font-size: 1rem;
+    }
+
+/* ===================== LISTAS ===================== */
+
+.panel-columnas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+
+.panel-lista-card {
+    background-color: #FFFFFF;
+    border: 1px solid var(--habitia-border, #ECECEC);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.panel-lista-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #F1F3F1;
+}
+
+    .panel-lista-header h6 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #14261a;
+    }
+
+    .panel-lista-header a {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--habitia-green-active, #336332);
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+        .panel-lista-header a:hover {
+            text-decoration: underline;
+        }
+
+.panel-lista-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid #F6F7F6;
+    transition: background-color .12s ease;
+}
+
+    .panel-lista-item:last-child {
+        border-bottom: none;
+    }
+
+    .panel-lista-item:hover {
+        background-color: #FAFBFA;
+    }
+
+.panel-item-titulo {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #14261a;
+}
+
+.panel-item-detalle {
+    font-size: 0.8rem;
+    color: var(--habitia-text-gray, #848484);
+    margin-top: 3px;
+}
+
+.panel-badge {
+    font-size: 0.73rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.panel-badge-success {
+    background-color: #DFEEDF;
+    color: #2A5A29;
+}
+
+.panel-badge-warning {
+    background-color: #FDF0D5;
+    color: #8A6100;
+}
+
+.panel-badge-info {
+    background-color: #E1EDF9;
+    color: #1B4F8A;
+}
+
+.panel-badge-danger {
+    background-color: #F8DADA;
+    color: #A32020;
+}
+
+.panel-badge-secondary {
+    background-color: #F0F1F0;
+    color: #5A5A5A;
+}
+
+.panel-lista-vacia {
+    padding: 42px 20px;
+    text-align: center;
+    color: #a8b0a8;
+    font-size: 0.86rem;
+}
+
+    .panel-lista-vacia i {
+        display: block;
+        font-size: 1.9rem;
+        margin-bottom: 10px;
+        opacity: .45;
+    }
+
+/* ===================== RESPONSIVE ===================== */
+
+@media (max-width: 1200px) {
+    .panel-cifras {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 820px) {
+    .panel-cifras {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .panel-cifra {
+        padding: 16px;
+    }
+
+    .panel-cifra-valor {
+        font-size: 1.6rem;
+    }
+
+    .panel-columnas {
+        grid-template-columns: 1fr;
+    }
+}

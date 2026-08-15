@@ -36,6 +36,11 @@ namespace Habitia.Models
 
         public bool TB_Reservado { get; set; } = false;
 
+        // Anticipación mínima (en minutos) que debe respetar el residente para
+        // cancelar una reserva de este horario. Antes se definía por área común;
+        // ahora se pide al crear cada horario.
+        public int TN_AnticipacionMinima { get; set; }
+
         // Relaciones
 
         [ForeignKey(nameof(TN_IdAreaComun))]

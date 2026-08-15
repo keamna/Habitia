@@ -4,6 +4,7 @@ using Habitia.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Habitia.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260815194223_AnticipacionPorHorario")]
+    partial class AnticipacionPorHorario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -798,10 +801,6 @@ namespace Habitia.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("TC_FrecuenciaRecargo")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
                     b.Property<string>("TC_IdResidente")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -810,9 +809,6 @@ namespace Habitia.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("TF_FechaVencimiento")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("TF_UltimaAplicacionRecargo")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("TN_IdEstadoCargo")
@@ -879,10 +875,6 @@ namespace Habitia.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("TC_FrecuenciaRecargo")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
 
                     b.Property<DateTime>("TF_FechaInicio")
                         .HasColumnType("datetime2");
@@ -998,6 +990,7 @@ namespace Habitia.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("TC_MotivoRechazo")
+                        .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
@@ -1300,6 +1293,7 @@ namespace Habitia.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TC_MotivoRechazo")
+                        .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 

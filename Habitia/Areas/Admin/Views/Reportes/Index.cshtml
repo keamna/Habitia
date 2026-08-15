@@ -1,137 +1,890 @@
-﻿@model Habitia.ViewModels.Reportes.ReporteIncidenciasViewModel
+﻿@model Habitia.ViewModels.Reportes.ReporteGeneralViewModel
+@using Habitia.ViewModels.Reportes
+@using System.Text.Json
 @{
-    ViewData["Title"] = "Reportes de incidencias y mantenimiento";
+    ViewData["Title"] = "Reportes";
+
+    // Series que consumen los gráficos del lado del navegador.
+    string Serie(IEnumerable<ConteoReporteViewModel> items) =>
+        JsonSerializer.Serialize(items.Select(x => new { etiqueta = x.Etiqueta, valor = x.Cantidad }));
+
+    // Series de tendencia: muestran algo que NO está repetido en las listas.
+    var datosRegistrosMes = Serie(Model.Usuarios.RegistrosPorMes);
+    var datosReservasMes = Serie(Model.AreasComunes.ReservasPorMes);
+    var datosIncidenciasMes = Serie(Model.IncidenciasPorMes);
+    var datosDiaSemana = Serie(Model.Accesos.IngresosPorDiaSemana);
+
+    // Viviendas: comparativa ocupadas vs disponibles por tipo.
+    var etiquetasTipo = JsonSerializer.Serialize(Model.Viviendas.OcupadasPorTipo.Select(x => x.Etiqueta));
+    var ocupadasTipo = JsonSerializer.Serialize(Model.Viviendas.OcupadasPorTipo.Select(x => x.Cantidad));
+    var disponiblesTipo = JsonSerializer.Serialize(Model.Viviendas.DisponiblesPorTipo.Select(x => x.Cantidad));
 }
 
-<h2>Reportes de incidencias y mantenimiento</h2>
+<style>
+    /* Bootstrap pinta los nav-link de azul por defecto. Acá se usan los
+           verdes/grises de Habitia. El ícono hereda el color del enlace. */
+    .nav-tabs .nav-link {
+        color: #5a655a;
+        font-weight: 600;
+        border: none;
+        border-bottom: 2px solid transparent;
+    }
 
-<form method="get" class="row g-2 mb-4">
-    <div class="col-md-3">
-        <label class="form-label">Desde</label>
-        <input type="date" name="fechaDesde" class="form-control" value="@ViewBag.FechaDesde" />
-    </div>
-    <div class="col-md-3">
-        <label class="form-label">Hasta</label>
-        <input type="date" name="fechaHasta" class="form-control" value="@ViewBag.FechaHasta" />
-    </div>
-    <div class="col-md-2 align-self-end">
-        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-    </div>
-    <div class="col-md-2 align-self-end">
-        <a asp-action="Index" class="btn btn-outline-secondary w-100">Limpiar</a>
-    </div>
-</form>
+        .nav-tabs .nav-link:hover {
+            color: var(--habitia-green-active, #336332);
+            border-bottom-color: #D6E2D6;
+        }
 
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="reporte-stat-card">
-            <h6>Total Incidencias</h6>
-            <h3>@Model.TotalIncidencias</h3>
+        .nav-tabs .nav-link.active {
+            color: var(--habitia-green-active, #336332);
+            background-color: transparent;
+            border-bottom: 2px solid var(--habitia-green-active, #336332);
+        }
+
+    /* Alto fijo: sin esto Chart.js crece indefinidamente al redibujar. */
+    .reporte-grafico {
+        position: relative;
+        height: 260px;
+    }
+
+    .reporte-grafico-card {
+        background-color: #FFFFFF;
+        border: 1px solid var(--habitia-border, #ECECEC);
+        border-radius: 16px;
+        padding: 18px;
+    }
+</style>
+<div class="panel-page">
+
+    <div class="panel-encabezado">
+        <div class="panel-saludo">
+            <h2>Reportes</h2>
+            <p>Resumen estadístico de todas las secciones del condominio.</p>
         </div>
+
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+            <i class="bi bi-printer me-1"></i> Imprimir
+        </button>
     </div>
-    <div class="col-md-3">
-        <div class="reporte-stat-card">
-            <h6>Pendientes</h6>
-            <h3 class="text-warning">@Model.TotalPendientes</h3>
+
+    <!-- ===================== FILTRO ===================== -->
+    <div class="panel-seccion">
+        <div class="panel-seccion-titulo">Rango de fechas</div>
+
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-6 col-md-3">
+                <label class="form-label small">Desde</label>
+                <input type="date" name="fechaDesde" class="form-control" value="@ViewBag.FechaDesde" />
+            </div>
+            <div class="col-6 col-md-3">
+                <label class="form-label small">Hasta</label>
+                <input type="date" name="fechaHasta" class="form-control" value="@ViewBag.FechaHasta" />
+            </div>
+            <div class="col-6 col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+            </div>
+            <div class="col-6 col-md-2">
+                <a asp-action="Index" class="btn btn-outline-secondary w-100">Limpiar</a>
+            </div>
+        </form>
+
+        @if (Model.FechaDesde.HasValue || Model.FechaHasta.HasValue)
+        {
+            <div class="alert alert-light border small mt-3 mb-0">
+                <i class="bi bi-funnel me-1"></i>
+                Mostrando datos
+                @if (Model.FechaDesde.HasValue)
+                {
+                    <text>desde el <strong>@Model.FechaDesde.Value.ToString("dd/MM/yyyy")</strong></text>
+                }
+                @if (Model.FechaHasta.HasValue)
+                {
+                    <text> hasta el <strong>@Model.FechaHasta.Value.ToString("dd/MM/yyyy")</strong></text>
+                }
+    .
+                El reporte de viviendas siempre refleja el estado actual del condominio.
+            </div>
+        }
+    </div>
+
+    <!-- ===================== PESTAÑAS ===================== -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabUsuarios" type="button" role="tab">
+                <i class="bi bi-people-fill me-1"></i> Usuarios
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabViviendas" type="button" role="tab">
+                <i class="bi bi-house-fill me-1"></i> Viviendas
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabAreas" type="button" role="tab">
+                <i class="bi bi-building me-1"></i> Áreas comunes
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabAccesos" type="button" role="tab">
+                <i class="bi bi-shield-check me-1"></i> Accesos
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabIncidencias" type="button" role="tab">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i> Incidencias
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+
+        <!-- ===================== USUARIOS ===================== -->
+        <div class="tab-pane fade show active" id="tabUsuarios" role="tabpanel">
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Estado de las cuentas</div>
+                <div class="panel-cifras" style="--cols:4;">
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-people-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Usuarios.Total</div>
+                        <div class="panel-cifra-titulo">Total de usuarios</div>
+                        <div class="panel-cifra-meta">Registrados en el sistema</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Usuarios.Activos</div>
+                        <div class="panel-cifra-titulo">Activos</div>
+                        <div class="panel-cifra-meta">Pueden ingresar</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-ambar">
+                                <i class="bi bi-hourglass-split"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Usuarios.Pendientes</div>
+                        <div class="panel-cifra-titulo">Pendientes</div>
+                        <div class="panel-cifra-meta">Esperando aprobación</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-rojo">
+                                <i class="bi bi-slash-circle"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Usuarios.Suspendidos</div>
+                        <div class="panel-cifra-titulo">Suspendidos</div>
+                        <div class="panel-cifra-meta">Acceso bloqueado</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Nuevos usuarios por mes</div>
+                <div class="reporte-grafico-card">
+                    <div class="reporte-grafico">
+                        <canvas id="grafUsuarios"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Desglose</div>
+                <div class="panel-columnas">
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Usuarios por rol</h6>
+                        </div>
+                        @if (!Model.Usuarios.PorRol.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin roles registrados.
+                            </div>
+                        }
+                        @foreach (var item in Model.Usuarios.PorRol)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Etiqueta</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Cantidad</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Relación con la vivienda</h6>
+                        </div>
+                        @if (!Model.Usuarios.PorTipoRelacion.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin vínculos activos.
+                            </div>
+                        }
+                        @foreach (var item in Model.Usuarios.PorTipoRelacion)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Etiqueta</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Cantidad</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Otros datos</h6>
+                        </div>
+                        <div class="panel-lista-item">
+                            <div class="panel-item-titulo">Registrados en el rango</div>
+                            <span class="panel-badge panel-badge-secondary">@Model.Usuarios.RegistradosEnRango</span>
+                        </div>
+                        <div class="panel-lista-item">
+                            <div class="panel-item-titulo">Solicitudes rechazadas</div>
+                            <span class="panel-badge panel-badge-secondary">@Model.Usuarios.Rechazados</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="reporte-stat-card">
-            <h6>En Proceso</h6>
-            <h3 class="text-info">@Model.TotalEnProceso</h3>
+
+        <!-- ===================== VIVIENDAS ===================== -->
+        <div class="tab-pane fade" id="tabViviendas" role="tabpanel">
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Estado actual del condominio</div>
+                <div class="panel-cifras" style="--cols:4;">
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-house-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Viviendas.Total</div>
+                        <div class="panel-cifra-titulo">Total de viviendas</div>
+                        <div class="panel-cifra-meta">Registradas</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-people-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Viviendas.Ocupadas</div>
+                        <div class="panel-cifra-titulo">Ocupadas</div>
+                        <div class="panel-cifra-meta">Con residentes activos</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-azul">
+                                <i class="bi bi-door-open"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Viviendas.Disponibles</div>
+                        <div class="panel-cifra-titulo">Disponibles</div>
+                        <div class="panel-cifra-meta">Sin ocupar</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-ambar">
+                                <i class="bi bi-pie-chart-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Viviendas.PorcentajeOcupacion.ToString("0.#")%</div>
+                        <div class="panel-cifra-titulo">Ocupación</div>
+                        <div class="panel-cifra-meta">Del total de viviendas</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Ocupación por tipo de vivienda</div>
+                <div class="reporte-grafico-card">
+                    <div class="reporte-grafico">
+                        <canvas id="grafViviendas"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Desglose</div>
+                <div class="panel-columnas">
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Viviendas por tipo</h6>
+                        </div>
+                        @if (!Model.Viviendas.PorTipo.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                No hay viviendas registradas.
+                            </div>
+                        }
+                        @foreach (var item in Model.Viviendas.PorTipo)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Etiqueta</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Cantidad</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Situaciones por atender</h6>
+                        </div>
+                        <div class="panel-lista-item">
+                            <div class="panel-item-titulo">Sin propietario activo</div>
+                            <span class="panel-badge panel-badge-secondary">@Model.Viviendas.SinPropietario</span>
+                        </div>
+                        <div class="panel-lista-item">
+                            <div class="panel-item-titulo">Sin cupo configurado</div>
+                            <span class="panel-badge panel-badge-secondary">@Model.Viviendas.SinCupoConfigurado</span>
+                        </div>
+                        <div class="panel-lista-item">
+                            <div class="panel-item-titulo">Inactivas</div>
+                            <span class="panel-badge panel-badge-secondary">@Model.Viviendas.Inactivas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="reporte-stat-card">
-            <h6>Resueltas</h6>
-            <h3 class="text-success">@Model.TotalResueltas</h3>
+
+        <!-- ===================== ÁREAS COMUNES ===================== -->
+        <div class="tab-pane fade" id="tabAreas" role="tabpanel">
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Reservas en el período</div>
+                <div class="panel-cifras" style="--cols:4;">
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-calendar-check"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.AreasComunes.TotalReservas</div>
+                        <div class="panel-cifra-titulo">Total de reservas</div>
+                        <div class="panel-cifra-meta">En el rango seleccionado</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-play-circle-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.AreasComunes.ReservasActivas</div>
+                        <div class="panel-cifra-titulo">Activas</div>
+                        <div class="panel-cifra-meta">Todavía por realizarse</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-secundario">
+                                <i class="bi bi-check2-all"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.AreasComunes.ReservasFinalizadas</div>
+                        <div class="panel-cifra-titulo">Finalizadas</div>
+                        <div class="panel-cifra-meta">Ya ocurrieron</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-rojo">
+                                <i class="bi bi-x-circle-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.AreasComunes.ReservasCanceladas</div>
+                        <div class="panel-cifra-titulo">Canceladas</div>
+                        <div class="panel-cifra-meta">@Model.AreasComunes.PorcentajeCancelacion.ToString("0.#")% del total</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Áreas comunes y horarios</div>
+                <div class="panel-cifras" style="--cols:4;">
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-building"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.AreasComunes.AreasActivas</div>
+                        <div class="panel-cifra-titulo">Áreas activas</div>
+                        <div class="panel-cifra-meta">Disponibles para reservar</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-secundario">
+                                <i class="bi bi-building-slash"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.AreasComunes.AreasInactivas</div>
+                        <div class="panel-cifra-titulo">Áreas inactivas</div>
+                        <div class="panel-cifra-meta">Ocultas para residentes</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-azul">
+                                <i class="bi bi-clock-history"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.AreasComunes.HorariosPublicados</div>
+                        <div class="panel-cifra-titulo">Horarios publicados</div>
+                        <div class="panel-cifra-meta">Vigentes en total</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-ambar">
+                                <i class="bi bi-bookmark-check-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.AreasComunes.HorariosReservados</div>
+                        <div class="panel-cifra-titulo">Horarios reservados</div>
+                        <div class="panel-cifra-meta">Ya tomados</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Reservas por mes</div>
+                <div class="reporte-grafico-card">
+                    <div class="reporte-grafico">
+                        <canvas id="grafAreas"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Rankings</div>
+                <div class="panel-columnas">
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Áreas más reservadas (top 5)</h6>
+                        </div>
+                        @if (!Model.AreasComunes.AreasMasReservadas.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin reservas en el rango seleccionado.
+                            </div>
+                        }
+                        @foreach (var item in Model.AreasComunes.AreasMasReservadas)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Etiqueta</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Cantidad</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Viviendas que más reservan (top 5)</h6>
+                        </div>
+                        @if (!Model.AreasComunes.ViviendasMasReservan.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin reservas en el rango seleccionado.
+                            </div>
+                        }
+                        @foreach (var item in Model.AreasComunes.ViviendasMasReservan)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Etiqueta</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Cantidad</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
         </div>
+
+        <!-- ===================== ACCESOS ===================== -->
+        <div class="tab-pane fade" id="tabAccesos" role="tabpanel">
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Movimiento de visitantes</div>
+                <div class="panel-cifras" style="--cols:4;">
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-box-arrow-in-right"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Accesos.TotalAccesos</div>
+                        <div class="panel-cifra-titulo">Total de ingresos</div>
+                        <div class="panel-cifra-meta">En el rango seleccionado</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-azul">
+                                <i class="bi bi-people-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Accesos.VisitantesDentro</div>
+                        <div class="panel-cifra-titulo">Dentro ahora</div>
+                        <div class="panel-cifra-meta">Sin salida registrada</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-secundario">
+                                <i class="bi bi-car-front-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Accesos.AccesosConVehiculo</div>
+                        <div class="panel-cifra-titulo">Con vehículo</div>
+                        <div class="panel-cifra-meta">Ingresos en carro</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-ambar">
+                                <i class="bi bi-person-badge"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Accesos.TotalAutorizaciones</div>
+                        <div class="panel-cifra-titulo">Autorizaciones</div>
+                        <div class="panel-cifra-meta">Emitidas por residentes</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Ingresos por día de la semana</div>
+                <div class="reporte-grafico-card">
+                    <div class="reporte-grafico">
+                        <canvas id="grafAccesos"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Desglose</div>
+                <div class="panel-columnas">
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Autorizaciones por estado</h6>
+                        </div>
+                        @if (!Model.Accesos.AutorizacionesPorEstado.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin autorizaciones en el rango.
+                            </div>
+                        }
+                        @foreach (var item in Model.Accesos.AutorizacionesPorEstado)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Etiqueta</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Cantidad</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Viviendas más visitadas (top 5)</h6>
+                        </div>
+                        @if (!Model.Accesos.ViviendasMasVisitadas.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin ingresos en el rango.
+                            </div>
+                        }
+                        @foreach (var item in Model.Accesos.ViviendasMasVisitadas)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Etiqueta</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Cantidad</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Ingresos por franja horaria</h6>
+                        </div>
+                        @if (!Model.Accesos.IngresosPorFranja.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin ingresos en el rango.
+                            </div>
+                        }
+                        @foreach (var item in Model.Accesos.IngresosPorFranja)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Etiqueta</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Cantidad</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ===================== INCIDENCIAS ===================== -->
+        <div class="tab-pane fade" id="tabIncidencias" role="tabpanel">
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Estado de las incidencias</div>
+                <div class="panel-cifras" style="--cols:4;">
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Incidencias.TotalIncidencias</div>
+                        <div class="panel-cifra-titulo">Total</div>
+                        <div class="panel-cifra-meta">Reportadas en el rango</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-ambar">
+                                <i class="bi bi-hourglass-split"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Incidencias.TotalPendientes</div>
+                        <div class="panel-cifra-titulo">Pendientes</div>
+                        <div class="panel-cifra-meta">Sin atender</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-azul">
+                                <i class="bi bi-tools"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Incidencias.TotalEnProceso</div>
+                        <div class="panel-cifra-titulo">En proceso</div>
+                        <div class="panel-cifra-meta">Con trabajo iniciado</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-check2-circle"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Incidencias.TotalResueltas</div>
+                        <div class="panel-cifra-titulo">Resueltas</div>
+                        <div class="panel-cifra-meta">Cerradas</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Mantenimiento</div>
+                <div class="panel-cifras" style="--cols:2;">
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-check2-all"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Incidencias.TotalMantenimientosRealizados</div>
+                        <div class="panel-cifra-titulo">Mantenimientos realizados</div>
+                        <div class="panel-cifra-meta">Completados</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-ambar">
+                                <i class="bi bi-clipboard-check"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Incidencias.TotalMantenimientosPendientes</div>
+                        <div class="panel-cifra-titulo">Mantenimientos pendientes</div>
+                        <div class="panel-cifra-meta">Programados o en proceso</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Incidencias reportadas por mes</div>
+                <div class="reporte-grafico-card">
+                    <div class="reporte-grafico">
+                        <canvas id="grafIncidencias"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Desglose</div>
+                <div class="panel-columnas">
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Por responsabilidad</h6>
+                        </div>
+                        @if (!Model.Incidencias.PorResponsabilidad.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin datos clasificados aún.
+                            </div>
+                        }
+                        @foreach (var item in Model.Incidencias.PorResponsabilidad)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Key</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Value</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Por tipo de ubicación</h6>
+                        </div>
+                        @if (!Model.Incidencias.PorTipoUbicacion.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin datos en el rango seleccionado.
+                            </div>
+                        }
+                        @foreach (var item in Model.Incidencias.PorTipoUbicacion)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Key</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Value</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Ubicaciones más frecuentes (top 5)</h6>
+                        </div>
+                        @if (!Model.Incidencias.UbicacionesMasFrecuentes.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin datos en el rango seleccionado.
+                            </div>
+                        }
+                        @foreach (var item in Model.Incidencias.UbicacionesMasFrecuentes)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Ubicacion</div>
+                                <span class="panel-badge panel-badge-secondary">@item.CantidadIncidencias</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Mantenimientos por tipo</h6>
+                        </div>
+                        @if (!Model.Incidencias.MantenimientosPorTipo.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin mantenimientos registrados.
+                            </div>
+                        }
+                        @foreach (var item in Model.Incidencias.MantenimientosPorTipo)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Key</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Value</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
     </div>
+
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">Incidencias por responsabilidad</div>
-            @foreach (var item in Model.PorResponsabilidad)
-            {
-                <div class="reporte-lista-item">
-                    <span>@item.Key</span>
-                    <strong>@item.Value</strong>
-                </div>
-            }
-            @if (!Model.PorResponsabilidad.Any())
-            {
-                <div class="reporte-lista-item text-muted">Sin datos clasificados aún.</div>
-            }
-        </div>
-    </div>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        const VERDE_FUERTE = '#336332';
+        const VERDE_MEDIO = '#7CA87B';
+        const graficos = [];
 
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">Incidencias por tipo de ubicación</div>
-            @foreach (var item in Model.PorTipoUbicacion)
-            {
-                <div class="reporte-lista-item">
-                    <span>@item.Key</span>
-                    <strong>@item.Value</strong>
-                </div>
-            }
-            @if (!Model.PorTipoUbicacion.Any())
-            {
-                <div class="reporte-lista-item text-muted">Sin datos en el rango seleccionado.</div>
-            }
-        </div>
-    </div>
-</div>
+        function vacio(el) {
+            el.parentElement.innerHTML =
+                '<div class="panel-lista-vacia"><i class="bi bi-bar-chart"></i>' +
+                'Todavía no hay datos suficientes para graficar.</div>';
+        }
 
-<div class="row g-3 mb-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">Ubicaciones más frecuentes (top 5)</div>
-            @foreach (var item in Model.UbicacionesMasFrecuentes)
-            {
-                <div class="reporte-lista-item">
-                    <span>@item.Ubicacion</span>
-                    <strong>@item.CantidadIncidencias</strong>
-                </div>
-            }
-            @if (!Model.UbicacionesMasFrecuentes.Any())
-            {
-                <div class="reporte-lista-item text-muted">Sin datos en el rango seleccionado.</div>
-            }
-        </div>
-    </div>
+        // Gráfico de barras simple a partir de una serie etiqueta/valor.
+        function barras(idCanvas, datos, etiquetaSerie) {
+            const el = document.getElementById(idCanvas);
+            if (!el) return;
 
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">Mantenimientos por tipo</div>
-            @foreach (var item in Model.MantenimientosPorTipo)
-            {
-                <div class="reporte-lista-item">
-                    <span>@item.Key</span>
-                    <strong>@item.Value</strong>
-                </div>
+            if (!datos || datos.length === 0 || datos.every(d => d.valor === 0)) {
+                vacio(el);
+                return;
             }
-            @if (!Model.MantenimientosPorTipo.Any())
-            {
-                <div class="reporte-lista-item text-muted">Sin mantenimientos registrados.</div>
-            }
-        </div>
-    </div>
-</div>
 
-<div class="row g-3">
-    <div class="col-md-6">
-        <div class="reporte-stat-card">
-            <h6>Mantenimientos Realizados</h6>
-            <h3 class="text-success">@Model.TotalMantenimientosRealizados</h3>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="reporte-stat-card">
-            <h6>Mantenimientos Pendientes</h6>
-            <h3 class="text-warning">@Model.TotalMantenimientosPendientes</h3>
-        </div>
-    </div>
-</div>
+            graficos.push(new Chart(el, {
+                type: 'bar',
+                data: {
+                    labels: datos.map(d => d.etiqueta),
+                    datasets: [{
+                        label: etiquetaSerie,
+                        data: datos.map(d => d.valor),
+                        backgroundColor: VERDE_MEDIO,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            }));
+        }
+
+        // Barras agrupadas: dos series sobre las mismas etiquetas.
+        function barrasDobles(idCanvas, etiquetas, serieA, serieB, nombreA, nombreB) {
+            const el = document.getElementById(idCanvas);
+            if (!el) return;
+
+            if (!etiquetas || etiquetas.length === 0) {
+                vacio(el);
+                return;
+            }
+
+            graficos.push(new Chart(el, {
+                type: 'bar',
+                data: {
+                    labels: etiquetas,
+                    datasets: [
+                        { label: nombreA, data: serieA, backgroundColor: VERDE_FUERTE, borderRadius: 6 },
+                        { label: nombreB, data: serieB, backgroundColor: VERDE_MEDIO, borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            }));
+        }
+
+        barras('grafUsuarios', @Html.Raw(datosRegistrosMes), 'Nuevos usuarios');
+        barrasDobles('grafViviendas', @Html.Raw(etiquetasTipo), @Html.Raw(ocupadasTipo), @Html.Raw(disponiblesTipo), 'Ocupadas', 'Disponibles');
+        barras('grafAreas', @Html.Raw(datosReservasMes), 'Reservas');
+        barras('grafAccesos', @Html.Raw(datosDiaSemana), 'Ingresos');
+        barras('grafIncidencias', @Html.Raw(datosIncidenciasMes), 'Incidencias');
+
+        // Los gráficos de pestañas ocultas nacen con ancho 0: hay que
+        // redimensionarlos cuando la pestaña se muestra por primera vez.
+        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(btn => {
+            btn.addEventListener('shown.bs.tab', () => {
+                graficos.forEach(g => g.resize());
+            });
+        });
+    </script>
+}

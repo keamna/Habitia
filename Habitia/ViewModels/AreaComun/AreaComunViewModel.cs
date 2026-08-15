@@ -18,7 +18,12 @@ namespace Habitia.ViewModels
         [StringLength(20, ErrorMessage = "El código no puede superar los 20 caracteres")]
         public string Codigo { get; set; }
 
-        public int IdTipo { get; set; }
+        // Nullable + mensaje propio: si se deja en "-- Seleccione --" el binder ya no
+        // genera el error en inglés "The IdTipo field is required.", sino este mensaje.
+        [Required(ErrorMessage = "Seleccione el tipo de área")]
+        [Range(1, int.MaxValue, ErrorMessage = "Seleccione el tipo de área")]
+        [Display(Name = "Tipo de área")]
+        public int? IdTipo { get; set; }
 
         [Required(ErrorMessage = "La capacidad es obligatoria")]
         [Range(1, 10000, ErrorMessage = "La capacidad debe ser mayor a 0")]
@@ -26,13 +31,8 @@ namespace Habitia.ViewModels
 
         public bool Estado { get; set; }
 
-        [Required(ErrorMessage = "Ingrese la anticipación mínima")]
-        [Range(0, 168, ErrorMessage = "Ingrese un número válido de horas")]
-        public int AnticipacionHoras { get; set; }
-
-        [Required(ErrorMessage = "Ingrese la anticipación mínima")]
-        [Range(0, 59, ErrorMessage = "Ingrese un número válido de minutos")]
-        public int AnticipacionMinutos { get; set; }
+        // La anticipación mínima ya no se pide acá: ahora se define al crear
+        // cada horario de reserva (ver DisponibilidadFormVM).
 
         [ValidateNever]
         public List<IFormFile> Fotos { get; set; }

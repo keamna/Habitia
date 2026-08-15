@@ -40,7 +40,9 @@
             @if (fotos == null || !fotos.Any(f => f.TB_Estado))
             {
                 <div class="text-center text-secondary py-3">
-                    <img src="~/img/area-default.png" style="max-width:120px;" class="mb-2 d-block mx-auto" />
+                    <div class="area-sin-foto area-sin-foto-grande">
+                        <i class="bi bi-house-door"></i>
+                    </div>
                     Sin fotos cargadas
                 </div>
             }
@@ -126,28 +128,21 @@
 
                     <div class="col-12 col-md-3">
                         <label class="form-label">Fecha</label>
-                        <input type="date" name="Fecha" class="form-control" required />
+                        @* min bloquea los días ya pasados en el selector del navegador *@
+                        <input type="date" name="Fecha" class="form-control"
+                               min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                               value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
                     </div>
 
                     <div class="col-12 col-md-3">
                         <label class="form-label">Hora inicio</label>
                         <div class="d-flex gap-1">
-                            <select name="HoraInicioHora" class="form-select" required>
-                                <option value="">HH</option>
-                                @for (int h = 1; h <= 12; h++)
-                                {
-                                    <option value="@h">@h.ToString("00")</option>
-                                }
-                            </select>
-                            <select name="HoraInicioMinuto" class="form-select" required>
-                                <option value="">MM</option>
-                                <option value="0">00</option>
-                                <option value="15">15</option>
-                                <option value="30">30</option>
-                                <option value="45">45</option>
-                            </select>
-                            <select name="HoraInicioAmPm" class="form-select" required>
-                                <option value="">--</option>
+                            @* Hora y minutos se digitan libremente, ya no salen de una lista fija *@
+                            <input type="number" name="HoraInicioHora" class="form-control"
+                                   min="1" max="12" placeholder="HH" required />
+                            <input type="number" name="HoraInicioMinuto" class="form-control"
+                                   min="0" max="59" placeholder="MM" value="0" required />
+                            <select name="HoraInicioAmPm" class="form-select" style="max-width:90px;" required>
                                 <option value="AM">AM</option>
                                 <option value="PM">PM</option>
                             </select>
@@ -157,29 +152,18 @@
                     <div class="col-12 col-md-3">
                         <label class="form-label">Hora fin</label>
                         <div class="d-flex gap-1">
-                            <select name="HoraFinHora" class="form-select" required>
-                                <option value="">HH</option>
-                                @for (int h = 1; h <= 12; h++)
-                                {
-                                    <option value="@h">@h.ToString("00")</option>
-                                }
-                            </select>
-                            <select name="HoraFinMinuto" class="form-select" required>
-                                <option value="">MM</option>
-                                <option value="0">00</option>
-                                <option value="15">15</option>
-                                <option value="30">30</option>
-                                <option value="45">45</option>
-                            </select>
-                            <select name="HoraFinAmPm" class="form-select" required>
-                                <option value="">--</option>
+                            <input type="number" name="HoraFinHora" class="form-control"
+                                   min="1" max="12" placeholder="HH" required />
+                            <input type="number" name="HoraFinMinuto" class="form-control"
+                                   min="0" max="59" placeholder="MM" value="0" required />
+                            <select name="HoraFinAmPm" class="form-select" style="max-width:90px;" required>
                                 <option value="AM">AM</option>
                                 <option value="PM">PM</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="col-12 col-md-2">
+                    <div class="col-12 col-md-3">
                         <label class="form-label">Cant. personas</label>
                         <input type="number"
                                name="Cantidad"
@@ -190,8 +174,27 @@
                                required />
                     </div>
 
-                    <div class="col-12 col-md-1">
-                        <button type="submit" class="btn btn-primary w-100">Guardar</button>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">Anticipación mínima para cancelar</label>
+                        <div class="d-flex gap-2">
+                            <div class="input-group">
+                                <input type="number" name="AnticipacionHoras" class="form-control"
+                                       min="0" max="168" value="0" required />
+                                <span class="input-group-text">h</span>
+                            </div>
+                            <div class="input-group">
+                                <input type="number" name="AnticipacionMinutos" class="form-control"
+                                       min="0" max="59" value="0" required />
+                                <span class="input-group-text">min</span>
+                            </div>
+                        </div>
+                        <div class="form-text">
+                            Tiempo mínimo antes del horario para que el residente pueda cancelar.
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">Guardar horario</button>
                     </div>
 
                 </div>
@@ -215,6 +218,7 @@
                         <th>Inicio</th>
                         <th>Fin</th>
                         <th>Personas</th>
+                        <th>Anticipación</th>
                         <th>Estado</th>
                         <th class="text-end"></th>
                     </tr>
@@ -224,7 +228,7 @@
                     @if (disponibilidades == null || !disponibilidades.Any())
                     {
                         <tr>
-                            <td colspan="6" class="text-center text-secondary py-4">
+                            <td colspan="7" class="text-center text-secondary py-4">
                                 No hay horarios registrados.
                             </td>
                         </tr>
@@ -238,6 +242,19 @@
                                 <td>@DateTime.Today.Add(d.TF_HoraInicio).ToString("hh:mm tt")</td>
                                 <td>@DateTime.Today.Add(d.TF_HoraFin).ToString("hh:mm tt")</td>
                                 <td>@d.TN_Cantidad</td>
+
+                                <td>
+                                    @if (d.TN_AnticipacionMinima <= 0)
+                                    {
+                                        <span class="text-secondary">Sin restricción</span>
+                                    }
+                                    else
+                                    {
+                                        var horasAnt = d.TN_AnticipacionMinima / 60;
+                                        var minutosAnt = d.TN_AnticipacionMinima % 60;
+                                        <text>@(horasAnt > 0 ? horasAnt + " h " : "")@(minutosAnt > 0 ? minutosAnt + " min" : "")</text>
+                                    }
+                                </td>
 
                                 <td>
                                     @if (!d.TB_Estado)
@@ -264,7 +281,18 @@
                                         <input type="hidden" name="id" value="@d.TN_Id" />
                                         <input type="hidden" name="areaId" value="@Model.TN_Id" />
 
-                                        <button class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                        @* Un horario ya reservado no se puede eliminar *@
+                                        @if (d.TB_Reservado)
+                                        {
+                                            <button class="btn btn-sm btn-outline-secondary" disabled
+                                                    title="No se puede eliminar: ya fue reservado por un residente">
+                                                Eliminar
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                        }
                                     </form>
                                 </td>
                             </tr>

@@ -49,25 +49,10 @@
                     </div>
 
                     <div class="col-12">
-                        <label class="form-label">Anticipación mínima para cancelar</label>
-                        <div class="row g-2">
-                            <div class="col-6 col-md-3">
-                                <div class="input-group">
-                                    <input asp-for="AnticipacionHoras" type="number" min="0" max="168" class="form-control" />
-                                    <span class="input-group-text">h</span>
-                                </div>
-                                <span asp-validation-for="AnticipacionHoras" class="text-danger small"></span>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="input-group">
-                                    <input asp-for="AnticipacionMinutos" type="number" min="0" max="59" class="form-control" />
-                                    <span class="input-group-text">min</span>
-                                </div>
-                                <span asp-validation-for="AnticipacionMinutos" class="text-danger small"></span>
-                            </div>
-                        </div>
-                        <div class="form-text">
-                            Tiempo mínimo antes del horario para que un residente pueda cancelar su reserva.
+                        <div class="alert alert-light border small mb-0">
+                            <i class="bi bi-info-circle me-1"></i>
+                            La <strong>anticipación mínima para cancelar</strong> ahora se define
+                            en cada horario de reserva, desde la pantalla de horarios del área.
                         </div>
                     </div>
 
@@ -87,7 +72,16 @@
                                 @foreach (var foto in Model.FotosExistentes)
                                 {
                                     <div class="col-4 col-md-3 position-relative">
-                                        <img src="@foto.TC_Url" alt="@Model.Nombre" class="img-fluid rounded" style="width:100%; height:100px; object-fit:cover;" />
+                                        @* El marcador queda de fondo; si el archivo no existe, onerror quita la foto. *@
+                                        <div class="area-foto-celda w-100">
+                                            <div class="area-sin-foto" style="width:100%; height:100px;">
+                                                <i class="bi bi-house-door fs-3"></i>
+                                            </div>
+                                            <img src="@foto.TC_Url" alt="@Model.Nombre"
+                                                 class="img-fluid rounded area-foto-encima"
+                                                 style="width:100%; height:100px; object-fit:cover;"
+                                                 onerror="this.remove();" />
+                                        </div>
                                         <button type="button"
                                                 class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle"
                                                 style="width:28px; height:28px; padding:0;"

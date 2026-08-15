@@ -1,51 +1,158 @@
 ﻿@model Habitia.ViewModels.Financiero.Admin.HistorialFinancieroViewModel
 @{
     ViewData["Title"] = "Historial financiero";
+
+    var registros = Model.Registros;
+    var totalPagado = registros.Where(r => r.Estado == "Pagado").Sum(r => r.Monto);
+    var totalPendiente = registros.Where(r => r.Estado == "Pendiente").Sum(r => r.Monto);
+    var totalRevision = registros.Where(r => r.Estado == "En revisión").Sum(r => r.Monto);
 }
+
 <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
 <partial name="_FinancieroTabs" />
 
-<h4 class="mb-3">Historial financiero</h4>
+<div class="mb-3">
+    <h4 class="mb-1">Historial financiero</h4>
+    <p class="text-muted mb-0" style="font-size:.88rem;">
+        Registro completo de cargos, recargos y pagos del condominio.
+    </p>
+</div>
 
-<div class="fin-card">
-    <div class="fin-card-body p-0">
-        <div class="table-responsive">
-            <table class="table fin-table mb-0">
-                <thead>
-                    <tr>
-                        <th>Residente</th>
-                        <th>Tipo</th>
-                        <th>Descripción</th>
-                        <th>Monto</th>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (!Model.Registros.Any())
-                    {
-                        <tr><td colspan="6" class="text-center text-muted py-4">No hay registros</td></tr>
-                    }
-                    @foreach (var r in Model.Registros)
-                    {
-                        var badgeClass = r.Estado switch
-                        {
-                            "Pendiente" => "badge-pendiente",
-                            "En revisión" => "badge-revision",
-                            "Pagado" => "badge-pagado",
-                            _ => "badge-aplicado"
-                        };
-                        <tr>
-                            <td>@r.NombreResidente</td>
-                            <td>@r.TipoRegistro</td>
-                            <td>@r.Descripcion</td>
-                            <td>@r.Monto.ToString("C")</td>
-                            <td>@r.Fecha.ToString("dd/MM/yyyy")</td>
-                            <td><span class="badge @badgeClass">@r.Estado</span></td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+@if (registros.Any())
+{
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-md-3">
+            <div class="fin-card h-100">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">Cobrado</div>
+                    <div class="fin-monto-total">@totalPagado.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="fin-card h-100">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">En revisión</div>
+                    <div class="fin-monto-total" style="color:#0C5460;">@totalRevision.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="fin-card h-100">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">Pendiente</div>
+                    <div class="fin-monto-total" style="color:#856404;">@totalPendiente.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="fin-card h-100">
+                <div class="fin-card-body">
+                    <div class="fin-metrica-label">Registros</div>
+                    <div class="fin-monto-total">@registros.Count</div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Filtros de solo lectura, del lado del navegador -->
+    <div class="row g-2 mb-3">
+        <div class="col-md-5">
+            <input type="text" id="buscarHistorial" class="form-control"
+                   placeholder="Buscar por residente o descripción..." />
+        </div>
+        <div class="col-md-3">
+            <select id="filtroEstado" class="form-select">
+                <option value="">Todos los estados</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="En revisión">En revisión</option>
+                <option value="Pagado">Pagado</option>
+            </select>
+        </div>
+    </div>
+}
+
+<div class="fin-card">
+    <div class="fin-card-header">
+        <i class="bi bi-journal-text"></i>
+        Movimientos
+    </div>
+
+    <div class="fin-card-body p-0">
+        @if (!registros.Any())
+        {
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-journal" style="font-size:2.5rem; color:#C9D6C9;"></i>
+                <p class="mt-3 mb-0">No hay registros financieros todavía.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table fin-table mb-0" id="tablaHistorial">
+                    <thead>
+                        <tr>
+                            <th>Residente</th>
+                            <th>Tipo</th>
+                            <th>Descripción</th>
+                            <th class="text-end">Monto</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in registros)
+                        {
+                            var badgeClass = r.Estado switch
+                            {
+                                "Pendiente" => "badge-pendiente",
+                                "En revisión" => "badge-revision",
+                                "Pagado" => "badge-pagado",
+                                _ => "badge-aplicado"
+                            };
+
+                            <tr data-estado="@r.Estado">
+                                <td class="fw-semibold">@r.NombreResidente</td>
+                                <td>@r.TipoRegistro</td>
+                                <td>@r.Descripcion</td>
+                                <td class="text-end fw-semibold">@r.Monto.ToString("C")</td>
+                                <td class="text-nowrap">@r.Fecha.ToString("dd/MM/yyyy")</td>
+                                <td><span class="badge @badgeClass">@r.Estado</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var buscar = document.getElementById('buscarHistorial');
+            var filtro = document.getElementById('filtroEstado');
+            var tabla = document.getElementById('tablaHistorial');
+
+            if (!tabla) return;
+
+            function aplicar() {
+                var texto = (buscar?.value || '').toLowerCase();
+                var estado = filtro?.value || '';
+
+                tabla.querySelectorAll('tbody tr').forEach(function (fila) {
+                    var coincideTexto = fila.textContent.toLowerCase().includes(texto);
+                    var coincideEstado = estado === '' || fila.dataset.estado === estado;
+
+                    fila.style.display = (coincideTexto && coincideEstado) ? '' : 'none';
+                });
+            }
+
+            buscar?.addEventListener('input', aplicar);
+            filtro?.addEventListener('change', aplicar);
+        })();
+    </script>
+}
