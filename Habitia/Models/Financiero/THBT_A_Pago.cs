@@ -29,7 +29,7 @@ namespace Habitia.Models.Financiero
 
         // Solo tiene valor si el administrador rechaza el pago (US-10, punto 3.4).
         [MaxLength(300)]
-        public string TC_MotivoRechazo { get; set; }
+        public string? TC_MotivoRechazo { get; set; }
 
         [Required]
         public bool TB_Estado { get; set; }

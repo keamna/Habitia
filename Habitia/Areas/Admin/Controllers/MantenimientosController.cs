@@ -123,7 +123,7 @@ namespace Habitia.Areas.Admin.Controllers
             var resultado = personal.Select(u => new
             {
                 id = u.Id,
-                nombre = u.UserName
+                nombre = $"{u.TC_Identificacion} - {u.TC_Nombre} {u.TC_Apellido}"
             });
 
             return Json(resultado);
@@ -424,14 +424,17 @@ namespace Habitia.Areas.Admin.Controllers
             }).ToList();
 
             // Carga inicial completa (personal activo); el JS la reemplaza al elegir un tipo existente.
+            // Se muestra "Identificación - Nombre Apellido" en vez del correo, para que el Admin
+            // reconozca fácilmente a la persona en el select.
             var personalMantenimiento = await _userManager.GetUsersInRoleAsync("Mantenimiento");
             model.PersonalMantenimiento = personalMantenimiento
                 .Where(u => u.TN_Estado == EstadoUsuarioEnum.Activo)
-                .OrderBy(u => u.UserName)
+                .OrderBy(u => u.TC_Nombre)
+                .ThenBy(u => u.TC_Apellido)
                 .Select(u => new SelectListItem
                 {
                     Value = u.Id,
-                    Text = u.UserName
+                    Text = $"{u.TC_Identificacion} - {u.TC_Nombre} {u.TC_Apellido}"
                 }).ToList();
 
             if (!incidenciaFija)

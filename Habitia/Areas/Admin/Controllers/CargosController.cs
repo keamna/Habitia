@@ -45,7 +45,8 @@ namespace Habitia.Areas.Admin.Controllers
                     TF_FechaEmision = c.TF_FechaEmision,
                     TF_FechaVencimiento = c.TF_FechaVencimiento,
                     EstadoCargo = c.EstadoCargo.TC_Nombre,
-                    TB_RecargoAplicado = c.TB_RecargoAplicado // <-- NUEVO
+                    TB_RecargoAplicado = c.TB_RecargoAplicado,
+                    TB_RecargoProgramado = c.TB_RecargoProgramado // <-- NUEVO
                 })
                 .ToListAsync();
 
@@ -62,7 +63,8 @@ namespace Habitia.Areas.Admin.Controllers
             var vm = new CargoCreateViewModel
             {
                 TiposCargo = await ObtenerTiposCargo(),
-                Residentes = await ObtenerResidentesBusqueda()
+                Residentes = await ObtenerResidentesBusqueda(),
+                TiposRecargo = await ObtenerTiposRecargo() // <-- NUEVO
             };
             return View(vm);
         }
@@ -73,9 +75,13 @@ namespace Habitia.Areas.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                // NOTA: sin TempData aquí — no hay redirección, es el mismo request.
+                // TempData sobrevive hasta la SIGUIENTE petición, así que si se usara,
+                // el mensaje quedaría "colgado" y aparecería luego en el Index sin motivo.
+                // Los errores ya se muestran en el formulario vía asp-validation-summary.
                 vm.TiposCargo = await ObtenerTiposCargo();
                 vm.Residentes = await ObtenerResidentesBusqueda();
-                TempData["Error"] = "Debe completar todos los campos obligatorios.";
+                vm.TiposRecargo = await ObtenerTiposRecargo(); // <-- NUEVO
                 return View(vm);
             }
 
@@ -90,7 +96,7 @@ namespace Habitia.Areas.Admin.Controllers
                 var estadoPendiente = await _context.EstadosCargo
                     .FirstAsync(e => e.TC_Nombre == ESTADO_PENDIENTE);
 
-                // --- NUEVO: lista de residentes destino según el modo (único o masivo) ---
+                // --- lista de residentes destino según el modo (único o masivo) ---
                 var residentesDestino = vm.TB_AplicarATodos
                     ? vm.ResidentesSeleccionados
                     : new List<string> { vm.TC_IdResidente! };
@@ -109,7 +115,13 @@ namespace Habitia.Areas.Admin.Controllers
                         TN_MontoTotal = montoTotal,
                         TF_FechaEmision = DateTime.Now,
                         TF_FechaVencimiento = vm.TF_FechaVencimiento!.Value,
-                        TB_Estado = true
+                        TB_Estado = true,
+
+                        // <-- NUEVO: recargo programado
+                        TB_RecargoProgramado = vm.TB_RecargoProgramado,
+                        TN_IdTipoRecargo = vm.TB_RecargoProgramado ? vm.TN_IdTipoRecargo : null,
+                        TN_ValorRecargo = vm.TB_RecargoProgramado ? vm.TN_ValorRecargo : null,
+                        TC_FrecuenciaRecargo = vm.TB_RecargoProgramado ? vm.TC_FrecuenciaRecargo : null
                     };
 
                     _context.Cargos.Add(cargo);
@@ -175,9 +187,9 @@ namespace Habitia.Areas.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                // NOTA: sin TempData aquí, mismo motivo que en Create — no hay redirección.
                 vm.TiposCargo = await ObtenerTiposCargo();
                 vm.Residentes = await ObtenerResidentesBusqueda();
-                TempData["Error"] = "Debe completar todos los campos obligatorios.";
                 return View(vm);
             }
 
@@ -286,6 +298,14 @@ namespace Habitia.Areas.Admin.Controllers
             return await _context.TiposCargo
                 .OrderBy(t => t.TC_Nombre)
                 .Select(t => new SelectListItem { Value = t.TC_Nombre, Text = t.TC_Nombre })
+                .ToListAsync();
+        }
+
+        // <-- NUEVO: mismos tipos que usa RecargosController (Fijo / Porcentaje)
+        private async Task<List<SelectListItem>> ObtenerTiposRecargo()
+        {
+            return await _context.TiposRecargo
+                .Select(t => new SelectListItem { Value = t.TN_Id.ToString(), Text = t.TC_Nombre })
                 .ToListAsync();
         }
 

@@ -1,9 +1,9 @@
 ﻿@model List<Habitia.ViewModels.Financiero.Residente.CargoPendienteViewModel>
 @{
     ViewData["Title"] = "Mis cargos";
+    var tiposCargo = Model.Select(c => c.TipoCargo).Distinct().OrderBy(t => t).ToList();
 }
 <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
-
 <h4 class="mb-3">Mis cargos pendientes y vencidos</h4>
 
 @if (TempData["Mensaje"] != null)
@@ -15,7 +15,56 @@
     <div class="alert alert-danger">@TempData["Error"]</div>
 }
 
-<div class="row g-3">
+@if (Model.Any())
+{
+    <!-- ===== Filtros ===== -->
+    <div class="fin-card mb-3">
+        <div class="fin-card-body">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <input type="text" id="buscarCargo" class="form-control form-control-sm"
+                           placeholder="Buscar por tipo o descripción..." />
+                </div>
+                <div class="col-md-3">
+                    <select id="filtroEstado" class="form-select form-select-sm">
+                        <option value="">Todos los estados</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Vencido">Vencido</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select id="filtroTipo" class="form-select form-select-sm">
+                        <option value="">Todos los tipos</option>
+                        @foreach (var t in tiposCargo)
+                        {
+                            <option value="@t">@t</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select id="ordenCargo" class="form-select form-select-sm">
+                        <option value="vencimiento_asc">Vence primero</option>
+                        <option value="vencimiento_desc">Vence último</option>
+                        <option value="monto_desc">Mayor monto</option>
+                        <option value="monto_asc">Menor monto</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <div class="form-check form-check-inline mt-1">
+                        <input class="form-check-input" type="checkbox" id="filtroConRecargo" />
+                        <label class="form-check-label small" for="filtroConRecargo">
+                            Con recargo (aplicado o programado)
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div id="contadorResultados" class="text-muted small mb-2"></div>
+
+<div class="row g-3" id="contenedorCargos">
     @if (!Model.Any())
     {
         <div class="col-12">
@@ -28,7 +77,15 @@
     }
     @foreach (var c in Model)
     {
-        <div class="col-md-6 col-lg-4">
+        var tieneRecargo = c.TN_MontoRecargo > 0 || c.TB_RecargoProgramado;
+
+        <div class="col-md-6 col-lg-4 tarjeta-cargo"
+             data-estado="@c.EstadoCargo"
+             data-tipo="@c.TipoCargo"
+             data-texto="@($"{c.TipoCargo} {c.TC_Descripcion}".ToLower())"
+             data-vencimiento="@c.TF_FechaVencimiento.ToString("yyyy-MM-dd")"
+             data-monto="@c.TN_MontoTotal"
+             data-recargo="@(tieneRecargo ? "1" : "0")">
             <div class="fin-card h-100">
                 <div class="fin-card-header d-flex justify-content-between align-items-center">
                     <span><i class="bi bi-receipt"></i> @c.TipoCargo</span>
@@ -39,9 +96,7 @@
                     {
                         <p class="text-muted mb-1">@c.TC_Descripcion</p>
                     }
-
                     <p class="fin-monto-total mb-1">@c.TN_MontoTotal.ToString("C")</p>
-
                     @if (c.TN_MontoRecargo > 0)
                     {
                         <p class="small text-danger mb-2">
@@ -49,10 +104,18 @@
                             Incluye recargo por atraso: @c.TN_MontoRecargo.ToString("C")
                         </p>
                     }
-
                     <p class="small mb-1"><strong>Emitido:</strong> @c.TF_FechaEmision.ToString("dd/MM/yyyy")</p>
                     <p class="small mb-3"><strong>Vence:</strong> @c.TF_FechaVencimiento.ToString("dd/MM/yyyy")</p>
-
+                    @if (c.TB_RecargoProgramado && !string.IsNullOrEmpty(c.TextoRecargoProgramado))
+                    {
+                        <div class="alert alert-warning py-2 px-2 small mb-3 d-flex align-items-start gap-2">
+                            <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+                            <span>
+                                Si no paga antes del <strong>@c.TF_FechaVencimiento.ToString("dd/MM/yyyy")</strong>,
+                                se aplicará un recargo automático de <strong>@c.TextoRecargoProgramado</strong>.
+                            </span>
+                        </div>
+                    }
                     <div>
                         <a asp-action="Pagar" asp-route-id="@c.TN_Id" class="btn btn-sm w-100" style="background-color:#336332;color:#fff;">
                             <i class="bi bi-cash-coin"></i> Pagar
@@ -63,3 +126,82 @@
         </div>
     }
 </div>
+
+<div id="sinResultadosFiltro" class="col-12 d-none">
+    <div class="fin-card">
+        <div class="fin-card-body text-center text-muted py-4">
+            <i class="bi bi-search" style="font-size:2rem; color:#C9D6C9;"></i>
+            <p class="mt-2 mb-0">Ningún cargo coincide con los filtros aplicados.</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var buscar = document.getElementById('buscarCargo');
+            var filtroEstado = document.getElementById('filtroEstado');
+            var filtroTipo = document.getElementById('filtroTipo');
+            var filtroConRecargo = document.getElementById('filtroConRecargo');
+            var ordenCargo = document.getElementById('ordenCargo');
+            var contenedor = document.getElementById('contenedorCargos');
+            var contador = document.getElementById('contadorResultados');
+            var sinResultados = document.getElementById('sinResultadosFiltro');
+
+            if (!contenedor) return;
+
+            var tarjetas = Array.from(contenedor.querySelectorAll('.tarjeta-cargo'));
+            if (tarjetas.length === 0) return; // no hay cargos, nada que filtrar
+
+            function aplicarFiltros() {
+                var texto = (buscar.value || '').trim().toLowerCase();
+                var estado = filtroEstado.value;
+                var tipo = filtroTipo.value;
+                var soloConRecargo = filtroConRecargo.checked;
+
+                var visibles = tarjetas.filter(function (t) {
+                    var coincideTexto = !texto || t.dataset.texto.includes(texto);
+                    var coincideEstado = !estado || t.dataset.estado === estado;
+                    var coincideTipo = !tipo || t.dataset.tipo === tipo;
+                    var coincideRecargo = !soloConRecargo || t.dataset.recargo === '1';
+                    return coincideTexto && coincideEstado && coincideTipo && coincideRecargo;
+                });
+
+                tarjetas.forEach(function (t) {
+                    t.style.display = visibles.includes(t) ? '' : 'none';
+                });
+
+                // ===== Orden =====
+                var criterio = ordenCargo.value;
+                var visiblesOrdenadas = visibles.slice().sort(function (a, b) {
+                    switch (criterio) {
+                        case 'vencimiento_desc':
+                            return b.dataset.vencimiento.localeCompare(a.dataset.vencimiento);
+                        case 'monto_desc':
+                            return parseFloat(b.dataset.monto) - parseFloat(a.dataset.monto);
+                        case 'monto_asc':
+                            return parseFloat(a.dataset.monto) - parseFloat(b.dataset.monto);
+                        case 'vencimiento_asc':
+                        default:
+                            return a.dataset.vencimiento.localeCompare(b.dataset.vencimiento);
+                    }
+                });
+                visiblesOrdenadas.forEach(function (t) { contenedor.appendChild(t); });
+
+                sinResultados.classList.toggle('d-none', visibles.length !== 0);
+
+                contador.innerText = visibles.length === tarjetas.length
+                    ? `${tarjetas.length} cargo(s)`
+                    : `${visibles.length} de ${tarjetas.length} cargo(s)`;
+            }
+
+            buscar.addEventListener('input', aplicarFiltros);
+            filtroEstado.addEventListener('change', aplicarFiltros);
+            filtroTipo.addEventListener('change', aplicarFiltros);
+            filtroConRecargo.addEventListener('change', aplicarFiltros);
+            ordenCargo.addEventListener('change', aplicarFiltros);
+
+            aplicarFiltros();
+        })();
+    </script>
+}

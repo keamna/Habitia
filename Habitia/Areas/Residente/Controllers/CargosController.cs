@@ -39,6 +39,7 @@ namespace Habitia.Areas.Residente.Controllers
             var cargos = await _context.Cargos
                 .Include(c => c.TipoCargo)
                 .Include(c => c.EstadoCargo)
+                .Include(c => c.TipoRecargo) // <-- NUEVO: para mostrar "Fijo"/"Porcentaje" en el aviso
                 .Where(c => c.TC_IdResidente == userId
                             && c.TB_Estado
                             && EstadosVisiblesResidente.Contains(c.EstadoCargo.TC_Nombre))
@@ -53,7 +54,14 @@ namespace Habitia.Areas.Residente.Controllers
                     TN_MontoTotal = c.TN_MontoTotal,
                     TF_FechaEmision = c.TF_FechaEmision,
                     TF_FechaVencimiento = c.TF_FechaVencimiento,
-                    EstadoCargo = c.EstadoCargo.TC_Nombre
+                    EstadoCargo = c.EstadoCargo.TC_Nombre,
+
+                    // <-- NUEVO: solo tiene sentido mostrarlo mientras el cargo sigue "Pendiente"
+                    // (si ya está "Vencido", TN_MontoRecargo ya refleja lo aplicado, así que no se duplica el aviso)
+                    TB_RecargoProgramado = c.TB_RecargoProgramado && c.EstadoCargo.TC_Nombre == "Pendiente",
+                    TC_FrecuenciaRecargo = c.TC_FrecuenciaRecargo,
+                    TN_ValorRecargo = c.TN_ValorRecargo,
+                    TipoRecargoNombre = c.TipoRecargo != null ? c.TipoRecargo.TC_Nombre : null
                 })
                 .ToListAsync();
 
@@ -128,11 +136,16 @@ namespace Habitia.Areas.Residente.Controllers
             // Validaciones básicas de negocio antes de tocar el archivo
             if (!ModelState.IsValid)
             {
-                TempData["Error"] = "Debe completar los campos obligatorios";
+                var primerError = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .FirstOrDefault();
+
+                TempData["Error"] = primerError ?? "Debe completar los campos obligatorios";
                 return RedirectToAction(nameof(Pagar), new { id = vm.TN_IdCargo });
             }
 
-            if (vm.TN_IdMetodoPago <= 0)
+            if (vm.TN_IdMetodoPago == null || vm.TN_IdMetodoPago <= 0)
             {
                 TempData["Error"] = "Debe seleccionar un método de pago";
                 return RedirectToAction(nameof(Pagar), new { id = vm.TN_IdCargo });
@@ -194,10 +207,10 @@ namespace Habitia.Areas.Residente.Controllers
                 _context.Pagos.Add(new THBT_A_Pago
                 {
                     TN_IdCargo = cargo.TN_Id,
-                    TN_IdMetodoPago = vm.TN_IdMetodoPago,
+                    TN_IdMetodoPago = vm.TN_IdMetodoPago!.Value,
                     TC_RutaComprobante = $"/uploads/comprobantes/{nombreArchivo}",
                     TF_FechaPago = DateTime.Now,
-                    TC_MotivoRechazo = null, 
+                    TC_MotivoRechazo = null,
                     TB_Estado = true
                 });
 
@@ -220,7 +233,7 @@ namespace Habitia.Areas.Residente.Controllers
             catch (Exception ex)
             {
                 var mensaje = ex.InnerException?.Message ?? ex.Message;
-                TempData["Error"] = "No fue posible completar la operación: " + mensaje; 
+                TempData["Error"] = "No fue posible completar la operación: " + mensaje;
             }
 
             return RedirectToAction(nameof(Index));

@@ -15,22 +15,22 @@ namespace Habitia.ViewModels.Financiero.Admin
         public decimal TN_MontoBase { get; set; }
 
         public bool TB_AplicaIva { get; set; }
-
         public string? TC_Descripcion { get; set; }
 
         [Required(ErrorMessage = "Seleccione la frecuencia")]
         public string TC_Frecuencia { get; set; }
 
         public bool TB_AplicarATodos { get; set; }
-
         public List<string> ResidentesSeleccionados { get; set; } = new();
 
         public bool TB_RecargoProgramado { get; set; }
-
         public int? TN_IdTipoRecargo { get; set; }
 
         [Range(0.01, double.MaxValue, ErrorMessage = "El valor del recargo debe ser mayor a 0")]
         public decimal? TN_ValorRecargo { get; set; }
+
+        // NUEVO: "Unico" o "PorDia"
+        public string? TC_FrecuenciaRecargo { get; set; }
 
         // Solo informativo: no editable, para mostrarlo en la vista
         public DateTime TF_FechaInicio { get; set; }

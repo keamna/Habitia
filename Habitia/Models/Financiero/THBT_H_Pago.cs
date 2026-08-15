@@ -20,7 +20,7 @@ namespace Habitia.Models.Financiero
         public bool TB_Aprobado { get; set; }
 
         [MaxLength(300)]
-        public string TC_MotivoRechazo { get; set; }
+        public string? TC_MotivoRechazo { get; set; }
 
         [Required]
         public DateTime TF_FechaCambio { get; set; }

@@ -1322,3 +1322,9 @@
     background-color: #E7F6EC;
     color: #15803D;
 }
+
+
+.tabla-mantenimiento-tareas.table thead th {
+    text-transform: none !important;
+    letter-spacing: normal;
+}

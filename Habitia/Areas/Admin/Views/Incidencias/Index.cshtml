@@ -1,4 +1,5 @@
-﻿@model List<Habitia.ViewModels.Incidencias.IncidenciaListItemViewModel>
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@model List<Habitia.ViewModels.Incidencias.IncidenciaListItemViewModel>
 @{
     ViewData["Title"] = "Gestión de incidencias";
     var filtro = ViewBag.Filtro as Habitia.ViewModels.Incidencias.IncidenciaFiltroViewModel;
@@ -11,12 +12,28 @@
         _ => "badge-estado-default"
     };
 
+    string TextoEstado(Habitia.Enums.EstadoIncidenciaEnum e) => e switch
+    {
+        Habitia.Enums.EstadoIncidenciaEnum.Pendiente => "Pendiente",
+        Habitia.Enums.EstadoIncidenciaEnum.EnProceso => "En proceso",
+        Habitia.Enums.EstadoIncidenciaEnum.Resuelta => "Resuelta",
+        _ => e.ToString()
+    };
+
     string ClaseBadgePrioridad(Habitia.Enums.PrioridadEnum p) => p switch
     {
         Habitia.Enums.PrioridadEnum.Alta => "badge-prioridad-alta",
         Habitia.Enums.PrioridadEnum.Media => "badge-prioridad-media",
         Habitia.Enums.PrioridadEnum.Baja => "badge-prioridad-baja",
         _ => "badge-prioridad-baja"
+    };
+
+    string TextoPrioridad(Habitia.Enums.PrioridadEnum p) => p switch
+    {
+        Habitia.Enums.PrioridadEnum.Alta => "Alta",
+        Habitia.Enums.PrioridadEnum.Media => "Media",
+        Habitia.Enums.PrioridadEnum.Baja => "Baja",
+        _ => p.ToString()
     };
 
     string ClasePillResponsabilidad(Habitia.Enums.ResponsabilidadEnum? r) => r switch
@@ -26,6 +43,34 @@
         Habitia.Enums.ResponsabilidadEnum.Mixto => "pill-mixto",
         _ => "pill-sin-clasificar"
     };
+
+    string TextoResponsabilidad(Habitia.Enums.ResponsabilidadEnum? r) => r switch
+    {
+        Habitia.Enums.ResponsabilidadEnum.Privado => "Privado",
+        Habitia.Enums.ResponsabilidadEnum.Comun => "Común",
+        Habitia.Enums.ResponsabilidadEnum.Mixto => "Mixto",
+        _ => "Sin responsabilidad"
+    };
+
+    // Opciones armadas a mano (sin Html.GetEnumSelectList) para controlar
+    // el texto que se muestra: "En proceso" en vez de "EnProceso".
+    var opcionesEstado = Enum.GetValues<Habitia.Enums.EstadoIncidenciaEnum>()
+        .Select(e => new SelectListItem
+        {
+            Value = e.ToString(),
+            Text = TextoEstado(e),
+            Selected = filtro?.Estado == e
+        })
+        .ToList();
+
+    var opcionesResponsabilidad = Enum.GetValues<Habitia.Enums.ResponsabilidadEnum>()
+        .Select(r => new SelectListItem
+        {
+            Value = r.ToString(),
+            Text = TextoResponsabilidad(r),
+            Selected = filtro?.Responsabilidad == r
+        })
+        .ToList();
 }
 
 <partial name="_IncidenciaTabs" />
@@ -53,13 +98,13 @@
     <form asp-action="Index" method="get" class="row g-2 align-items-end">
         <div class="col-md-2">
             <label class="form-label small text-muted mb-1">Estado</label>
-            <select name="Estado" class="form-select" asp-items="Html.GetEnumSelectList<Habitia.Enums.EstadoIncidenciaEnum>()">
+            <select name="Estado" class="form-select" asp-items="opcionesEstado">
                 <option value="">Todos los estados</option>
             </select>
         </div>
         <div class="col-md-2">
             <label class="form-label small text-muted mb-1">Responsabilidad</label>
-            <select name="Responsabilidad" class="form-select" asp-items="Html.GetEnumSelectList<Habitia.Enums.ResponsabilidadEnum>()">
+            <select name="Responsabilidad" class="form-select" asp-items="opcionesResponsabilidad">
                 <option value="">Toda responsabilidad</option>
             </select>
         </div>
@@ -124,17 +169,17 @@
                         <td class="ubicacion-celda">@item.Ubicacion</td>
                         <td class="fecha-celda">@item.FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</td>
                         <td>
-                            <span class="badge-estado @ClaseBadgeEstado(item.Estado)">@item.Estado</span>
+                            <span class="badge-estado @ClaseBadgeEstado(item.Estado)">@TextoEstado(item.Estado)</span>
                         </td>
                         <td>
                             <span class="pill-responsabilidad @ClasePillResponsabilidad(item.Responsabilidad)">
-                                @(item.Responsabilidad?.ToString() ?? "N/D")
+                                @TextoResponsabilidad(item.Responsabilidad)
                             </span>
                         </td>
                         <td>
                             @if (item.Prioridad.HasValue)
                             {
-                                <span class="badge-prioridad @ClaseBadgePrioridad(item.Prioridad.Value)">@item.Prioridad</span>
+                                <span class="badge-prioridad @ClaseBadgePrioridad(item.Prioridad.Value)">@TextoPrioridad(item.Prioridad.Value)</span>
                             }
                             else
                             {
@@ -183,6 +228,17 @@
                                     <div class="fila-detalle-item">
                                         <span class="meta-label">Identificación</span>
                                         <span class="meta-valor">@(item.ReportanteIdentificacion ?? "N/D")</span>
+                                    </div>
+                                    <div class="fila-detalle-item">
+                                        <span class="meta-label">Código de vivienda</span>
+                                        @if (!string.IsNullOrEmpty(item.ReportanteCodigoVivienda))
+                                        {
+                                            <span class="meta-valor">@item.ReportanteCodigoVivienda</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="meta-valor text-muted fst-italic">Sin vivienda</span>
+                                        }
                                     </div>
                                     <div class="fila-detalle-item">
                                         <span class="meta-label">Teléfono</span>
