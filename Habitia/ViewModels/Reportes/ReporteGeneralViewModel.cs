@@ -109,6 +109,30 @@
 
 
     // =====================================================
+    // MANTENIMIENTO
+    // =====================================================
+    public class ReporteMantenimientoViewModel
+    {
+        public int Total { get; set; }
+        public int Programados { get; set; }
+        public int EnProceso { get; set; }
+        public int Completados { get; set; }
+        public int Cancelados { get; set; }
+
+        // Trabajos que ya deberían haber arrancado y siguen sin iniciar
+        public int Atrasados { get; set; }
+
+        // Promedio de días entre el inicio y el cierre de los completados
+        public double PromedioDiasResolucion { get; set; }
+
+        public List<ConteoReporteViewModel> PorTipo { get; set; } = new();
+        public List<ConteoReporteViewModel> PorPersonal { get; set; } = new();
+        public List<ConteoReporteViewModel> PorUbicacion { get; set; } = new();
+        public List<ConteoReporteViewModel> PorMes { get; set; } = new();
+    }
+
+
+    // =====================================================
     // CONTENEDOR DE TODOS LOS REPORTES
     // =====================================================
     public class ReporteGeneralViewModel
@@ -127,5 +151,7 @@
         // Va acá y no dentro de ReporteIncidenciasViewModel para no modificar
         // esa clase, que pertenece al módulo de incidencias.
         public List<ConteoReporteViewModel> IncidenciasPorMes { get; set; } = new();
+
+        public ReporteMantenimientoViewModel Mantenimiento { get; set; } = new();
     }
-} 
+}
