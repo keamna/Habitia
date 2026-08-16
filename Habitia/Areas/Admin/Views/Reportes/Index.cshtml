@@ -13,6 +13,7 @@
     var datosReservasMes = Serie(Model.AreasComunes.ReservasPorMes);
     var datosIncidenciasMes = Serie(Model.IncidenciasPorMes);
     var datosDiaSemana = Serie(Model.Accesos.IngresosPorDiaSemana);
+    var datosMantenimientoMes = Serie(Model.Mantenimiento.PorMes);
 
     // Viviendas: comparativa ocupadas vs disponibles por tipo.
     var etiquetasTipo = JsonSerializer.Serialize(Model.Viviendas.OcupadasPorTipo.Select(x => x.Etiqueta));
@@ -242,6 +243,11 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabIncidencias" type="button" role="tab">
                 <i class="bi bi-exclamation-triangle-fill me-1"></i> Incidencias
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabMantenimiento" type="button" role="tab">
+                <i class="bi bi-tools me-1"></i> Mantenimiento
             </button>
         </li>
     </ul>
@@ -799,32 +805,6 @@
                 </div>
             </div>
 
-            <div class="panel-seccion">
-                <div class="panel-seccion-titulo">Mantenimiento</div>
-                <div class="panel-cifras" style="--cols:2;">
-                    <div class="panel-cifra">
-                        <div class="panel-cifra-top">
-                            <span class="panel-cifra-icono panel-cifra-icono-verde">
-                                <i class="bi bi-check2-all"></i>
-                            </span>
-                        </div>
-                        <div class="panel-cifra-valor">@Model.Incidencias.TotalMantenimientosRealizados</div>
-                        <div class="panel-cifra-titulo">Mantenimientos realizados</div>
-                        <div class="panel-cifra-meta">Completados</div>
-                    </div>
-                    <div class="panel-cifra">
-                        <div class="panel-cifra-top">
-                            <span class="panel-cifra-icono panel-cifra-icono-ambar">
-                                <i class="bi bi-clipboard-check"></i>
-                            </span>
-                        </div>
-                        <div class="panel-cifra-valor">@Model.Incidencias.TotalMantenimientosPendientes</div>
-                        <div class="panel-cifra-titulo">Mantenimientos pendientes</div>
-                        <div class="panel-cifra-meta">Programados o en proceso</div>
-                    </div>
-                </div>
-            </div>
-
 
             <div class="panel-seccion">
                 <div class="panel-seccion-titulo">Incidencias reportadas por mes</div>
@@ -894,22 +874,164 @@
                             </div>
                         }
                     </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ===================== MANTENIMIENTO ===================== -->
+        <div class="tab-pane fade" id="tabMantenimiento" role="tabpanel">
+
+            <h4 class="solo-impresion mb-3">Mantenimiento</h4>
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Estado de las tareas</div>
+                <div class="panel-cifras" style="--cols:4;">
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-tools"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Mantenimiento.Total</div>
+                        <div class="panel-cifra-titulo">Total de tareas</div>
+                        <div class="panel-cifra-meta">En el rango seleccionado</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-ambar">
+                                <i class="bi bi-clipboard-check"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Mantenimiento.Programados</div>
+                        <div class="panel-cifra-titulo">Programadas</div>
+                        <div class="panel-cifra-meta">Todavía sin iniciar</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-azul">
+                                <i class="bi bi-gear-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Mantenimiento.EnProceso</div>
+                        <div class="panel-cifra-titulo">En proceso</div>
+                        <div class="panel-cifra-meta">Con trabajo iniciado</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-check2-all"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Mantenimiento.Completados</div>
+                        <div class="panel-cifra-titulo">Completadas</div>
+                        <div class="panel-cifra-meta">Cerradas</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Indicadores</div>
+                <div class="panel-cifras" style="--cols:3;">
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-rojo">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Mantenimiento.Atrasados</div>
+                        <div class="panel-cifra-titulo">Atrasadas</div>
+                        <div class="panel-cifra-meta">Debieron iniciar y siguen programadas</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-azul">
+                                <i class="bi bi-stopwatch"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Mantenimiento.PromedioDiasResolucion.ToString("0.#")</div>
+                        <div class="panel-cifra-titulo">Días promedio</div>
+                        <div class="panel-cifra-meta">Desde el inicio hasta el cierre</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-secundario">
+                                <i class="bi bi-x-circle"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Mantenimiento.Cancelados</div>
+                        <div class="panel-cifra-titulo">Canceladas</div>
+                        <div class="panel-cifra-meta">Descartadas</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Tareas registradas por mes</div>
+                <div class="reporte-grafico-card">
+                    <div class="reporte-grafico">
+                        <canvas id="grafMantenimiento"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Desglose</div>
+                <div class="panel-columnas">
                     <div class="panel-lista-card">
                         <div class="panel-lista-header">
-                            <h6>Mantenimientos por tipo</h6>
+                            <h6>Por tipo de mantenimiento</h6>
                         </div>
-                        @if (!Model.Incidencias.MantenimientosPorTipo.Any())
+                        @if (!Model.Mantenimiento.PorTipo.Any())
                         {
                             <div class="panel-lista-vacia">
                                 <i class="bi bi-bar-chart"></i>
                                 Sin mantenimientos registrados.
                             </div>
                         }
-                        @foreach (var item in Model.Incidencias.MantenimientosPorTipo)
+                        @foreach (var item in Model.Mantenimiento.PorTipo)
                         {
                             <div class="panel-lista-item">
-                                <div class="panel-item-titulo">@item.Key</div>
-                                <span class="panel-badge panel-badge-secondary">@item.Value</span>
+                                <div class="panel-item-titulo">@item.Etiqueta</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Cantidad</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Carga por personal (top 5)</h6>
+                        </div>
+                        @if (!Model.Mantenimiento.PorPersonal.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin tareas asignadas.
+                            </div>
+                        }
+                        @foreach (var item in Model.Mantenimiento.PorPersonal)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Etiqueta</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Cantidad</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Por ubicación (top 5)</h6>
+                        </div>
+                        @if (!Model.Mantenimiento.PorUbicacion.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin datos en el rango.
+                            </div>
+                        }
+                        @foreach (var item in Model.Mantenimiento.PorUbicacion)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Etiqueta</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Cantidad</span>
                             </div>
                         }
                     </div>
@@ -982,6 +1104,14 @@
                            value="tabIncidencias" checked />
                     <label class="form-check-label" for="chkIncidencias">
                         <i class="bi bi-exclamation-triangle-fill me-1"></i> Incidencias y mantenimiento
+                    </label>
+                </div>
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input chk-seccion" type="checkbox" id="chkMantenimiento"
+                           value="tabMantenimiento" checked />
+                    <label class="form-check-label" for="chkMantenimiento">
+                        <i class="bi bi-tools me-1"></i> Mantenimiento
                     </label>
                 </div>
 
@@ -1077,6 +1207,7 @@
         barras('grafAreas', @Html.Raw(datosReservasMes), 'Reservas');
         barras('grafAccesos', @Html.Raw(datosDiaSemana), 'Ingresos');
         barras('grafIncidencias', @Html.Raw(datosIncidenciasMes), 'Incidencias');
+        barras('grafMantenimiento', @Html.Raw(datosMantenimientoMes), 'Tareas');
 
         // Los gráficos de pestañas ocultas nacen con ancho 0: hay que
         // redimensionarlos cuando la pestaña se muestra por primera vez.

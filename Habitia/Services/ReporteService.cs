@@ -113,6 +113,8 @@ namespace Habitia.Services
 
             modelo.IncidenciasPorMes = AgruparPorMes(fechasIncidencias);
 
+            modelo.Mantenimiento = await ReporteMantenimientoAsync(desde, hasta);
+
             return modelo;
         }
 
@@ -388,6 +390,82 @@ namespace Habitia.Services
                 })
                 .OrderByDescending(x => x.Cantidad)
                 .ToList();
+
+            return r;
+        }
+
+
+        // ===================== MANTENIMIENTO =====================
+        private async Task<ReporteMantenimientoViewModel> ReporteMantenimientoAsync(DateTime? desde, DateTime? hasta)
+        {
+            var query = _context.Mantenimientos
+                .Include(m => m.Tipo)
+                .Include(m => m.PersonalAsignado)
+                .Include(m => m.AreaComun)
+                .AsQueryable();
+
+            if (desde.HasValue)
+                query = query.Where(m => m.TF_FechaRegistro >= desde.Value);
+
+            if (hasta.HasValue)
+                query = query.Where(m => m.TF_FechaRegistro <= hasta.Value);
+
+            var tareas = await query.ToListAsync();
+
+            var r = new ReporteMantenimientoViewModel
+            {
+                Total = tareas.Count,
+                Programados = tareas.Count(m => m.TN_Estado == EstadoMantenimientoEnum.Programado),
+                EnProceso = tareas.Count(m => m.TN_Estado == EstadoMantenimientoEnum.EnProceso),
+                Completados = tareas.Count(m => m.TN_Estado == EstadoMantenimientoEnum.Completado),
+                Cancelados = tareas.Count(m => m.TN_Estado == EstadoMantenimientoEnum.Cancelado)
+            };
+
+            // Programados cuya fecha de inicio ya pasó y siguen sin arrancar.
+            r.Atrasados = tareas.Count(m =>
+                m.TN_Estado == EstadoMantenimientoEnum.Programado &&
+                m.TF_FechaInicio.HasValue &&
+                m.TF_FechaInicio.Value.Date < DateTime.Today);
+
+            // Días promedio entre inicio y cierre, solo de los completados.
+            var cerrados = tareas
+                .Where(m => m.TN_Estado == EstadoMantenimientoEnum.Completado &&
+                            m.TF_FechaInicio.HasValue &&
+                            m.TF_FechaFin.HasValue)
+                .ToList();
+
+            r.PromedioDiasResolucion = cerrados.Any()
+                ? Math.Round(cerrados.Average(m => (m.TF_FechaFin!.Value - m.TF_FechaInicio!.Value).TotalDays), 1)
+                : 0;
+
+            r.PorTipo = tareas
+                .GroupBy(m => m.Tipo != null ? m.Tipo.TC_Nombre : "Sin tipo")
+                .Select(g => new ConteoReporteViewModel { Etiqueta = g.Key, Cantidad = g.Count() })
+                .OrderByDescending(x => x.Cantidad)
+                .ToList();
+
+            r.PorPersonal = tareas
+                .GroupBy(m => m.PersonalAsignado != null
+                    ? m.PersonalAsignado.TC_Nombre + " " + m.PersonalAsignado.TC_Apellido
+                    : "Sin asignar")
+                .Select(g => new ConteoReporteViewModel { Etiqueta = g.Key, Cantidad = g.Count() })
+                .OrderByDescending(x => x.Cantidad)
+                .Take(5)
+                .ToList();
+
+            r.PorUbicacion = tareas
+                .GroupBy(m => m.AreaComun != null ? m.AreaComun.TC_Nombre : "Vivienda o sin área")
+                .Select(g => new ConteoReporteViewModel { Etiqueta = g.Key, Cantidad = g.Count() })
+                .OrderByDescending(x => x.Cantidad)
+                .Take(5)
+                .ToList();
+
+            // Tendencia mensual sobre todas las tareas, sin filtro de rango.
+            var todas = await _context.Mantenimientos
+                .Select(m => m.TF_FechaRegistro)
+                .ToListAsync();
+
+            r.PorMes = AgruparPorMes(todas);
 
             return r;
         }
