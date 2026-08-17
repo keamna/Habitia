@@ -17,11 +17,13 @@
         public string? TC_FrecuenciaRecargo { get; set; } // "Unico" o "PorDia"
         public decimal? TN_ValorRecargo { get; set; }
         public string? TipoRecargoNombre { get; set; } // "Fijo" o "Porcentaje"
+        public string? NumeroVivienda { get; set; } // NUEVO
 
         public string BadgeClass => EstadoCargo switch
         {
             "Pendiente" => "badge-pendiente",
             "Vencido" => "badge-vencido",
+            "En revisión" => "badge-revision",
             _ => "badge-aplicado"
         };
 

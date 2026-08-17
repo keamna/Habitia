@@ -1,5 +1,4 @@
-﻿// /ViewModels/Financiero/Admin/PagoDetalleViewModel.cs
-namespace Habitia.ViewModels.Financiero.Admin
+﻿namespace Habitia.ViewModels.Financiero.Admin
 {
     public class PagoDetalleViewModel
     {
@@ -17,13 +16,20 @@ namespace Habitia.ViewModels.Financiero.Admin
         public bool TB_AplicaIva { get; set; }
         public decimal TN_MontoIva { get; set; }
         public decimal TN_MontoTotal { get; set; }
+
+        // recargo ya aplicado a este cargo (la diferencia entre el total y base+IVA)
+        public decimal TN_MontoRecargo => Math.Max(0, TN_MontoTotal - TN_MontoBase - TN_MontoIva);
+
         public DateTime TF_FechaEmision { get; set; }
         public DateTime TF_FechaVencimiento { get; set; }
 
         public string MetodoPago { get; set; }
         public DateTime TF_FechaPago { get; set; }
-        public string TC_RutaComprobante { get; set; }
+        public string? TC_RutaComprobante { get; set; }
 
         public string EstadoCargo { get; set; }
+
+        // NUEVO: vivienda asociada al cargo, si tiene
+        public string? NumeroVivienda { get; set; }
     }
 }

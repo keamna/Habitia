@@ -370,3 +370,88 @@ label[for="EsVisitanteNuevo"] {
     .acc-btn-salida i {
         font-size: 12px;
     }
+
+/* ---------- Modal Confirmación de Creación (éxito) ---------- */
+
+.acc-modal-icon-success {
+    background-color: #DCFCE7;
+}
+
+    .acc-modal-icon-success i {
+        font-size: 26px;
+        color: var(--habitia-green-active);
+    }
+
+#modalConfirmacionCreacion .acc-modal-titulo {
+    color: #101010;
+}
+
+#modalConfirmacionCreacion .acc-modal-desc {
+    margin-bottom: 4px;
+}
+
+    #modalConfirmacionCreacion .acc-modal-desc strong {
+        color: #1a1a1a;
+    }
+
+#modalConfirmacionCreacion .btn {
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13.5px;
+    padding: 10px 20px;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+#modalConfirmacionCreacion .acc-btn-green:hover {
+    transform: translateY(-1px);
+}
+
+/* Detalle resumen dentro del modal (ej: código generado, vivienda, monto) */
+.acc-modal-resumen {
+    background-color: var(--habitia-bg);
+    border: 1px solid var(--habitia-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 14px 0 18px 0;
+    text-align: left;
+}
+
+    .acc-modal-resumen .acc-detalle-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--habitia-text-gray);
+        margin-bottom: 2px;
+    }
+
+    .acc-modal-resumen .acc-detalle-valor {
+        font-size: 0.9rem;
+        color: #1a1a1a;
+        font-weight: 500;
+        margin-bottom: 10px;
+    }
+
+        .acc-modal-resumen .acc-detalle-valor:last-child {
+            margin-bottom: 0;
+        }
+
+/* Animación de check al abrir */
+.acc-modal-icon-success i {
+    animation: accCheckPop .35s ease;
+}
+
+@keyframes accCheckPop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    60% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}

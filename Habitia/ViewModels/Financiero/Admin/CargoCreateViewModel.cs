@@ -8,9 +8,12 @@ namespace Habitia.ViewModels.Financiero.Admin
         // Ya NO lleva [Required] aquí: la validación condicional se hace en Validate()
         public string? TC_IdResidente { get; set; }
 
-        // --- Modo aplicar a todos ---
+        // --- Modo aplicar a todos: ahora selecciona pares vivienda-residente ---
         public bool TB_AplicarATodos { get; set; }
-        public List<string> ResidentesSeleccionados { get; set; } = new();
+        public List<int> ViviendaUsuarioSeleccionados { get; set; } = new(); // ids de THBT_A_ViviendaUsuario
+
+        // --- viviendas del residente elegido en modo individual (solo si tiene 2+) ---
+        public List<int> ViviendasSeleccionadas { get; set; } = new();
 
         [Required(ErrorMessage = "Debe indicar el tipo de cargo")]
         public string TC_TipoCargoTexto { get; set; }
@@ -26,27 +29,28 @@ namespace Habitia.ViewModels.Financiero.Admin
 
         public string? TC_Descripcion { get; set; }
 
-        // --- NUEVO: recargo programado (se aplica si el cargo vence) ---
+        // --- Recargo programado (se aplica si el cargo vence) ---
         public bool TB_RecargoProgramado { get; set; }
         public int? TN_IdTipoRecargo { get; set; }
         public decimal? TN_ValorRecargo { get; set; }
-        // "Unico" o "PorDia"
         public string? TC_FrecuenciaRecargo { get; set; }
 
         public List<SelectListItem> TiposCargo { get; set; } = new();
         public List<ResidenteBusquedaViewModel> Residentes { get; set; } = new();
-        public List<SelectListItem> TiposRecargo { get; set; } = new(); // <-- NUEVO
+        public List<SelectListItem> TiposRecargo { get; set; } = new();
+
+        // NUEVO: pares vivienda-residente para la tabla del modo masivo
+        public List<ViviendaResidenteViewModel> ViviendasResidentes { get; set; } = new();
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            // --- validación condicional de residente(s) ---
             if (TB_AplicarATodos)
             {
-                if (ResidentesSeleccionados == null || ResidentesSeleccionados.Count == 0)
+                if (ViviendaUsuarioSeleccionados == null || ViviendaUsuarioSeleccionados.Count == 0)
                 {
                     yield return new ValidationResult(
-                        "Debe seleccionar al menos un residente.",
-                        new[] { nameof(ResidentesSeleccionados) });
+                        "Debe seleccionar al menos una vivienda.",
+                        new[] { nameof(ViviendaUsuarioSeleccionados) });
                 }
             }
             else if (string.IsNullOrWhiteSpace(TC_IdResidente))
@@ -55,6 +59,10 @@ namespace Habitia.ViewModels.Financiero.Admin
                     "Debe seleccionar un residente.",
                     new[] { nameof(TC_IdResidente) });
             }
+            // NOTA: si el residente individual tiene 2+ viviendas y ViviendasSeleccionadas
+            // queda vacío, el controller decide (ver comentario en CargosController.Create).
+            // No se valida aquí porque el count de viviendas del residente no se conoce
+            // en el ViewModel sin una consulta a la base de datos.
 
             if (TN_MontoBase.HasValue && TN_MontoBase.Value <= 0)
             {
@@ -76,7 +84,6 @@ namespace Habitia.ViewModels.Financiero.Admin
                     new[] { nameof(TF_FechaVencimiento) });
             }
 
-            // --- NUEVO: validación condicional del recargo programado ---
             if (TB_RecargoProgramado)
             {
                 if (TN_IdTipoRecargo == null)

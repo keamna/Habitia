@@ -26,6 +26,13 @@
                     <span asp-validation-for="TC_IdResidente" class="text-danger small"></span>
                 </div>
 
+                <!-- ===== NUEVO: vivienda del residente (solo si tiene 2+) ===== -->
+                <div class="col-md-6 d-none" id="viviendaWrapper">
+                    <label class="form-label">Vivienda</label>
+                    <select id="selectVivienda" name="TN_IdVivienda" class="form-select"></select>
+                    <div class="form-text">Este residente tiene varias viviendas asociadas.</div>
+                </div>
+
                 <div class="col-md-6">
                     <label class="form-label">Tipo de cargo</label>
                     <select id="tipoCargoSelect" class="form-select mb-2">
@@ -181,6 +188,44 @@
         document.getElementById('aplicaIva').addEventListener('change', calcularTotal);
         calcularTotal(); // ejecutar al cargar para mostrar el desglose con los valores precargados
 
+        // ================== NUEVO: vivienda del residente ==================
+        const viviendaWrapper = document.getElementById('viviendaWrapper');
+        const selectVivienda = document.getElementById('selectVivienda');
+        const viviendaActualId = @(Model.TN_IdVivienda?.ToString() ?? "null");
+
+        async function cargarViviendasDeResidente(idResidente) {
+            selectVivienda.innerHTML = '';
+            viviendaWrapper.classList.add('d-none');
+            if (!idResidente) return;
+
+            try {
+                const resp = await fetch('@Url.Action("ObtenerViviendasDeResidente", "Cargos")?idResidente=' + encodeURIComponent(idResidente));
+                const viviendas = await resp.json();
+
+                if (viviendas.length <= 1) {
+                    return; // 0 o 1 vivienda: no hace falta elegir
+                }
+
+                viviendas.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.tN_Id;
+                    opt.textContent = 'Vivienda ' + v.tC_Numero;
+                    if (viviendaActualId !== null && v.tN_Id === viviendaActualId) {
+                        opt.selected = true;
+                    }
+                    selectVivienda.appendChild(opt);
+                });
+
+                viviendaWrapper.classList.remove('d-none');
+            } catch (e) {
+                // si falla, el controller conserva la vivienda ya guardada
+            }
+        }
+
+        // Carga inicial: el residente ya viene precargado desde el servidor
+        cargarViviendasDeResidente(document.getElementById('TC_IdResidente').value);
+
+        // ================== Buscador de residentes (modal único) ==================
         document.getElementById('buscadorResidente').addEventListener('input', function () {
             const filtro = this.value.trim().toLowerCase();
             const filas = document.querySelectorAll('#tablaResidentes .fila-residente');
@@ -196,9 +241,12 @@
 
         document.querySelectorAll('.fila-residente').forEach(fila => {
             fila.addEventListener('click', function () {
-                document.getElementById('TC_IdResidente').value = this.dataset.id;
+                const idResidente = this.dataset.id;
+                document.getElementById('TC_IdResidente').value = idResidente;
                 document.getElementById('residenteDisplay').value = `${this.dataset.identificacion} - ${this.dataset.nombre}`;
                 bootstrap.Modal.getInstance(document.getElementById('modalResidentes')).hide();
+
+                cargarViviendasDeResidente(idResidente); // <-- NUEVO: si cambia el residente, recarga sus viviendas
             });
         });
 

@@ -21,6 +21,12 @@
         </p>
     </div>
     <span class="badge badge-revision ms-2">@Model.EstadoCargo</span>
+    @if (Model.TN_MontoRecargo > 0)
+    {
+        <span class="badge" style="background-color:#B02A37;">
+            <i class="bi bi-graph-up-arrow"></i> Incluye recargo
+        </span>
+    }
 </div>
 
 @if (TempData["Error"] != null)
@@ -96,6 +102,13 @@
                         <div class="text-muted" style="font-size:.75rem; text-transform:uppercase;">Identificación</div>
                         <div>@Model.IdentificacionResidente</div>
                     </div>
+                    @if (!string.IsNullOrEmpty(Model.NumeroVivienda))
+                    {
+                        <div class="col-sm-6">
+                            <div class="text-muted" style="font-size:.75rem; text-transform:uppercase;">Vivienda</div>
+                            <div><i class="bi bi-house-door"></i> @Model.NumeroVivienda</div>
+                        </div>
+                    }
                     <div class="col-sm-6">
                         <div class="text-muted" style="font-size:.75rem; text-transform:uppercase;">Correo</div>
                         <div>@(string.IsNullOrWhiteSpace(Model.CorreoResidente) ? "—" : Model.CorreoResidente)</div>
@@ -173,11 +186,31 @@
                     <span>@Model.TN_MontoIva.ToString("C")</span>
                 </div>
 
+                @if (Model.TN_MontoRecargo > 0)
+                {
+                    <div class="d-flex justify-content-between mb-2 text-danger">
+                        <span><i class="bi bi-graph-up-arrow"></i> Recargo por atraso</span>
+                        <span>@Model.TN_MontoRecargo.ToString("C")</span>
+                    </div>
+                }
+
                 <div class="d-flex justify-content-between align-items-center pt-2"
                      style="border-top:1px solid #ECECEC;">
                     <span class="fw-semibold">Total a validar</span>
                     <span class="fin-monto-total">@Model.TN_MontoTotal.ToString("C")</span>
                 </div>
+
+                @if (Model.TN_MontoRecargo > 0)
+                {
+                    <div class="alert alert-warning mt-3 mb-0 py-2 px-3 d-flex align-items-start gap-2" style="font-size:.85rem;">
+                        <i class="bi bi-info-circle-fill mt-1"></i>
+                        <span>
+                            Este cargo venció el <strong>@Model.TF_FechaVencimiento.ToString("dd/MM/yyyy")</strong>
+                            y se le aplicó un recargo por atraso de <strong>@Model.TN_MontoRecargo.ToString("C")</strong>,
+                            ya incluido en el total a validar.
+                        </span>
+                    </div>
+                }
             </div>
         </div>
 

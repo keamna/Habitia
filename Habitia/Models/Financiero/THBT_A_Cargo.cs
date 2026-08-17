@@ -12,6 +12,8 @@ namespace Habitia.Models.Financiero
         public int TN_Id { get; set; }
         [Required]
         public string TC_IdResidente { get; set; }
+        // vivienda a la que corresponde este cargo (un residente puede tener varias)
+        public int? TN_IdVivienda { get; set; }
         [Required]
         public int TN_IdTipoCargo { get; set; }
 
@@ -49,6 +51,9 @@ namespace Habitia.Models.Financiero
         // Relaciones
         [ForeignKey(nameof(TC_IdResidente))]
         public ApplicationUser Residente { get; set; }
+        // NUEVO
+        [ForeignKey(nameof(TN_IdVivienda))]
+        public Vivienda? Vivienda { get; set; }
         [ForeignKey(nameof(TN_IdTipoCargo))]
         public THBT_CAT_TipoCargo TipoCargo { get; set; }
         [ForeignKey(nameof(TN_IdEstadoCargo))]

@@ -100,7 +100,7 @@ namespace Habitia.Controllers
 
                 ModelState.AddModelError(
                     "",
-                    "Su solicitud fue rechazada."
+                    "Su cuenta no ha sido aceptada. Inténtelo de nuevo."
                 );
 
                 return View(model);
