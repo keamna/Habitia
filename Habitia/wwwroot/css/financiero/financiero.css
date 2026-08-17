@@ -331,12 +331,7 @@
     text-align: center;
     line-height: 1.6;
     margin-bottom: 0;
-    .fin-tab.active {
-        background-color: #FFFFFF;
-        color: #336332;
-        border-color: #ECECEC;
-        box-shadow: 0 -2px 0 #336332 inset;
-    }
+}
 
 /* Badges faltantes */
 .badge-vencido {
@@ -356,3 +351,26 @@
     letter-spacing: .05em;
     color: #848484;
 }
+
+/* ===== Comprobante de pago (vista Revisar pago) ===== */
+.fin-comprobante-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 420px;
+    max-height: 420px;
+    overflow: hidden;
+    background-color: #F8F9FA;
+    border: 1px solid #ECECEC;
+    border-radius: 8px;
+}
+
+    .fin-comprobante-preview img {
+        max-width: 100% !important;
+        max-height: 100% !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+        display: block;
+        cursor: zoom-in;
+    }

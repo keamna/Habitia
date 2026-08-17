@@ -381,6 +381,13 @@ namespace Habitia.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Rechazar([FromBody] AprobarSolicitudVM model)
         {
+            var usuario = await _userManager.FindByIdAsync(model.Id);
+
+            if (usuario == null)
+            {
+                return Json(new { success = false, message = "Usuario no encontrado" });
+            }
+
             var viviendaUsuario = await _context.ViviendaUsuarios
                 .FirstOrDefaultAsync(x =>
                     x.TC_IdUsuario == model.Id &&
@@ -393,6 +400,10 @@ namespace Habitia.Areas.Admin.Controllers
             }
 
             viviendaUsuario.TN_Estado = EstadoUsuarioEnum.Rechazado;
+
+            usuario.TN_Estado = EstadoUsuarioEnum.Rechazado;
+            await _userManager.UpdateAsync(usuario);
+
             await _context.SaveChangesAsync();
 
             await RecalcularEstadoVivienda(viviendaUsuario.TN_IdVivienda);

@@ -10,6 +10,7 @@
 }
 
 <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/accesos/accesos.css" asp-append-version="true" />
 <partial name="_FinancieroTabs" />
 
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
@@ -130,22 +131,52 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var c in Model)
+                        @{
+                            var grupos = Model.GroupBy(c => new
+                            {
+                                c.ResidenteId,
+                                c.TipoCargo,
+                                c.TF_FechaEmision,
+                                c.TN_MontoBase,
+                                c.TB_AplicaIva,
+                                c.TN_MontoIva,
+                                c.TN_MontoTotal,
+                                c.TF_FechaVencimiento,
+                                c.TB_RecargoProgramado,
+                                c.NombreTipoRecargo,
+                                c.TC_FrecuenciaRecargo,
+                                c.TN_ValorRecargo
+                            }).ToList();
+                        }
+                        @foreach (var grupo in grupos)
                         {
-                            var badgeClass = c.EstadoCargo switch
+                            var itemsGrupo = grupo.ToList();
+                            var c = itemsGrupo[0]; // datos comunes a todo el grupo (residente, montos, recargo configurado)
+                            var esGrupo = itemsGrupo.Count > 1;
+
+                            var estadosDelGrupo = itemsGrupo.Select(x => x.EstadoCargo).Distinct().ToList();
+                            var estadoMostrar = estadosDelGrupo.Count == 1 ? estadosDelGrupo[0] : "Mixto";
+
+                            var badgeClass = estadoMostrar switch
                             {
                                 "Pendiente" => "badge-pendiente",
                                 "En revisión" => "badge-revision",
                                 "Pagado" => "badge-pagado",
                                 "Vencido" => "badge-vencido",
+                                "Mixto" => "badge-revision",
                                 _ => "badge-aplicado"
                             };
 
-                            var detalleId = $"detalle-cargo-{c.TN_Id}";
-                            var puedeEditar = c.EstadoCargo == "Pendiente";
-                            var estaVencido = c.EstadoCargo == "Vencido";
+                            var esPorcentaje = !string.IsNullOrWhiteSpace(c.NombreTipoRecargo)
+                                                && c.NombreTipoRecargo.Trim().Equals("Porcentaje", StringComparison.OrdinalIgnoreCase);
 
-                            <tr data-estado="@c.EstadoCargo">
+                            string FormatoValorRecargo(decimal? valor) =>
+                                !valor.HasValue ? "—" : esPorcentaje ? valor.Value.ToString("0.##") + "%" : valor.Value.ToString("C");
+
+                            var detalleId = $"detalle-cargo-{c.TN_Id}";
+                            var puedeEditar = !esGrupo && c.EstadoCargo == "Pendiente";
+
+                            <tr data-estado="@estadoMostrar">
                                 <td>
                                     <button type="button"
                                             class="btn btn-sm btn-outline-secondary"
@@ -158,7 +189,15 @@
                                     </button>
                                 </td>
 
-                                <td class="fw-semibold">@c.NombreResidente</td>
+                                <td class="fw-semibold">
+                                    @c.NombreResidente
+                                    @if (esGrupo)
+                                    {
+                                        <span class="badge bg-secondary ms-1" title="Este cargo se aplicó a varias viviendas del mismo residente">
+                                            <i class="bi bi-houses"></i> @itemsGrupo.Count viviendas
+                                        </span>
+                                    }
+                                </td>
                                 <td>
                                     @c.TipoCargo
                                     @if (c.TB_RecargoProgramado)
@@ -167,10 +206,16 @@
                                            title="Tiene recargo automático configurado"></i>
                                     }
                                 </td>
-                                <td class="text-end fw-semibold">@c.TN_MontoTotal.ToString("C")</td>
+                                <td class="text-end fw-semibold">
+                                    @c.TN_MontoTotal.ToString("C")
+                                    @if (esGrupo)
+                                    {
+                                        <div class="text-muted small fw-normal">c/u · @itemsGrupo.Count viviendas</div>
+                                    }
+                                </td>
                                 <td class="text-nowrap">@c.TF_FechaEmision.ToString("dd/MM/yyyy")</td>
                                 <td class="text-nowrap">@c.TF_FechaVencimiento.ToString("dd/MM/yyyy")</td>
-                                <td><span class="badge @badgeClass">@c.EstadoCargo</span></td>
+                                <td><span class="badge @badgeClass">@estadoMostrar</span></td>
 
                                 <td class="text-end">
                                     @if (puedeEditar)
@@ -186,6 +231,10 @@
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     }
+                                    else if (esGrupo)
+                                    {
+                                        <span class="text-muted small">Ver detalle</span>
+                                    }
                                     else
                                     {
                                         <span class="text-muted small">—</span>
@@ -193,7 +242,7 @@
                                 </td>
                             </tr>
 
-                            <tr class="collapse" id="@detalleId" data-estado="@c.EstadoCargo">
+                            <tr class="collapse" id="@detalleId" data-estado="@estadoMostrar">
                                 <td></td>
                                 <td colspan="7" class="fin-detalle-panel">
                                     <div class="row g-3 py-2">
@@ -203,10 +252,27 @@
                                             <div><strong>Nombre:</strong> @c.NombreResidente</div>
                                             <div><strong>Teléfono:</strong> @(c.TelefonoResidente ?? "No registrado")</div>
                                             <div><strong>Correo:</strong> @c.CorreoResidente</div>
+
+                                            @if (!esGrupo)
+                                            {
+                                                <div>
+                                                    <strong>Vivienda:</strong>
+                                                    @if (!string.IsNullOrWhiteSpace(c.NumeroVivienda))
+                                                    {
+                                                        <span class="badge" style="background-color:#336332;">
+                                                            <i class="bi bi-house-door"></i> Vivienda @c.NumeroVivienda
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">No especificada</span>
+                                                    }
+                                                </div>
+                                            }
                                         </div>
 
                                         <div class="col-md-6">
-                                            <div class="fin-metrica-label mb-2">Desglose del monto</div>
+                                            <div class="fin-metrica-label mb-2">Desglose del monto @(esGrupo ? "(por vivienda)" : "")</div>
                                             <div class="d-flex justify-content-between" style="max-width:280px;">
                                                 <span class="text-muted">Monto base</span>
                                                 <span>@c.TN_MontoBase.ToString("C")</span>
@@ -220,37 +286,169 @@
                                                 <span class="fw-semibold">Total</span>
                                                 <span class="fw-semibold">@c.TN_MontoTotal.ToString("C")</span>
                                             </div>
+                                            @if (esGrupo)
+                                            {
+                                                <div class="d-flex justify-content-between pt-1" style="max-width:280px;">
+                                                    <span class="text-muted small">Total del lote (@itemsGrupo.Count viviendas)</span>
+                                                    <span class="small">@((c.TN_MontoTotal * itemsGrupo.Count).ToString("C"))</span>
+                                                </div>
+                                            }
                                         </div>
 
-                                        @if (estaVencido && c.TB_RecargoProgramado)
+                                        @if (c.TB_RecargoProgramado)
                                         {
                                             <div class="col-12">
-                                                <span class="badge" style="background-color:#0C5460;">
-                                                    <i class="bi bi-arrow-repeat"></i>
-                                                    Recargo automático configurado
-                                                    @if (c.TB_RecargoAplicado)
-                                                    {
-                                                        <text> · ya aplicado</text>
-                                                    }
-                                                </span>
+                                                <hr class="my-1" />
+                                                <div class="fin-metrica-label mb-2">
+                                                    <i class="bi bi-arrow-repeat"></i> Recargo automático
+                                                </div>
+
+                                                <div class="row g-2" style="max-width:560px;">
+                                                    <div class="col-sm-4">
+                                                        <div class="text-muted small">Frecuencia</div>
+                                                        <div class="fw-semibold">
+                                                            @(c.TC_FrecuenciaRecargo switch
+                                                            {
+                                                                "Unico" => "Monto único al vencer",
+                                                                "PorDia" => "Por día de atraso",
+                                                                _ => c.TC_FrecuenciaRecargo ?? "No especificada"
+                                                            })
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-4">
+                                                        <div class="text-muted small">Tipo de recargo</div>
+                                                        <div class="fw-semibold">@(c.NombreTipoRecargo ?? "No especificado")</div>
+                                                    </div>
+                                                    <div class="col-sm-4">
+                                                        <div class="text-muted small">Valor configurado</div>
+                                                        <div class="fw-semibold">@FormatoValorRecargo(c.TN_ValorRecargo)</div>
+                                                    </div>
+                                                </div>
+
+                                                @if (!esGrupo)
+                                                {
+                                                    var estaVencido = c.EstadoCargo == "Vencido";
+                                                    <div class="mt-2">
+                                                        @if (estaVencido && c.TB_RecargoAplicado)
+                                                        {
+                                                            <span class="badge" style="background-color:#6c757d;">
+                                                                <i class="bi bi-check-circle"></i> Recargo ya aplicado
+                                                            </span>
+                                                        }
+                                                        else if (estaVencido && !c.TB_RecargoAplicado)
+                                                        {
+                                                            <button type="button" class="btn btn-sm text-white btn-aplicar-recargo"
+                                                                    style="background-color:#B02A37;"
+                                                                    data-id="@c.TN_Id">
+                                                                <i class="bi bi-graph-up-arrow"></i> Aplicar recargo
+                                                            </button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge" style="background-color:#0C5460;">
+                                                                <i class="bi bi-clock-history"></i> Se aplicará automáticamente si el cargo vence
+                                                            </span>
+                                                        }
+                                                    </div>
+                                                }
                                             </div>
                                         }
-                                        else if (estaVencido && !c.TB_RecargoAplicado)
+
+                                        @if (esGrupo)
                                         {
                                             <div class="col-12">
-                                                <button type="button" class="btn btn-sm text-white btn-aplicar-recargo"
-                                                        style="background-color:#B02A37;"
-                                                        data-id="@c.TN_Id">
-                                                    <i class="bi bi-graph-up-arrow"></i> Aplicar recargo
-                                                </button>
-                                            </div>
-                                        }
-                                        else if (estaVencido && c.TB_RecargoAplicado)
-                                        {
-                                            <div class="col-12">
-                                                <span class="badge" style="background-color:#6c757d;">
-                                                    <i class="bi bi-check-circle"></i> Recargo ya aplicado
-                                                </span>
+                                                <hr class="my-1" />
+                                                <div class="fin-metrica-label mb-2">
+                                                    <i class="bi bi-houses"></i> Viviendas incluidas en este cargo (@itemsGrupo.Count)
+                                                </div>
+                                                <div class="table-responsive" style="max-height:280px; overflow-y:auto; border:1px solid #ECECEC; border-radius:6px;">
+                                                    <table class="table table-sm mb-0">
+                                                        <thead class="table-light" style="position:sticky; top:0;">
+                                                            <tr>
+                                                                <th>Vivienda</th>
+                                                                <th>Estado</th>
+                                                                <th>Recargo</th>
+                                                                <th class="text-end" style="width:110px;">Acciones</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach (var item in itemsGrupo)
+                                                            {
+                                                                var itemBadgeClass = item.EstadoCargo switch
+                                                                {
+                                                                    "Pendiente" => "badge-pendiente",
+                                                                    "En revisión" => "badge-revision",
+                                                                    "Pagado" => "badge-pagado",
+                                                                    "Vencido" => "badge-vencido",
+                                                                    _ => "badge-aplicado"
+                                                                };
+                                                                var itemPuedeEditar = item.EstadoCargo == "Pendiente";
+                                                                var itemVencido = item.EstadoCargo == "Vencido";
+
+                                                                <tr>
+                                                                    <td>
+                                                                        @if (!string.IsNullOrWhiteSpace(item.NumeroVivienda))
+                                                                        {
+                                                                            <span class="badge" style="background-color:#336332;">
+                                                                                <i class="bi bi-house-door"></i> Vivienda @item.NumeroVivienda
+                                                                            </span>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <span class="text-muted small">No especificada</span>
+                                                                        }
+                                                                    </td>
+                                                                    <td><span class="badge @itemBadgeClass">@item.EstadoCargo</span></td>
+                                                                    <td>
+                                                                        @if (!item.TB_RecargoProgramado)
+                                                                        {
+                                                                            <span class="text-muted small">—</span>
+                                                                        }
+                                                                        else if (itemVencido && item.TB_RecargoAplicado)
+                                                                        {
+                                                                            <span class="badge" style="background-color:#6c757d;">
+                                                                                <i class="bi bi-check-circle"></i> Aplicado
+                                                                            </span>
+                                                                        }
+                                                                        else if (itemVencido && !item.TB_RecargoAplicado)
+                                                                        {
+                                                                            <button type="button" class="btn btn-sm text-white btn-aplicar-recargo"
+                                                                                    style="background-color:#B02A37;"
+                                                                                    data-id="@item.TN_Id">
+                                                                                <i class="bi bi-graph-up-arrow"></i> Aplicar
+                                                                            </button>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <span class="badge" style="background-color:#0C5460;">
+                                                                                <i class="bi bi-clock-history"></i> Pendiente de vencer
+                                                                            </span>
+                                                                        }
+                                                                    </td>
+                                                                    <td class="text-end">
+                                                                        @if (itemPuedeEditar)
+                                                                        {
+                                                                            <a asp-action="Edit" asp-route-id="@item.TN_Id"
+                                                                               class="btn btn-sm btn-outline-secondary" title="Editar">
+                                                                                <i class="bi bi-pencil"></i>
+                                                                            </a>
+                                                                            <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar"
+                                                                                    title="Eliminar"
+                                                                                    data-id="@item.TN_Id"
+                                                                                    data-descripcion="@item.TipoCargo - @item.NombreResidente (Vivienda @item.NumeroVivienda)">
+                                                                                <i class="bi bi-trash"></i>
+                                                                            </button>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <span class="text-muted small">—</span>
+                                                                        }
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                         }
                                     </div>
@@ -261,6 +459,34 @@
                 </table>
             </div>
         }
+    </div>
+</div>
+
+<!-- Modal de confirmación de creación exitosa -->
+<div class="modal fade" id="modalConfirmacionCreacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content acc-modal-content">
+            <div class="modal-body text-center p-4">
+                <div class="acc-modal-icon acc-modal-icon-success">
+                    <i class="bi bi-check-lg"></i>
+                </div>
+                <h5 class="acc-modal-titulo" id="confirmacionTitulo">Cargo creado con éxito</h5>
+                <p class="acc-modal-desc">El cargo fue registrado correctamente y ya está disponible en el listado.</p>
+
+                <div class="acc-modal-resumen">
+                    <div class="acc-detalle-label">Tipo de cargo</div>
+                    <div class="acc-detalle-valor" id="resumenTipoCargo">-</div>
+                    <div class="acc-detalle-label">Monto total</div>
+                    <div class="acc-detalle-valor" id="resumenMontoTotal">-</div>
+                    <div class="acc-detalle-label">Fecha límite de pago</div>
+                    <div class="acc-detalle-valor" id="resumenFechaVencimiento">-</div>
+                </div>
+
+                <div class="acc-form-actions">
+                    <button type="button" class="btn acc-btn-green" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -441,6 +667,24 @@
             if (estadoInicial && filtro) {
                 filtro.value = estadoInicial;
                 aplicar();
+            }
+
+            // ===== Modal de confirmación tras crear un cargo =====
+            @if (TempData["CargoCreado"] != null)
+            {
+                var cantidad = TempData["CantidadCargosResumen"] as int? ?? 1;
+                <text>
+                var modalConfirmacionEl = document.getElementById('modalConfirmacionCreacion');
+                if (modalConfirmacionEl && window.bootstrap) {
+                    document.getElementById('confirmacionTitulo').innerText =
+                        @Html.Raw(Json.Serialize(cantidad > 1 ? $"Se crearon {cantidad} cargos con éxito" : "Cargo creado con éxito"));
+                    document.getElementById('resumenTipoCargo').innerText = @Html.Raw(Json.Serialize(TempData["TipoCargoResumen"]?.ToString() ?? "-"));
+                    document.getElementById('resumenMontoTotal').innerText = @Html.Raw(Json.Serialize(TempData["MontoTotalResumen"]?.ToString() ?? "-"));
+                    document.getElementById('resumenFechaVencimiento').innerText = @Html.Raw(Json.Serialize(TempData["FechaVencimientoResumen"]?.ToString() ?? "-"));
+
+                    new bootstrap.Modal(modalConfirmacionEl).show();
+                }
+                </text>
             }
 
         })();

@@ -48,24 +48,42 @@ namespace Habitia.Services
 
                 foreach (var idResidente in residentesDestino)
                 {
-                    _context.Cargos.Add(new THBT_A_Cargo
+                    // NUEVO: resuelve las viviendas activas de este residente. Si tiene 2+,
+                    // se genera un cargo por cada una (igual criterio que la creación manual
+                    // individual en CargosController cuando el residente tiene varias viviendas).
+                    var viviendasDelResidente = await _context.ViviendaUsuarios
+                        .Where(vu => vu.TC_IdUsuario == idResidente && vu.TN_Estado == EstadoUsuarioEnum.Activo)
+                        .Select(vu => (int?)vu.TN_IdVivienda)
+                        .Distinct()
+                        .ToListAsync();
+
+                    // Si no tiene ninguna vivienda registrada, igual se genera el cargo (vivienda null)
+                    var destinosVivienda = viviendasDelResidente.Count > 0
+                        ? viviendasDelResidente
+                        : new List<int?> { null };
+
+                    foreach (var idVivienda in destinosVivienda)
                     {
-                        TC_IdResidente = idResidente,
-                        TN_IdTipoCargo = plantilla.TN_IdTipoCargo,
-                        TN_IdEstadoCargo = estadoPendiente.TN_Id,
-                        TC_Descripcion = plantilla.TC_Descripcion,
-                        TN_MontoBase = plantilla.TN_MontoBase,
-                        TB_AplicaIva = plantilla.TB_AplicaIva,
-                        TN_MontoIva = montoIva,
-                        TN_MontoTotal = montoTotal,
-                        TF_FechaEmision = DateTime.Now,
-                        TF_FechaVencimiento = hoy, // El cargo vence el mismo día que se genera (día alineado a TF_FechaInicio según la frecuencia)
-                        TB_Estado = true,
-                        TB_RecargoProgramado = plantilla.TB_RecargoProgramado,
-                        TN_IdTipoRecargo = plantilla.TN_IdTipoRecargo,
-                        TN_ValorRecargo = plantilla.TN_ValorRecargo,
-                        TC_FrecuenciaRecargo = plantilla.TC_FrecuenciaRecargo // <-- NUEVO: se hereda de la plantilla
-                    });
+                        _context.Cargos.Add(new THBT_A_Cargo
+                        {
+                            TC_IdResidente = idResidente,
+                            TN_IdVivienda = idVivienda, // <-- NUEVO
+                            TN_IdTipoCargo = plantilla.TN_IdTipoCargo,
+                            TN_IdEstadoCargo = estadoPendiente.TN_Id,
+                            TC_Descripcion = plantilla.TC_Descripcion,
+                            TN_MontoBase = plantilla.TN_MontoBase,
+                            TB_AplicaIva = plantilla.TB_AplicaIva,
+                            TN_MontoIva = montoIva,
+                            TN_MontoTotal = montoTotal,
+                            TF_FechaEmision = DateTime.Now,
+                            TF_FechaVencimiento = hoy, // El cargo vence el mismo día que se genera
+                            TB_Estado = true,
+                            TB_RecargoProgramado = plantilla.TB_RecargoProgramado,
+                            TN_IdTipoRecargo = plantilla.TN_IdTipoRecargo,
+                            TN_ValorRecargo = plantilla.TN_ValorRecargo,
+                            TC_FrecuenciaRecargo = plantilla.TC_FrecuenciaRecargo
+                        });
+                    }
                 }
 
                 plantilla.TF_UltimaGeneracion = hoy;

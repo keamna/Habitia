@@ -3,6 +3,15 @@
     ViewData["Title"] = "Crear cargo";
 }
 <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/accesos/accesos.css" asp-append-version="true" />
+<style>
+    .campo-con-error .form-control,
+    .campo-con-error {
+        border-color: #DC2626 !important;
+        box-shadow: 0 0 0 3px rgba(220,38,38,0.12);
+        border-radius: 8px;
+    }
+</style>
 <partial name="_FinancieroTabs" />
 <h4 class="mb-3">Crear cargo</h4>
 <div class="fin-card">
@@ -17,7 +26,7 @@
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="checkbox" asp-for="TB_AplicarATodos" id="aplicarATodos" />
                         <label class="form-check-label fw-semibold" for="aplicarATodos">
-                            Aplicar este cargo a todos los residentes
+                            Aplicar este cargo a todas las viviendas
                         </label>
                     </div>
                 </div>
@@ -25,8 +34,9 @@
                 <!-- ===== Residente único (modo normal) ===== -->
                 <div class="col-md-6" id="residenteUnicoWrapper">
                     <label class="form-label">Residente</label>
-                    <div class="input-group">
+                    <div class="input-group" id="residenteInputGroup">
                         <input type="text" id="residenteDisplay" class="form-control"
+                               value="@(ViewData["ResidenteDisplaySeleccionado"] as string)"
                                placeholder="Buscar por identificación o nombre..." readonly />
                         <button type="button" class="btn btn-outline-secondary"
                                 data-bs-toggle="modal" data-bs-target="#modalResidentes">
@@ -35,16 +45,32 @@
                     </div>
                     <input type="hidden" asp-for="TC_IdResidente" id="TC_IdResidente" />
                     <span asp-validation-for="TC_IdResidente" class="text-danger small"></span>
+                    <div class="text-danger small mt-1 d-none" id="errResidenteObligatorio">
+                        <i class="bi bi-exclamation-circle"></i> Debe seleccionar un residente para continuar.
+                    </div>
                 </div>
 
-                <!-- ===== tabla de residentes (modo masivo) ===== -->
+                <!-- ===== viviendas del residente elegido ===== -->
+                <div class="col-12 d-none" id="viviendasResidenteWrapper">
+                    <label class="form-label">Viviendas asociadas a este residente</label>
+                    <div class="d-flex gap-2 mb-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnTodasViviendas">Seleccionar todas</button>
+                    </div>
+                    <div id="listaViviendasResidente" class="d-flex flex-wrap gap-3"></div>
+                    <div class="form-text">Marque las viviendas de este residente a las que se aplicará el cargo.</div>
+                    <div class="text-danger small mt-1 d-none" id="errViviendaResidenteObligatoria">
+                        <i class="bi bi-exclamation-circle"></i> Debe seleccionar al menos una vivienda de este residente.
+                    </div>
+                </div>
+
+                <!-- ===== tabla de viviendas-residentes (modo masivo) ===== -->
                 <div class="col-12 d-none" id="residentesMasivoWrapper">
-                    <label class="form-label">Residentes a incluir</label>
+                    <label class="form-label">Viviendas a incluir</label>
                     <div class="d-flex gap-2 mb-2">
                         <button type="button" class="btn btn-sm btn-outline-secondary" id="btnSeleccionarTodos">Seleccionar todos</button>
                         <button type="button" class="btn btn-sm btn-outline-secondary" id="btnQuitarTodos">Quitar todos</button>
                         <input type="text" id="buscadorMasivo" class="form-control form-control-sm w-auto flex-grow-1"
-                               placeholder="Filtrar por nombre o identificación..." />
+                               placeholder="Filtrar por vivienda, nombre o identificación..." />
                     </div>
                     <div class="table-responsive" style="max-height:320px; overflow-y:auto; border:1px solid #ECECEC; border-radius:6px;">
                         <table class="table table-sm mb-0">
@@ -53,25 +79,49 @@
                                     <th style="width:40px;"></th>
                                     <th>Identificación</th>
                                     <th>Nombre</th>
+                                    <th>Viviendas</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaResidentesMasivo">
-                                @foreach (var r in Model.Residentes)
+                                @foreach (var grupo in Model.ViviendasResidentes.GroupBy(v => new { v.IdentificacionResidente, v.NombreResidente }))
                                 {
-                                    <tr class="fila-residente-masivo" data-nombre="@r.Nombre" data-identificacion="@r.Identificacion">
+                                    var viviendasTexto = string.Join(",", grupo.Select(v => v.NumeroVivienda));
+                                    <tr class="fila-residente-masivo"
+                                        data-nombre="@grupo.Key.NombreResidente"
+                                        data-identificacion="@grupo.Key.IdentificacionResidente"
+                                        data-viviendas="@viviendasTexto">
                                         <td>
-                                            <input type="checkbox" class="form-check-input chk-residente-masivo"
-                                                   name="ResidentesSeleccionados" value="@r.Id" checked />
+                                            <input type="checkbox" class="form-check-input chk-master-residente"
+                                                   data-grupo="@grupo.Key.IdentificacionResidente" checked />
                                         </td>
-                                        <td>@r.Identificacion</td>
-                                        <td>@r.Nombre</td>
+                                        <td>@grupo.Key.IdentificacionResidente</td>
+                                        <td>@grupo.Key.NombreResidente</td>
+                                        <td>
+                                            <div class="d-flex flex-wrap gap-3">
+                                                @foreach (var vr in grupo)
+                                                {
+                                                    <div class="form-check form-check-inline m-0">
+                                                        <input type="checkbox" class="form-check-input chk-residente-masivo chk-vivienda-item"
+                                                               name="ViviendaUsuarioSeleccionados" value="@vr.TN_IdViviendaUsuario"
+                                                               data-grupo="@grupo.Key.IdentificacionResidente"
+                                                               id="chkViv_@vr.TN_IdViviendaUsuario" checked />
+                                                        <label class="form-check-label small" for="chkViv_@vr.TN_IdViviendaUsuario">
+                                                            Vivienda @vr.NumeroVivienda <span class="text-muted">(@vr.TipoRelacion)</span>
+                                                        </label>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </td>
                                     </tr>
                                 }
                             </tbody>
                         </table>
                     </div>
                     <div class="form-text" id="contadorSeleccionados"></div>
-                    <span asp-validation-for="ResidentesSeleccionados" class="text-danger small"></span>
+                    <span asp-validation-for="ViviendaUsuarioSeleccionados" class="text-danger small"></span>
+                    <div class="text-danger small mt-1 d-none" id="errMasivoMinimo">
+                        <i class="bi bi-exclamation-circle"></i> Debe quedar seleccionada al menos una vivienda.
+                    </div>
                 </div>
 
                 <div class="col-md-6">
@@ -128,7 +178,7 @@
                     <span asp-validation-for="TC_Descripcion" class="text-danger small"></span>
                 </div>
 
-                <!-- ===== Recargo programado ===== -->
+                <!-- ===== Recargo automático ===== -->
                 <div class="col-12">
                     <hr />
                     <div class="form-check mb-2">
@@ -136,9 +186,6 @@
                         <label class="form-check-label fw-semibold" for="recargoProgramado">
                             Aplicar recargo automático si vence
                         </label>
-                    </div>
-                    <div class="form-text">
-                        Si lo activa, el sistema aplicará el recargo configurado automáticamente cuando el cargo pase a estado "Vencido", sin necesidad de hacerlo manualmente.
                     </div>
                 </div>
 
@@ -259,11 +306,11 @@
                 tipoCargoTexto.focus();
             } else {
                 tipoCargoTexto.classList.add('d-none');
-                tipoCargoTexto.value = this.value; // nombre existente seleccionado
+                tipoCargoTexto.value = this.value;
             }
         });
 
-        // ================== Fecha límite de pago: permite hoy, no permite pasado ==================
+        // ================== Fecha límite de pago ==================
         const inputFecha = document.getElementById('fechaVencimiento');
         const hoyStr = fechaLocalYMD(new Date());
         inputFecha.setAttribute('min', hoyStr);
@@ -299,6 +346,99 @@
         document.getElementById('montoBase').addEventListener('input', calcularTotal);
         document.getElementById('aplicaIva').addEventListener('change', calcularTotal);
 
+        // ================== Viviendas del residente elegido (modo individual) ==================
+        const viviendasResidenteWrapper = document.getElementById('viviendasResidenteWrapper');
+        const listaViviendasResidente = document.getElementById('listaViviendasResidente');
+
+        function mostrarAvisoTemporal(elemento, ms = 2800) {
+            elemento.classList.remove('d-none');
+            clearTimeout(elemento._timeoutAviso);
+            elemento._timeoutAviso = setTimeout(() => elemento.classList.add('d-none'), ms);
+        }
+
+        async function cargarViviendasDeResidente(idResidente) {
+            listaViviendasResidente.innerHTML = '';
+            viviendasResidenteWrapper.classList.add('d-none');
+            if (!idResidente) return;
+
+            try {
+                const resp = await fetch('@Url.Action("ObtenerViviendasDeResidente", "Cargos")?idResidente=' + encodeURIComponent(idResidente));
+                const viviendas = await resp.json();
+
+                if (viviendas.length === 0) {
+                    // sin viviendas asociadas: no hay nada que seleccionar, el controller lo maneja
+                    return;
+                }
+
+                viviendas.forEach(v => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'form-check';
+
+                    if (viviendas.length === 1) {
+                        // Única vivienda: se aplica siempre, no se puede desmarcar.
+                        // El checkbox va deshabilitado (visual) + un input oculto asegura el envío del valor.
+                        wrapper.innerHTML = `
+                            <input class="form-check-input chk-vivienda-residente" type="checkbox"
+                                   id="viv_${v.tN_Id}" checked disabled>
+                            <input type="hidden" name="ViviendasSeleccionadas" value="${v.tN_Id}">
+                            <label class="form-check-label" for="viv_${v.tN_Id}">
+                                Vivienda ${v.tC_Numero} <span class="text-muted small">(única, se aplica automáticamente)</span>
+                            </label>
+                        `;
+                    } else {
+                        wrapper.innerHTML = `
+                            <input class="form-check-input chk-vivienda-residente" type="checkbox"
+                                   name="ViviendasSeleccionadas" value="${v.tN_Id}" id="viv_${v.tN_Id}" checked>
+                            <label class="form-check-label" for="viv_${v.tN_Id}">Vivienda ${v.tC_Numero}</label>
+                        `;
+                    }
+
+                    listaViviendasResidente.appendChild(wrapper);
+                });
+
+                viviendasResidenteWrapper.classList.remove('d-none');
+                limpiarErrorViviendaResidente();
+
+                document.getElementById('btnTodasViviendas').classList.toggle('d-none', viviendas.length === 1);
+            } catch (e) {
+                // si falla la consulta, no se bloquea el flujo: el controller asignará
+                // automáticamente si el residente tiene 0 viviendas, o todas si falló la selección.
+            }
+        }
+
+        // Delegación ÚNICA sobre el contenedor (no se duplica al cambiar de residente):
+        // impide desmarcar la vivienda si es la última que queda seleccionada.
+        listaViviendasResidente.addEventListener('click', function (e) {
+            if (!e.target.classList.contains('chk-vivienda-residente') || e.target.disabled) return;
+
+            if (!e.target.checked) {
+                const marcadas = document.querySelectorAll('.chk-vivienda-residente:checked').length;
+                if (marcadas === 0) {
+                    e.preventDefault();
+                    e.target.checked = true;
+                    mostrarAvisoTemporal(errViviendaResidenteObligatoria);
+                    errViviendaResidenteObligatoria.innerHTML =
+                        '<i class="bi bi-exclamation-circle"></i> Debe quedar al menos una vivienda seleccionada de este residente.';
+                    return;
+                }
+            }
+            limpiarErrorViviendaResidente();
+        });
+
+        document.getElementById('btnTodasViviendas').addEventListener('click', function () {
+            document.querySelectorAll('.chk-vivienda-residente').forEach(chk => chk.checked = true);
+            limpiarErrorViviendaResidente();
+        });
+
+        // Si el residente ya venía precargado (ej. la página se recargó por un error de
+        // validación en otro campo), se recuperan sus viviendas automáticamente.
+        {
+            const idResidenteInicial = document.getElementById('TC_IdResidente').value;
+            if (idResidenteInicial) {
+                cargarViviendasDeResidente(idResidenteInicial);
+            }
+        }
+
         // ================== Buscador de residentes (modal único) ==================
         document.getElementById('buscadorResidente').addEventListener('input', function () {
             const filtro = this.value.trim().toLowerCase();
@@ -318,12 +458,16 @@
 
         document.querySelectorAll('.fila-residente').forEach(fila => {
             fila.addEventListener('click', function () {
-                document.getElementById('TC_IdResidente').value = this.dataset.id;
+                const idResidente = this.dataset.id;
+                document.getElementById('TC_IdResidente').value = idResidente;
                 document.getElementById('residenteDisplay').value =
                     `${this.dataset.identificacion} - ${this.dataset.nombre}`;
 
                 const modal = bootstrap.Modal.getInstance(document.getElementById('modalResidentes'));
                 modal.hide();
+
+                limpiarErrorResidente();
+                cargarViviendasDeResidente(idResidente);
             });
         });
 
@@ -333,28 +477,102 @@
         const residentesMasivoWrapper = document.getElementById('residentesMasivoWrapper');
         const checksResidentes = document.querySelectorAll('.chk-residente-masivo');
         const contadorSeleccionados = document.getElementById('contadorSeleccionados');
+        const errMasivoMinimo = document.getElementById('errMasivoMinimo');
 
         function actualizarContador() {
             const total = checksResidentes.length;
             const marcados = document.querySelectorAll('.chk-residente-masivo:checked').length;
-            contadorSeleccionados.innerText = `${marcados} de ${total} residentes seleccionados`;
+            contadorSeleccionados.innerText = `${marcados} de ${total} viviendas seleccionadas`;
         }
 
         chkAplicarATodos.addEventListener('change', function () {
             residenteUnicoWrapper.classList.toggle('d-none', this.checked);
+            viviendasResidenteWrapper.classList.toggle('d-none', this.checked);
             residentesMasivoWrapper.classList.toggle('d-none', !this.checked);
             if (this.checked) actualizarContador();
         });
 
-        checksResidentes.forEach(chk => chk.addEventListener('change', actualizarContador));
+        // Impide desmarcar una vivienda si es la última seleccionada en todo el modo masivo
+        checksResidentes.forEach(chk => {
+            chk.addEventListener('click', function (e) {
+                if (!this.checked) {
+                    const marcados = document.querySelectorAll('.chk-residente-masivo:checked').length;
+                    if (marcados === 0) {
+                        e.preventDefault();
+                        this.checked = true;
+                        mostrarAvisoTemporal(errMasivoMinimo);
+                        return;
+                    }
+                }
+            });
+
+            chk.addEventListener('change', function () {
+                actualizarContador();
+                sincronizarMaestro(this.dataset.grupo);
+                if (document.querySelectorAll('.chk-residente-masivo:checked').length > 0) {
+                    errMasivoMinimo.classList.add('d-none');
+                }
+            });
+        });
+
+        // Checkbox maestro por residente: marca/desmarca todas sus viviendas.
+        // También bloqueado si desmarcarlo dejaría la selección global en cero.
+        document.querySelectorAll('.chk-master-residente').forEach(master => {
+            master.addEventListener('click', function (e) {
+                if (!this.checked) {
+                    const grupo = this.dataset.grupo;
+                    const totalGlobal = document.querySelectorAll('.chk-residente-masivo:checked').length;
+                    const enEsteGrupo = document.querySelectorAll(`.chk-vivienda-item[data-grupo="${grupo}"]:checked`).length;
+                    const marcadosFueraDelGrupo = totalGlobal - enEsteGrupo;
+                    if (marcadosFueraDelGrupo === 0) {
+                        e.preventDefault();
+                        this.checked = true;
+                        mostrarAvisoTemporal(errMasivoMinimo);
+                    }
+                }
+            });
+
+            master.addEventListener('change', function () {
+                const grupo = this.dataset.grupo;
+                document.querySelectorAll(`.chk-vivienda-item[data-grupo="${grupo}"]`).forEach(chk => {
+                    chk.checked = master.checked;
+                });
+                actualizarContador();
+                if (document.querySelectorAll('.chk-residente-masivo:checked').length > 0) {
+                    errMasivoMinimo.classList.add('d-none');
+                }
+            });
+        });
+
+        function sincronizarMaestro(grupo) {
+            const master = document.querySelector(`.chk-master-residente[data-grupo="${grupo}"]`);
+            if (!master) return;
+            const items = document.querySelectorAll(`.chk-vivienda-item[data-grupo="${grupo}"]`);
+            const marcados = document.querySelectorAll(`.chk-vivienda-item[data-grupo="${grupo}"]:checked`).length;
+            master.checked = marcados === items.length;
+            master.indeterminate = marcados > 0 && marcados < items.length;
+        }
 
         document.getElementById('btnSeleccionarTodos').addEventListener('click', function () {
-            checksResidentes.forEach(chk => { if (!chk.closest('tr').classList.contains('d-none')) chk.checked = true; });
+            document.querySelectorAll('.fila-residente-masivo:not(.d-none) .chk-residente-masivo').forEach(chk => chk.checked = true);
+            document.querySelectorAll('.fila-residente-masivo:not(.d-none) .chk-master-residente').forEach(chk => { chk.checked = true; chk.indeterminate = false; });
             actualizarContador();
+            errMasivoMinimo.classList.add('d-none');
         });
 
         document.getElementById('btnQuitarTodos').addEventListener('click', function () {
             checksResidentes.forEach(chk => chk.checked = false);
+            document.querySelectorAll('.chk-master-residente').forEach(chk => { chk.checked = false; chk.indeterminate = false; });
+
+            // Nunca debe quedar en cero: se conserva la primera vivienda de la lista visible.
+            const primeraDisponible = document.querySelector('.fila-residente-masivo:not(.d-none) .chk-residente-masivo')
+                || checksResidentes[0];
+            if (primeraDisponible) {
+                primeraDisponible.checked = true;
+                sincronizarMaestro(primeraDisponible.dataset.grupo);
+                mostrarAvisoTemporal(errMasivoMinimo);
+            }
+
             actualizarContador();
         });
 
@@ -362,7 +580,8 @@
             const filtro = this.value.trim().toLowerCase();
             document.querySelectorAll('.fila-residente-masivo').forEach(fila => {
                 const coincide = fila.dataset.nombre.toLowerCase().includes(filtro) ||
-                                  fila.dataset.identificacion.toLowerCase().includes(filtro);
+                                  fila.dataset.identificacion.toLowerCase().includes(filtro) ||
+                                  fila.dataset.viviendas.toLowerCase().includes(filtro);
                 fila.classList.toggle('d-none', !coincide);
             });
         });
@@ -394,31 +613,53 @@
         });
 
         // ================== Validación al enviar ==================
+        const errResidenteObligatorio = document.getElementById('errResidenteObligatorio');
+        const errViviendaResidenteObligatoria = document.getElementById('errViviendaResidenteObligatoria');
+        const residenteInputGroup = document.getElementById('residenteInputGroup');
+
+        function limpiarErrorResidente() {
+            errResidenteObligatorio.classList.add('d-none');
+            residenteInputGroup.classList.remove('campo-con-error');
+        }
+
+        function limpiarErrorViviendaResidente() {
+            errViviendaResidenteObligatoria.classList.add('d-none');
+            listaViviendasResidente.classList.remove('campo-con-error');
+        }
+
         document.querySelector('form').addEventListener('submit', function (e) {
             let errores = [];
 
-            // Residente (único o masivo)
+            // Limpiar avisos previos
+            limpiarErrorResidente();
+            limpiarErrorViviendaResidente();
+
             if (chkAplicarATodos.checked) {
                 const seleccionados = document.querySelectorAll('.chk-residente-masivo:checked').length;
                 if (seleccionados === 0) {
-                    errores.push('Debe seleccionar al menos un residente.');
+                    errores.push('Debe seleccionar al menos una vivienda.');
                 }
-            } else if (!document.getElementById('TC_IdResidente').value) {
-                errores.push('Debe seleccionar un residente.');
+            } else {
+                if (!document.getElementById('TC_IdResidente').value) {
+                    errores.push('Debe seleccionar un residente.');
+                    errResidenteObligatorio.classList.remove('d-none');
+                    residenteInputGroup.classList.add('campo-con-error');
+                }
+
+                const viviendasMarcadas = document.querySelectorAll('.chk-vivienda-residente:checked').length;
+                const totalViviendasResidente = document.querySelectorAll('.chk-vivienda-residente').length;
+                if (totalViviendasResidente > 0 && viviendasMarcadas === 0) {
+                    errores.push('Debe seleccionar al menos una vivienda del residente.');
+                    errViviendaResidenteObligatoria.classList.remove('d-none');
+                    listaViviendasResidente.classList.add('campo-con-error');
+                }
             }
 
-            // Tipo de cargo
-            if (!tipoCargoTexto.value.trim()) {
-                errores.push('Debe seleccionar o escribir un tipo de cargo.');
-            }
+            if (!tipoCargoTexto.value.trim()) errores.push('Debe seleccionar o escribir un tipo de cargo.');
 
-            // Monto base
             const montoBaseVal = parseFloat(document.getElementById('montoBase').value);
-            if (isNaN(montoBaseVal) || montoBaseVal <= 0) {
-                errores.push('Debe ingresar un monto base válido.');
-            }
+            if (isNaN(montoBaseVal) || montoBaseVal <= 0) errores.push('Debe ingresar un monto base válido.');
 
-            // Fecha límite de pago
             const valorFecha = inputFecha.value;
             if (!valorFecha) {
                 errores.push('Debe ingresar la fecha límite de pago.');
@@ -431,12 +672,11 @@
                 }
             }
 
-            // Recargo programado (solo si el checkbox está marcado)
             if (chkRecargoProgramado.checked) {
-                if (!frecuenciaRecargo.value) {
+                if (!document.getElementById('frecuenciaRecargo').value) {
                     errores.push('Debe seleccionar la frecuencia del recargo automático.');
                 }
-                if (!tipoRecargo.value) {
+                if (!document.getElementById('tipoRecargo').value) {
                     errores.push('Debe seleccionar el tipo de recargo automático.');
                 }
                 const valorRecargoVal = parseFloat(valorRecargo.value);
@@ -445,12 +685,18 @@
                 }
             }
 
-            // Nota: la descripción es OPCIONAL, no se valida
-
             if (errores.length > 0) {
                 e.preventDefault();
                 alert('Por favor complete los siguientes campos:\n\n- ' + errores.join('\n- '));
+
+                // Llevar la vista al primer aviso visible
+                if (!errResidenteObligatorio.classList.contains('d-none')) {
+                    residenteInputGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else if (!errViviendaResidenteObligatoria.classList.contains('d-none')) {
+                    listaViviendasResidente.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
             }
         });
+
     </script>
 }

@@ -31,6 +31,7 @@ namespace Habitia.Areas.Admin.Controllers
                 .Include(p => p.Cargo).ThenInclude(c => c.Residente)
                 .Include(p => p.Cargo).ThenInclude(c => c.TipoCargo)
                 .Include(p => p.Cargo).ThenInclude(c => c.EstadoCargo)
+                .Include(p => p.Cargo).ThenInclude(c => c.Vivienda) // <-- NUEVO
                 .Include(p => p.MetodoPago)
                 .Where(p => p.TB_Estado && p.Cargo.EstadoCargo.TC_Nombre == ESTADO_EN_REVISION)
                 .OrderBy(p => p.TF_FechaPago)
@@ -42,10 +43,13 @@ namespace Habitia.Areas.Admin.Controllers
                     IdentificacionResidente = p.Cargo.Residente.TC_Identificacion,
                     TipoCargo = p.Cargo.TipoCargo.TC_Nombre,
                     Descripcion = p.Cargo.TC_Descripcion,
+                    TN_MontoBase = p.Cargo.TN_MontoBase, // <-- NUEVO
+                    TN_MontoIva = p.Cargo.TN_MontoIva, // <-- NUEVO
                     TN_MontoTotal = p.Cargo.TN_MontoTotal,
                     MetodoPago = p.MetodoPago.TC_Nombre,
                     TF_FechaPago = p.TF_FechaPago,
-                    TC_RutaComprobante = p.TC_RutaComprobante
+                    TC_RutaComprobante = p.TC_RutaComprobante,
+                    NumeroVivienda = p.Cargo.Vivienda != null ? p.Cargo.Vivienda.TC_Numero : null // <-- NUEVO
                 })
                 .ToListAsync();
 
@@ -60,6 +64,7 @@ namespace Habitia.Areas.Admin.Controllers
                 .Include(p => p.Cargo).ThenInclude(c => c.Residente)
                 .Include(p => p.Cargo).ThenInclude(c => c.TipoCargo)
                 .Include(p => p.Cargo).ThenInclude(c => c.EstadoCargo)
+                .Include(p => p.Cargo).ThenInclude(c => c.Vivienda) // <-- NUEVO
                 .Include(p => p.MetodoPago)
                 .FirstOrDefaultAsync(p => p.TN_Id == id && p.TB_Estado);
 
@@ -94,7 +99,8 @@ namespace Habitia.Areas.Admin.Controllers
                 MetodoPago = pago.MetodoPago.TC_Nombre,
                 TF_FechaPago = pago.TF_FechaPago,
                 TC_RutaComprobante = pago.TC_RutaComprobante,
-                EstadoCargo = pago.Cargo.EstadoCargo.TC_Nombre
+                EstadoCargo = pago.Cargo.EstadoCargo.TC_Nombre,
+                NumeroVivienda = pago.Cargo.Vivienda != null ? pago.Cargo.Vivienda.TC_Numero : null // <-- NUEVO
             };
 
             return View(vm);

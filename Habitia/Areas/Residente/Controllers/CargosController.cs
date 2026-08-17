@@ -22,8 +22,12 @@ namespace Habitia.Areas.Residente.Controllers
         private static readonly string[] FormatosPermitidos = { ".jpg", ".jpeg", ".png", ".pdf" };
         private const long TAMANO_MAXIMO_BYTES = 5 * 1024 * 1024; // 5 MB
 
-        // Estados que el residente puede ver y sobre los que puede pagar
-        private static readonly string[] EstadosVisiblesResidente = { "Pendiente", "Vencido" };
+        // Estados que el residente puede pagar (usado en Pagar GET/POST)
+        private static readonly string[] EstadosPagables = { "Pendiente", "Vencido" };
+
+        // Estados que el residente puede VER en su listado (incluye "En revisión" para que
+        // vea el seguimiento de comprobantes ya enviados, aunque no pueda volver a pagarlos)
+        private static readonly string[] EstadosVisiblesResidente = { "Pendiente", "Vencido", "En revisión" };
 
         public CargosController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IWebHostEnvironment env)
         {
@@ -39,7 +43,8 @@ namespace Habitia.Areas.Residente.Controllers
             var cargos = await _context.Cargos
                 .Include(c => c.TipoCargo)
                 .Include(c => c.EstadoCargo)
-                .Include(c => c.TipoRecargo) // <-- NUEVO: para mostrar "Fijo"/"Porcentaje" en el aviso
+                .Include(c => c.TipoRecargo) // <-- para mostrar "Fijo"/"Porcentaje" en el aviso
+                .Include(c => c.Vivienda) // <-- NUEVO
                 .Where(c => c.TC_IdResidente == userId
                             && c.TB_Estado
                             && EstadosVisiblesResidente.Contains(c.EstadoCargo.TC_Nombre))
@@ -56,12 +61,13 @@ namespace Habitia.Areas.Residente.Controllers
                     TF_FechaVencimiento = c.TF_FechaVencimiento,
                     EstadoCargo = c.EstadoCargo.TC_Nombre,
 
-                    // <-- NUEVO: solo tiene sentido mostrarlo mientras el cargo sigue "Pendiente"
+                    // Solo tiene sentido mostrarlo mientras el cargo sigue "Pendiente"
                     // (si ya está "Vencido", TN_MontoRecargo ya refleja lo aplicado, así que no se duplica el aviso)
                     TB_RecargoProgramado = c.TB_RecargoProgramado && c.EstadoCargo.TC_Nombre == "Pendiente",
                     TC_FrecuenciaRecargo = c.TC_FrecuenciaRecargo,
                     TN_ValorRecargo = c.TN_ValorRecargo,
-                    TipoRecargoNombre = c.TipoRecargo != null ? c.TipoRecargo.TC_Nombre : null
+                    TipoRecargoNombre = c.TipoRecargo != null ? c.TipoRecargo.TC_Nombre : null,
+                    NumeroVivienda = c.Vivienda != null ? c.Vivienda.TC_Numero : null // <-- NUEVO
                 })
                 .ToListAsync();
 
@@ -74,12 +80,13 @@ namespace Habitia.Areas.Residente.Controllers
 
             var cargo = await _context.Cargos
                 .Include(c => c.EstadoCargo)
+                .Include(c => c.Vivienda) // <-- NUEVO
                 .FirstOrDefaultAsync(c => c.TN_Id == id && c.TC_IdResidente == userId && c.TB_Estado);
 
             if (cargo == null) return NotFound();
 
             // Solo se puede pagar si está Pendiente o Vencido
-            if (!EstadosVisiblesResidente.Contains(cargo.EstadoCargo.TC_Nombre))
+            if (!EstadosPagables.Contains(cargo.EstadoCargo.TC_Nombre))
             {
                 TempData["Error"] = $"Este cargo ya no admite pago (estado actual: {cargo.EstadoCargo.TC_Nombre}).";
                 return RedirectToAction(nameof(Index));
@@ -119,6 +126,7 @@ namespace Habitia.Areas.Residente.Controllers
                 TN_MontoBase = cargo.TN_MontoBase,
                 TN_MontoIva = cargo.TN_MontoIva,
                 TN_MontoTotal = cargo.TN_MontoTotal,
+                NumeroVivienda = cargo.Vivienda != null ? cargo.Vivienda.TC_Numero : null, // <-- NUEVO
                 MetodosPago = metodos,
                 TitularTarjeta = config?.TC_TitularTarjeta,
                 IbanTarjeta = config?.TC_IbanTarjeta,
@@ -179,7 +187,7 @@ namespace Habitia.Areas.Residente.Controllers
 
                 if (cargo == null) return NotFound();
 
-                if (!EstadosVisiblesResidente.Contains(cargo.EstadoCargo.TC_Nombre))
+                if (!EstadosPagables.Contains(cargo.EstadoCargo.TC_Nombre))
                 {
                     TempData["Error"] = $"Este cargo ya no admite pago (estado actual: {cargo.EstadoCargo.TC_Nombre}).";
                     return RedirectToAction(nameof(Index));

@@ -18,8 +18,13 @@ namespace Habitia.ViewModels.Financiero.Admin
         public bool TB_AplicaIva { get; set; }
         public bool TB_RecargoAplicado { get; set; }
         public bool TB_RecargoProgramado { get; set; } // <-- NUEVO
+        public string? NumeroVivienda { get; set; } // <-- NUEVO
         public decimal TN_MontoIva { get; set; }
         public decimal TN_MontoTotal { get; set; }
+
+        public string? NombreTipoRecargo { get; set; }
+        public string? TC_FrecuenciaRecargo { get; set; }
+        public decimal? TN_ValorRecargo { get; set; }
         public DateTime TF_FechaEmision { get; set; }
         public DateTime TF_FechaVencimiento { get; set; }
         public string EstadoCargo { get; set; }

@@ -11,6 +11,9 @@ namespace Habitia.ViewModels.Financiero.Admin
         public string TC_IdResidente { get; set; }
         public string ResidenteDisplay { get; set; } // para mostrar en el buscador al cargar
 
+        // vivienda actual del cargo (si el residente tiene 2+, se puede cambiar)
+        public int? TN_IdVivienda { get; set; }
+
         [Required(ErrorMessage = "Debe indicar el tipo de cargo")]
         public string TC_TipoCargoTexto { get; set; }
 
@@ -24,7 +27,6 @@ namespace Habitia.ViewModels.Financiero.Admin
         public DateTime? TF_FechaVencimiento { get; set; }
 
         public string? TC_Descripcion { get; set; }
-
         public string EstadoActual { get; set; } // solo informativo
 
         public List<SelectListItem> TiposCargo { get; set; } = new();
@@ -38,7 +40,6 @@ namespace Habitia.ViewModels.Financiero.Admin
                     "El monto base debe ser mayor a 0.",
                     new[] { nameof(TN_MontoBase) });
             }
-
             if (!TF_FechaVencimiento.HasValue || TF_FechaVencimiento.Value.Year < 2026)
             {
                 yield return new ValidationResult(

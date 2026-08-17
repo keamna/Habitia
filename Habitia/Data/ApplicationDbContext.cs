@@ -273,6 +273,13 @@ namespace Habitia.Data
                     .HasForeignKey(c => c.TC_IdResidente)
                     .OnDelete(DeleteBehavior.Restrict);
 
+                // NUEVO: vivienda a la que corresponde el cargo (opcional; un residente
+                // puede tener varias viviendas asociadas — ver THBT_A_ViviendaUsuario)
+                entity.HasOne(c => c.Vivienda)
+                    .WithMany()
+                    .HasForeignKey(c => c.TN_IdVivienda)
+                    .OnDelete(DeleteBehavior.Restrict);
+
                 entity.HasOne(c => c.TipoCargo)
                     .WithMany()
                     .HasForeignKey(c => c.TN_IdTipoCargo)
@@ -291,6 +298,15 @@ namespace Habitia.Data
                 // Acelera "cargos pendientes del residente" y "cargos vencidos" (US-10, puntos 2.2 y 4.1)
                 entity.HasIndex(c => c.TN_IdEstadoCargo);
                 entity.HasIndex(c => c.TF_FechaVencimiento);
+
+                // NUEVO: acelera filtros/reportes de cargos por vivienda
+                entity.HasIndex(c => c.TN_IdVivienda);
+
+                // NUEVO: precisión decimal explícita (evita warning de EF Core y truncamientos silenciosos)
+                entity.Property(c => c.TN_MontoBase).HasPrecision(18, 2);
+                entity.Property(c => c.TN_MontoIva).HasPrecision(18, 2);
+                entity.Property(c => c.TN_MontoTotal).HasPrecision(18, 2);
+                entity.Property(c => c.TN_ValorRecargo).HasPrecision(18, 2);
             });
 
             builder.Entity<THBT_A_CargoRecurrente>(entity =>
@@ -306,6 +322,10 @@ namespace Habitia.Data
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasIndex(cr => cr.TB_Estado);
+
+                // NUEVO: precisión decimal
+                entity.Property(cr => cr.TN_MontoBase).HasPrecision(18, 2);
+                entity.Property(cr => cr.TN_ValorRecargo).HasPrecision(18, 2);
             });
 
             // Cargo recurrente
@@ -349,6 +369,10 @@ namespace Habitia.Data
                     .WithMany()
                     .HasForeignKey(r => r.TN_IdTipoRecargo)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                // NUEVO: precisión decimal
+                entity.Property(r => r.TN_Valor).HasPrecision(18, 2);
+                entity.Property(r => r.TN_MontoAplicado).HasPrecision(18, 2);
             });
 
             builder.Entity<ResenaPublicacion>(entity =>
@@ -359,7 +383,7 @@ namespace Habitia.Data
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(r => r.Publicacion)
-                    .WithMany(p => p.Resenas) 
+                    .WithMany(p => p.Resenas)
                     .HasForeignKey(r => r.TN_IdPublicacion)
                     .OnDelete(DeleteBehavior.Restrict);
             });
