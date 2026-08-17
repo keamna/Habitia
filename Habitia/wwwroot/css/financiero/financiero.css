@@ -374,3 +374,131 @@
         display: block;
         cursor: zoom-in;
     }
+
+
+/* =========================================================
+   Botón "Ver más" (destinatarios de cargos recurrentes)
+========================================================= */
+.btn-ver-destinatarios {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .2px;
+    transition: background-color .15s ease, transform .1s ease, box-shadow .15s ease;
+    box-shadow: 0 1px 3px rgba(51, 99, 50, .25);
+}
+
+    .btn-ver-destinatarios:hover {
+        background-color: #285028 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(51, 99, 50, .35);
+        color: #fff;
+    }
+
+    .btn-ver-destinatarios:active {
+        transform: translateY(0);
+    }
+
+    .btn-ver-destinatarios i {
+        font-size: .85rem;
+    }
+
+    .btn-ver-destinatarios .contador-viviendas {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 50px;
+        background-color: rgba(255, 255, 255, .92);
+        color: #336332;
+        font-size: .72rem;
+        font-weight: 700;
+    }
+
+/* ---------- Modal de destinatarios ---------- */
+#modalDestinatarios .modal-content {
+    border-radius: 14px;
+    border: none;
+    overflow: hidden;
+}
+
+#modalDestinatarios .modal-header {
+    background-color: #f4f8f4;
+    border-bottom: 1px solid #e1e9e1;
+}
+
+#modalDestinatarios .modal-title {
+    color: #234d22;
+    font-size: 1.05rem;
+}
+
+#buscadorDestinatarios {
+    border-radius: 10px;
+    border: 1px solid #d7e2d7;
+}
+
+    #buscadorDestinatarios:focus {
+        border-color: #336332;
+        box-shadow: 0 0 0 .2rem rgba(51, 99, 50, .15);
+    }
+
+#tablaDestinatarios thead th {
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: #4a6b49;
+    border-bottom: 2px solid #e1e9e1;
+}
+
+#tablaDestinatarios tbody tr:hover {
+    background-color: #f7faf7;
+}
+
+#tablaDestinatarios .badge {
+    font-weight: 500;
+    font-size: .75rem;
+    padding: 5px 9px;
+    border-radius: 20px;
+}
+
+/* =========================================================
+   Fila expandible — Plantillas programadas (cargos recurrentes)
+========================================================= */
+.btn-expandir {
+    color: var(--habitia-text-gray);
+    padding: 4px 8px;
+}
+
+    .btn-expandir:hover {
+        color: var(--habitia-green-active);
+    }
+
+    .btn-expandir.expandido i {
+        transform: rotate(90deg);
+    }
+
+.fin-detalle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px 24px;
+}
+
+.fin-detalle-item-label {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--habitia-text-gray);
+    margin-bottom: 2px;
+}
+
+.fin-detalle-item-valor {
+    font-size: .92rem;
+    color: #1a1a1a;
+    font-weight: 500;
+}

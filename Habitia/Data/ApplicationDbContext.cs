@@ -273,7 +273,7 @@ namespace Habitia.Data
                     .HasForeignKey(c => c.TC_IdResidente)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // NUEVO: vivienda a la que corresponde el cargo (opcional; un residente
+                // Vivienda a la que corresponde el cargo (opcional; un residente
                 // puede tener varias viviendas asociadas — ver THBT_A_ViviendaUsuario)
                 entity.HasOne(c => c.Vivienda)
                     .WithMany()
@@ -299,10 +299,10 @@ namespace Habitia.Data
                 entity.HasIndex(c => c.TN_IdEstadoCargo);
                 entity.HasIndex(c => c.TF_FechaVencimiento);
 
-                // NUEVO: acelera filtros/reportes de cargos por vivienda
+                // Acelera filtros/reportes de cargos por vivienda
                 entity.HasIndex(c => c.TN_IdVivienda);
 
-                // NUEVO: precisión decimal explícita (evita warning de EF Core y truncamientos silenciosos)
+                // Precisión decimal explícita (evita warning de EF Core y truncamientos silenciosos)
                 entity.Property(c => c.TN_MontoBase).HasPrecision(18, 2);
                 entity.Property(c => c.TN_MontoIva).HasPrecision(18, 2);
                 entity.Property(c => c.TN_MontoTotal).HasPrecision(18, 2);
@@ -323,12 +323,12 @@ namespace Habitia.Data
 
                 entity.HasIndex(cr => cr.TB_Estado);
 
-                // NUEVO: precisión decimal
+                // Precisión decimal
                 entity.Property(cr => cr.TN_MontoBase).HasPrecision(18, 2);
                 entity.Property(cr => cr.TN_ValorRecargo).HasPrecision(18, 2);
             });
 
-            // Cargo recurrente
+            // Cargo recurrente - residente destino
 
             builder.Entity<THBT_A_CargoRecurrenteResidente>(entity =>
             {
@@ -342,7 +342,25 @@ namespace Habitia.Data
                     .HasForeignKey(x => x.TC_IdResidente)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasIndex(x => new { x.TN_IdCargoRecurrente, x.TC_IdResidente }).IsUnique();
+                // NUEVO: vivienda específica del residente dentro de esta plantilla
+                entity.HasOne(x => x.Vivienda)
+                    .WithMany()
+                    .HasForeignKey(x => x.TN_IdVivienda)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // CAMBIO: el índice único ahora incluye TN_IdVivienda. Antes era solo
+                // (TN_IdCargoRecurrente, TC_IdResidente), lo que impedía que un mismo
+                // residente apareciera más de una vez por plantilla — incorrecto ahora
+                // que un residente puede tener varias viviendas seleccionadas en la
+                // misma plantilla. Con la vivienda incluida se sigue evitando el
+                // duplicado real (misma plantilla + mismo residente + misma vivienda
+                // dos veces) sin bloquear el caso válido (mismo residente, viviendas
+                // distintas).
+                entity.HasIndex(x => new { x.TN_IdCargoRecurrente, x.TC_IdResidente, x.TN_IdVivienda })
+                    .IsUnique();
+
+                // NUEVO: acelera filtros/reportes por vivienda, igual que en THBT_A_Cargo
+                entity.HasIndex(x => x.TN_IdVivienda);
             });
 
             builder.Entity<THBT_A_Pago>(entity =>
@@ -370,7 +388,7 @@ namespace Habitia.Data
                     .HasForeignKey(r => r.TN_IdTipoRecargo)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                // NUEVO: precisión decimal
+                // Precisión decimal
                 entity.Property(r => r.TN_Valor).HasPrecision(18, 2);
                 entity.Property(r => r.TN_MontoAplicado).HasPrecision(18, 2);
             });

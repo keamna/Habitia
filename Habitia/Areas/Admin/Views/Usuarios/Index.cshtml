@@ -133,22 +133,22 @@
                             </td>
 
                             <td>
-                            <div class="roles-lista">
-                                @foreach (var rol in item.Roles)
-                                {
-                                    <span class="badge badge-rol">@rol</span>
-                                }
-                            </div>
-                            @if (item.Roles.Contains("Mantenimiento") && item.TiposMantenimientoNombres.Any())
-                            {
-                                <div class="tipos-mantenimiento-lista mt-1">
-                                    @foreach (var tipo in item.TiposMantenimientoNombres)
+                                <div class="roles-lista">
+                                    @foreach (var rol in item.Roles)
                                     {
-                                        <span class="badge-tipo-mantenimiento">@tipo</span>
+                                        <span class="badge badge-rol">@rol</span>
                                     }
                                 </div>
-                            }
-                        </td>
+                                @if (item.Roles.Contains("Mantenimiento") && item.TiposMantenimientoNombres.Any())
+                                {
+                                    <div class="tipos-mantenimiento-lista mt-1">
+                                        @foreach (var tipo in item.TiposMantenimientoNombres)
+                                        {
+                                            <span class="badge-tipo-mantenimiento">@tipo</span>
+                                        }
+                                    </div>
+                                }
+                            </td>
 
                             <td>
                                 @if (item.Viviendas.Any())
@@ -158,7 +158,9 @@
                                         <div class="vivienda-item">
                                             <div class="vivienda-item-linea">
                                                 <span class="vivienda-codigo">@vivienda.Codigo</span>
-                                                <span class="vivienda-relacion">@vivienda.TipoRelacion</span>
+                                                <span class="vivienda-relacion">
+                                                    @vivienda.TipoRelacion@(vivienda.ViveAhi ? " (vive ahí)" : "")
+                                                </span>
                                                 @if (vivienda.Estado == "Pendiente")
                                                 {
                                                     <span class="badge badge-pendiente badge-mini">Pendiente</span>
@@ -373,8 +375,7 @@
 <!-- MODAL ELIMINAR USUARIO (Bootstrap) -->
 <div class="modal fade" id="modalEliminarUsuario" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content p-3">
-            <div class="modal-body text-center">
+        <div class="modal-body text-center">
                 <h5 class="mb-2">Eliminar usuario</h5>
                 <p class="text-muted mb-3">
                     ¿Estás seguro de que querés eliminar a <strong id="eliminarUsuarioNombre"></strong>?
@@ -392,7 +393,6 @@
                         Eliminar
                     </button>
                 </div>
-            </div>
         </div>
     </div>
 </div>

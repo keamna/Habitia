@@ -18,10 +18,15 @@ namespace Habitia.Models.Financiero
         [Required]
         public string TC_IdResidente { get; set; }
 
+        public int? TN_IdVivienda { get; set; }
+
         [ForeignKey(nameof(TN_IdCargoRecurrente))]
         public THBT_A_CargoRecurrente CargoRecurrente { get; set; }
 
         [ForeignKey(nameof(TC_IdResidente))]
         public ApplicationUser Residente { get; set; }
+
+        [ForeignKey(nameof(TN_IdVivienda))]
+        public Vivienda? Vivienda { get; set; }
     }
 }

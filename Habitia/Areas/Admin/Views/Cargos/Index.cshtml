@@ -122,6 +122,7 @@
                         <tr>
                             <th style="width:36px;"></th>
                             <th>Residente</th>
+                            <th>Vivienda</th>
                             <th>Tipo</th>
                             <th class="text-end">Monto total</th>
                             <th>Emisión</th>
@@ -132,21 +133,14 @@
                     </thead>
                     <tbody>
                         @{
-                            var grupos = Model.GroupBy(c => new
-                            {
-                                c.ResidenteId,
-                                c.TipoCargo,
-                                c.TF_FechaEmision,
-                                c.TN_MontoBase,
-                                c.TB_AplicaIva,
-                                c.TN_MontoIva,
-                                c.TN_MontoTotal,
-                                c.TF_FechaVencimiento,
-                                c.TB_RecargoProgramado,
-                                c.NombreTipoRecargo,
-                                c.TC_FrecuenciaRecargo,
-                                c.TN_ValorRecargo
-                            }).ToList();
+                            // Se agrupa por TC_IdLote: es el único identificador confiable de
+                            // "estos cargos se crearon juntos, para varias viviendas del mismo
+                            // residente". Los cargos antiguos sin lote (TC_IdLote == null) se
+                            // agrupan cada uno con su propio TN_Id, es decir, nunca se agrupan
+                            // entre sí ni se fusionan por coincidencia de valores.
+                            var grupos = Model.GroupBy(c =>
+                                !string.IsNullOrEmpty(c.TC_IdLote) ? c.TC_IdLote : $"single-{c.TN_Id}"
+                            ).ToList();
                         }
                         @foreach (var grupo in grupos)
                         {
@@ -174,7 +168,7 @@
                                 !valor.HasValue ? "—" : esPorcentaje ? valor.Value.ToString("0.##") + "%" : valor.Value.ToString("C");
 
                             var detalleId = $"detalle-cargo-{c.TN_Id}";
-                            var puedeEditar = !esGrupo && c.EstadoCargo == "Pendiente";
+                            var puedeEliminar = !esGrupo && c.EstadoCargo == "Pendiente";
 
                             <tr data-estado="@estadoMostrar">
                                 <td>
@@ -189,13 +183,23 @@
                                     </button>
                                 </td>
 
-                                <td class="fw-semibold">
-                                    @c.NombreResidente
+                                <td class="fw-semibold">@c.NombreResidente</td>
+                                <td>
                                     @if (esGrupo)
                                     {
-                                        <span class="badge bg-secondary ms-1" title="Este cargo se aplicó a varias viviendas del mismo residente">
+                                        <span class="badge bg-secondary" title="Este cargo se aplicó a varias viviendas del mismo residente">
                                             <i class="bi bi-houses"></i> @itemsGrupo.Count viviendas
                                         </span>
+                                    }
+                                    else if (!string.IsNullOrWhiteSpace(c.NumeroVivienda))
+                                    {
+                                        <span class="badge" style="background-color:#336332;">
+                                            <i class="bi bi-house-door"></i> @c.NumeroVivienda
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">—</span>
                                     }
                                 </td>
                                 <td>
@@ -218,22 +222,14 @@
                                 <td><span class="badge @badgeClass">@estadoMostrar</span></td>
 
                                 <td class="text-end">
-                                    @if (puedeEditar)
+                                    @if (puedeEliminar)
                                     {
-                                        <a asp-action="Edit" asp-route-id="@c.TN_Id"
-                                           class="btn btn-sm btn-outline-secondary" title="Editar">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
                                         <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar"
                                                 title="Eliminar"
                                                 data-id="@c.TN_Id"
                                                 data-descripcion="@c.TipoCargo - @c.NombreResidente">
                                             <i class="bi bi-trash"></i>
                                         </button>
-                                    }
-                                    else if (esGrupo)
-                                    {
-                                        <span class="text-muted small">Ver detalle</span>
                                     }
                                     else
                                     {
@@ -244,7 +240,7 @@
 
                             <tr class="collapse" id="@detalleId" data-estado="@estadoMostrar">
                                 <td></td>
-                                <td colspan="7" class="fin-detalle-panel">
+                                <td colspan="8" class="fin-detalle-panel">
                                     <div class="row g-3 py-2">
                                         <div class="col-md-6">
                                             <div class="fin-metrica-label mb-2">Datos del residente</div>
@@ -382,7 +378,7 @@
                                                                     "Vencido" => "badge-vencido",
                                                                     _ => "badge-aplicado"
                                                                 };
-                                                                var itemPuedeEditar = item.EstadoCargo == "Pendiente";
+                                                                var itemPuedeEliminar = item.EstadoCargo == "Pendiente";
                                                                 var itemVencido = item.EstadoCargo == "Vencido";
 
                                                                 <tr>
@@ -426,12 +422,8 @@
                                                                         }
                                                                     </td>
                                                                     <td class="text-end">
-                                                                        @if (itemPuedeEditar)
+                                                                        @if (itemPuedeEliminar)
                                                                         {
-                                                                            <a asp-action="Edit" asp-route-id="@item.TN_Id"
-                                                                               class="btn btn-sm btn-outline-secondary" title="Editar">
-                                                                                <i class="bi bi-pencil"></i>
-                                                                            </a>
                                                                             <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar"
                                                                                     title="Eliminar"
                                                                                     data-id="@item.TN_Id"

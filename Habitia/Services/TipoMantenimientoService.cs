@@ -25,7 +25,6 @@ namespace Habitia.Services
         public async Task<bool> ExisteNombreAsync(string nombre)
         {
             var nombreNormalizado = nombre.Trim().ToLower();
-
             return await _context.TiposMantenimiento
                 .AnyAsync(t => t.TC_Nombre.ToLower() == nombreNormalizado);
         }
@@ -36,10 +35,8 @@ namespace Habitia.Services
             {
                 var tipo = await _context.TiposMantenimiento
                     .FirstOrDefaultAsync(t => t.TN_Id == idExistente.Value);
-
                 if (tipo == null)
                     throw new InvalidOperationException("El tipo de mantenimiento seleccionado no existe.");
-
                 return tipo;
             }
 
@@ -47,7 +44,6 @@ namespace Habitia.Services
                 throw new InvalidOperationException("Debe seleccionar un tipo existente o ingresar uno nuevo.");
 
             var nombreLimpio = nombreNuevo.Trim();
-
             if (await ExisteNombreAsync(nombreLimpio))
             {
                 throw new InvalidOperationException(
@@ -62,8 +58,23 @@ namespace Habitia.Services
 
             _context.TiposMantenimiento.Add(nuevoTipo);
             await _context.SaveChangesAsync();
-
             return nuevoTipo;
+        }
+
+        // Solo los tipos de mantenimiento que este personal tiene asignados
+        // (vía PersonalTipoMantenimiento), para restringir el filtro de "Mis tareas"
+        // a lo que esa persona realmente maneja.
+        public async Task<List<TipoMantenimiento>> ObtenerPorPersonalAsync(string idPersonal)
+        {
+            var idsTipo = await _context.PersonalTipoMantenimiento
+                .Where(x => x.TC_IdPersonal == idPersonal)
+                .Select(x => x.TN_IdTipo)
+                .ToListAsync();
+
+            return await _context.TiposMantenimiento
+                .Where(t => idsTipo.Contains(t.TN_Id))
+                .OrderBy(t => t.TC_Nombre)
+                .ToListAsync();
         }
     }
 }

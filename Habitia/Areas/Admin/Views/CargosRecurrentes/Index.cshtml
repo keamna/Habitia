@@ -1,4 +1,5 @@
 ﻿@model List<Habitia.Models.Financiero.THBT_A_CargoRecurrente>
+@using System.Text.Json
 @{
     ViewData["Title"] = "Cargos recurrentes";
 }
@@ -44,10 +45,14 @@
         }
         else
         {
+            var jsonTodosResidentes = ViewData["JsonTodosResidentes"] as string ?? "[]";
+            var countTodosResidentes = ViewData["CountTodosResidentes"] as int? ?? 0;
+
             <div class="table-responsive">
-                <table class="table fin-table mb-0">
+                <table class="table fin-table mb-0" id="tablaCargosRecurrentes">
                     <thead>
                         <tr>
+                            <th style="width:36px;"></th>
                             <th>Tipo</th>
                             <th class="text-end">Monto base</th>
                             <th>Frecuencia</th>
@@ -55,17 +60,74 @@
                             <th>Recargo</th>
                             <th>Última generación</th>
                             <th>Estado</th>
-                            <th class="text-end" style="width:150px;">Acciones</th>
+                            <th class="text-end" style="width:110px;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var p in Model)
                         {
+                            var viviendas = p.Residentes
+                                .Where(r => r.Vivienda != null)
+                                .Select(r => r.Vivienda!.TC_Numero)
+                                .ToList();
+
+                            // Datos para el modal de destinatarios: uno por cada vínculo
+                            // residente-vivienda de esta plantilla (si aplica a residentes
+                            // específicos). Se serializan aquí para no necesitar AJAX.
+                            var destinatarios = p.Residentes
+                                .Where(r => r.Residente != null)
+                                .Select(r => new
+                                {
+                                    identificacion = r.Residente!.TC_Identificacion,
+                                    nombre = r.Residente.TC_Nombre + " " + r.Residente.TC_Apellido,
+                                    telefono = string.IsNullOrWhiteSpace(r.Residente.TC_Telefono) ? "No registrado" : r.Residente.TC_Telefono,
+                                    correo = r.Residente.Email,
+                                    vivienda = r.Vivienda != null ? r.Vivienda.TC_Numero : "No especificada"
+                                })
+                                .ToList();
+
+                            var jsonDestinatarios = JsonSerializer.Serialize(destinatarios);
+                            var residentesUnicos = p.Residentes.Select(r => r.TC_IdResidente).Distinct().Count();
+
                             <tr>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-expandir" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#detalle-@p.TN_Id"
+                                            aria-expanded="false" aria-controls="detalle-@p.TN_Id">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </td>
                                 <td class="fw-semibold">@p.TipoCargo.TC_Nombre</td>
                                 <td class="text-end">@p.TN_MontoBase.ToString("C")</td>
                                 <td>@p.TC_Frecuencia</td>
-                                <td>@(p.TB_AplicarATodos ? "Todos los residentes" : $"{p.Residentes.Count} residente(s)")</td>
+                                <td>
+                                    @if (p.TB_AplicarATodos)
+                                    {
+                                        <button type="button" class="btn btn-sm badge border-0 text-white btn-ver-destinatarios"
+                                                style="background-color:#336332;"
+                                                data-descripcion="@p.TipoCargo.TC_Nombre (@p.TC_Frecuencia) — Todos los residentes"
+                                                data-destinatarios='@Html.Raw(jsonTodosResidentes)'
+                                                title="Ver todos los residentes incluidos">
+                                            <i class="bi bi-eye"></i> Ver más
+                                            <span class="contador-viviendas">@countTodosResidentes</span>
+                                        </button>
+                                    }
+                                    else if (viviendas.Any())
+                                    {
+                                        <button type="button" class="btn btn-sm badge border-0 text-white btn-ver-destinatarios"
+                                                style="background-color:#336332;"
+                                                data-descripcion="@p.TipoCargo.TC_Nombre (@p.TC_Frecuencia)"
+                                                data-destinatarios='@Html.Raw(jsonDestinatarios)'
+                                                title="Ver viviendas incluidas">
+                                            <i class="bi bi-eye"></i> Ver más
+                                            <span class="contador-viviendas">@viviendas.Count</span>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">@p.Residentes.Count residente(s)</span>
+                                    }
+                                </td>
                                 <td>
                                     @if (p.TB_RecargoProgramado)
                                     {
@@ -91,10 +153,6 @@
                                     }
                                 </td>
                                 <td class="text-end">
-                                    <a asp-action="Edit" asp-route-id="@p.TN_Id"
-                                       class="btn btn-sm btn-outline-secondary" title="Editar">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
                                     <form asp-action="Pausar" asp-route-id="@p.TN_Id" method="post" class="d-inline">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-sm btn-outline-secondary"
@@ -110,11 +168,128 @@
                                     </button>
                                 </td>
                             </tr>
+                            <tr class="collapse" id="detalle-@p.TN_Id">
+                                <td colspan="9" class="p-0">
+                                    <div class="fin-detalle-panel p-3">
+                                        <div class="fin-detalle-grid">
+                                            <div>
+                                                <div class="fin-detalle-item-label">Tipo de cargo</div>
+                                                <div class="fin-detalle-item-valor">@p.TipoCargo.TC_Nombre</div>
+                                            </div>
+                                            <div>
+                                                <div class="fin-detalle-item-label">Monto base</div>
+                                                <div class="fin-detalle-item-valor">@p.TN_MontoBase.ToString("C")</div>
+                                            </div>
+                                            <div>
+                                                <div class="fin-detalle-item-label">Aplica IVA (13%)</div>
+                                                <div class="fin-detalle-item-valor">@(p.TB_AplicaIva ? "Sí" : "No")</div>
+                                            </div>
+                                            <div>
+                                                <div class="fin-detalle-item-label">Frecuencia</div>
+                                                <div class="fin-detalle-item-valor">@p.TC_Frecuencia</div>
+                                            </div>
+                                            <div>
+                                                <div class="fin-detalle-item-label">Fecha de inicio</div>
+                                                <div class="fin-detalle-item-valor">@p.TF_FechaInicio.ToString("dd/MM/yyyy")</div>
+                                            </div>
+                                            <div>
+                                                <div class="fin-detalle-item-label">Última generación</div>
+                                                <div class="fin-detalle-item-valor">@(p.TF_UltimaGeneracion?.ToString("dd/MM/yyyy") ?? "Aún no se ha generado")</div>
+                                            </div>
+                                            <div>
+                                                <div class="fin-detalle-item-label">Estado</div>
+                                                <div class="fin-detalle-item-valor">
+                                                    @if (p.TB_Estado)
+                                                    {
+                                                        <span class="badge badge-pagado">Activa</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-vencido">Pausada</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="fin-detalle-item-label">Destinatarios</div>
+                                                <div class="fin-detalle-item-valor">
+                                                    @if (p.TB_AplicarATodos)
+                                                    {
+                                                        <span>Todos los residentes (@countTodosResidentes vivienda(s))</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>@residentesUnicos residente(s) — @viviendas.Count vivienda(s)</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="fin-detalle-item-label">Recargo programado</div>
+                                                <div class="fin-detalle-item-valor">
+                                                    @if (p.TB_RecargoProgramado)
+                                                    {
+                                                        <span>
+                                                            @(p.TC_FrecuenciaRecargo == "PorDia" ? "Por día de atraso" : "Monto único")
+                                                            — @p.TipoRecargo?.TC_Nombre
+                                                            (@(p.TipoRecargo?.TC_Nombre == "Porcentaje" ? $"{p.TN_ValorRecargo}%" : p.TN_ValorRecargo?.ToString("C")))
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>No aplica</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div style="grid-column: 1 / -1;">
+                                                <div class="fin-detalle-item-label">Descripción</div>
+                                                <div class="fin-detalle-item-valor">
+                                                    @(string.IsNullOrWhiteSpace(p.TC_Descripcion) ? "Sin descripción" : p.TC_Descripcion)
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         }
                     </tbody>
                 </table>
             </div>
         }
+    </div>
+</div>
+
+<!-- Modal: destinatarios del cargo recurrente -->
+<div class="modal fade" id="modalDestinatarios" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-people"></i> Residentes incluidos
+                    <div class="text-muted small fw-normal" id="destinatariosDescripcion"></div>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="buscadorDestinatarios" class="form-control mb-3"
+                       placeholder="Buscar por identificación, nombre, vivienda, teléfono o correo..." />
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="tablaDestinatarios">
+                        <thead class="table-light" style="position:sticky; top:0;">
+                            <tr>
+                                <th>Identificación</th>
+                                <th>Vivienda</th>
+                                <th>Nombre</th>
+                                <th>Teléfono</th>
+                                <th>Correo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoTablaDestinatarios"></tbody>
+                    </table>
+                    <div id="sinResultadosDestinatarios" class="text-center text-muted py-3 d-none">
+                        No se encontraron residentes
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -152,6 +327,7 @@
 @section Scripts {
     <script>
         (function () {
+            // ===== Modal de eliminación =====
             var modalEliminarEl = document.getElementById('modalEliminar');
 
             if (modalEliminarEl && window.bootstrap) {
@@ -162,6 +338,94 @@
                         document.getElementById('eliminarId').value = btn.dataset.id;
                         document.getElementById('eliminarDescripcion').innerText = btn.dataset.descripcion;
                         modalEliminar.show();
+                    });
+                });
+            }
+
+            // ===== Filas expandibles (detalle de la plantilla) =====
+            document.querySelectorAll('#tablaCargosRecurrentes .collapse').forEach(function (fila) {
+                var boton = document.querySelector('[data-bs-target="#' + fila.id + '"]');
+                if (!boton) return;
+
+                fila.addEventListener('shown.bs.collapse', function () {
+                    boton.classList.add('expandido');
+                });
+                fila.addEventListener('hidden.bs.collapse', function () {
+                    boton.classList.remove('expandido');
+                });
+            });
+
+            // ===== Modal de destinatarios (residentes incluidos) =====
+            var modalDestinatariosEl = document.getElementById('modalDestinatarios');
+            var modalDestinatarios = modalDestinatariosEl && window.bootstrap
+                ? new bootstrap.Modal(modalDestinatariosEl)
+                : null;
+
+            var cuerpoTabla = document.getElementById('cuerpoTablaDestinatarios');
+            var buscador = document.getElementById('buscadorDestinatarios');
+            var sinResultados = document.getElementById('sinResultadosDestinatarios');
+            var descripcionEl = document.getElementById('destinatariosDescripcion');
+
+            function escaparHtml(texto) {
+                var div = document.createElement('div');
+                div.innerText = texto == null ? '' : texto;
+                return div.innerHTML;
+            }
+
+            function renderizarDestinatarios(lista) {
+                cuerpoTabla.innerHTML = '';
+
+                if (!lista || lista.length === 0) {
+                    sinResultados.classList.remove('d-none');
+                    return;
+                }
+                sinResultados.classList.add('d-none');
+
+                lista.forEach(function (d) {
+                    var fila = document.createElement('tr');
+                    fila.className = 'fila-destinatario';
+                    fila.dataset.busqueda = [d.identificacion, d.nombre, d.vivienda, d.telefono, d.correo]
+                        .join(' ').toLowerCase();
+                    fila.innerHTML =
+                        '<td>' + escaparHtml(d.identificacion) + '</td>' +
+                        '<td><span class="badge" style="background-color:#336332;"><i class="bi bi-house-door"></i> Vivienda ' + escaparHtml(d.vivienda) + '</span></td>' +
+                        '<td>' + escaparHtml(d.nombre) + '</td>' +
+                        '<td>' + escaparHtml(d.telefono) + '</td>' +
+                        '<td>' + escaparHtml(d.correo) + '</td>';
+                    cuerpoTabla.appendChild(fila);
+                });
+            }
+
+            function aplicarFiltroDestinatarios() {
+                var filtro = buscador.value.trim().toLowerCase();
+                var visibles = 0;
+
+                document.querySelectorAll('#cuerpoTablaDestinatarios .fila-destinatario').forEach(function (fila) {
+                    var coincide = fila.dataset.busqueda.includes(filtro);
+                    fila.classList.toggle('d-none', !coincide);
+                    if (coincide) visibles++;
+                });
+
+                sinResultados.classList.toggle('d-none', visibles !== 0);
+            }
+
+            buscador.addEventListener('input', aplicarFiltroDestinatarios);
+
+            if (modalDestinatarios) {
+                document.querySelectorAll('.btn-ver-destinatarios').forEach(function (btn) {
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var datos = [];
+                        try {
+                            datos = JSON.parse(btn.dataset.destinatarios || '[]');
+                        } catch (e2) {
+                            datos = [];
+                        }
+
+                        descripcionEl.innerText = btn.dataset.descripcion || '';
+                        buscador.value = '';
+                        renderizarDestinatarios(datos);
+                        modalDestinatarios.show();
                     });
                 });
             }

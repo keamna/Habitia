@@ -1,5 +1,7 @@
-﻿using Habitia.Data;
+﻿// /Areas/Admin/Controllers/AreaComunController.cs
+using Habitia.Data;
 using Habitia.Enums;
+using Habitia.Helpers;
 using Habitia.Models;
 using Habitia.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -529,19 +531,19 @@ namespace Habitia.Areas.Admin.Controllers
 
         // Devuelve el motivo por el que el área NO se puede eliminar,
         // o null si sí se puede.
+        //
+        // Antes de contar las reservas activas, se actualizan las vencidas a
+        // Finalizada (vía ReservaHelper) para que TN_Estado en BD sea la
+        // fuente de verdad en vez de recalcular la fecha de fin aquí mismo.
         private async Task<string?> ValidarEliminacionAreaAsync(int idArea)
         {
-            var ahora = DateTime.Now;
-
             // 1) Reservas activas cuyo horario todavía no terminó.
-            var reservas = await _context.Reservas
-                .Include(r => r.Disponibilidad)
-                .Where(r => r.Disponibilidad.TN_IdAreaComun == idArea &&
-                            r.TN_Estado == EstadoReservaEnum.Activa)
-                .ToListAsync();
+            await ReservaHelper.FinalizarReservasVencidasAsync(_context);
 
-            var vigentes = reservas
-                .Count(r => r.Disponibilidad.TF_Fecha.Date.Add(r.Disponibilidad.TF_HoraFin) > ahora);
+            var vigentes = await _context.Reservas
+                .CountAsync(r =>
+                    r.Disponibilidad.TN_IdAreaComun == idArea &&
+                    r.TN_Estado == EstadoReservaEnum.Activa);
 
             if (vigentes > 0)
             {

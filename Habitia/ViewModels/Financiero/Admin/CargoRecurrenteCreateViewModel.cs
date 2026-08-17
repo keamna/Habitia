@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// /ViewModels/Financiero/Admin/CargoRecurrenteCreateViewModel.cs
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Habitia.ViewModels.Financiero.Admin
@@ -12,14 +13,18 @@ namespace Habitia.ViewModels.Financiero.Admin
         [Range(0.01, double.MaxValue, ErrorMessage = "El monto debe ser mayor a 0")]
         public decimal TN_MontoBase { get; set; }
 
-        public bool TB_AplicaIva { get; set; }
-        public string? TC_Descripcion { get; set; }
+        public bool TB_AplicaIva { get; set; } // opcional
+        public string? TC_Descripcion { get; set; } // opcional
 
         [Required(ErrorMessage = "Seleccione la frecuencia")]
         public string TC_Frecuencia { get; set; }
 
         public bool TB_AplicarATodos { get; set; }
-        public List<string> ResidentesSeleccionados { get; set; } = new();
+
+        // Viviendas concretas seleccionadas (TN_IdViviendaUsuario). Cada elemento ya
+        // representa un vínculo vivienda-residente específico, por lo que un residente
+        // solo queda incluido si tiene al menos una vivienda marcada aquí.
+        public List<int> ViviendaUsuarioSeleccionados { get; set; } = new();
 
         public bool TB_RecargoProgramado { get; set; }
         public int? TN_IdTipoRecargo { get; set; }
@@ -27,7 +32,6 @@ namespace Habitia.ViewModels.Financiero.Admin
         [Range(0.01, double.MaxValue, ErrorMessage = "El valor del recargo debe ser mayor a 0")]
         public decimal? TN_ValorRecargo { get; set; }
 
-        // NUEVO: "Unico" o "PorDia" — se valida condicionalmente abajo
         public string? TC_FrecuenciaRecargo { get; set; }
 
         [Required(ErrorMessage = "Indique la fecha de inicio")]
@@ -36,18 +40,25 @@ namespace Habitia.ViewModels.Financiero.Admin
 
         public List<SelectListItem> TiposCargo { get; set; } = new();
         public List<SelectListItem> TiposRecargo { get; set; } = new();
-        public List<ResidenteBusquedaViewModel> Residentes { get; set; } = new();
+        public List<ViviendaResidenteViewModel> ViviendasResidentes { get; set; } = new();
 
-        // NUEVO: validación condicional, igual que en CargoCreateViewModel
+        // ÚNICO lugar donde se valida esto — el Controller NO debe repetir estas
+        // condiciones con ModelState.AddModelError, porque ASP.NET Core ejecuta
+        // IValidatableObject.Validate() en la misma pasada que las DataAnnotations,
+        // y repetirlo en el Controller producía el mismo mensaje de error DOS VECES
+        // en el resumen de validación.
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (TB_AplicarATodos)
+            if (!TB_AplicarATodos)
             {
-                if (ResidentesSeleccionados == null || ResidentesSeleccionados.Count == 0)
+                // Cubre "al menos una vivienda en total" y, por construcción de la tabla
+                // (cada checkbox = 1 residente + 1 vivienda), también garantiza que todo
+                // residente incluido tiene como mínimo una vivienda seleccionada.
+                if (ViviendaUsuarioSeleccionados == null || ViviendaUsuarioSeleccionados.Count == 0)
                 {
                     yield return new ValidationResult(
-                        "Debe seleccionar al menos un residente.",
-                        new[] { nameof(ResidentesSeleccionados) });
+                        "Debe seleccionar al menos una vivienda. Cada residente incluido debe tener al menos una vivienda marcada.",
+                        new[] { nameof(ViviendaUsuarioSeleccionados) });
                 }
             }
 
@@ -59,14 +70,12 @@ namespace Habitia.ViewModels.Financiero.Admin
                         "Debe seleccionar el tipo de recargo.",
                         new[] { nameof(TN_IdTipoRecargo) });
                 }
-
                 if (TN_ValorRecargo == null || TN_ValorRecargo <= 0)
                 {
                     yield return new ValidationResult(
                         "Debe ingresar un valor de recargo mayor a 0.",
                         new[] { nameof(TN_ValorRecargo) });
                 }
-
                 if (string.IsNullOrWhiteSpace(TC_FrecuenciaRecargo)
                     || (TC_FrecuenciaRecargo != "Unico" && TC_FrecuenciaRecargo != "PorDia"))
                 {

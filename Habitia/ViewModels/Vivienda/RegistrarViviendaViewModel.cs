@@ -10,6 +10,6 @@ namespace Habitia.ViewModels.Vivienda
         public TipoViviendaEnum? TipoVivienda { get; set; }
 
         [Required(ErrorMessage = "Debe seleccionar una vivienda.")]
-        public int IdVivienda { get; set; }
+        public int? IdVivienda { get; set; }
     }
 }

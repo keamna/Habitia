@@ -203,7 +203,7 @@
                                 <a asp-action="Details" asp-route-id="@item.Id" class="btn-fila-ver">
                                     <i class="bi bi-eye"></i> Ver
                                 </a>
-                                @if (!item.Prioridad.HasValue)
+                                @if (!item.Prioridad.HasValue && item.Responsabilidad != Habitia.Enums.ResponsabilidadEnum.Privado)
                                 {
                                     <a asp-action="AsignarPrioridad" asp-route-id="@item.Id" class="btn-fila-prioridad">
                                         <i class="bi bi-flag"></i> Asignar prioridad

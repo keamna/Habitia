@@ -4,6 +4,7 @@ using Habitia.ViewModels.Mantenimiento;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+
 namespace Habitia.Areas.Mantenimiento.Controllers
 {
     [Area("Mantenimiento")]
@@ -13,6 +14,7 @@ namespace Habitia.Areas.Mantenimiento.Controllers
         private readonly IMantenimientoService _mantenimientoService;
         private readonly ITipoMantenimientoService _tipoMantenimientoService;
         private readonly UserManager<ApplicationUser> _userManager;
+
         public TareasController(
             IMantenimientoService mantenimientoService,
             ITipoMantenimientoService tipoMantenimientoService,
@@ -34,8 +36,8 @@ namespace Habitia.Areas.Mantenimiento.Controllers
             var idUsuario = _userManager.GetUserId(User);
             var tareas = await _mantenimientoService.ObtenerPorPersonalAsignadoAsync(idUsuario!);
 
-            // Opciones de tipo para el filtro: catálogo de tipos de mantenimiento activos.
-            ViewBag.TiposDisponibles = await _tipoMantenimientoService.ObtenerActivosAsync();
+            // Solo los tipos de mantenimiento que este personal maneja, no todo el catálogo.
+            ViewBag.TiposDisponibles = await _tipoMantenimientoService.ObtenerPorPersonalAsync(idUsuario!);
 
             var huboFiltro = tipoId.HasValue || prioridad.HasValue || estado.HasValue;
 
@@ -67,6 +69,7 @@ namespace Habitia.Areas.Mantenimiento.Controllers
                 return Forbid();
             return View(tarea);
         }
+
         // GET: /Mantenimiento/Tareas/Actualizar/5
         public async Task<IActionResult> Actualizar(int id)
         {
@@ -91,6 +94,7 @@ namespace Habitia.Areas.Mantenimiento.Controllers
             ViewBag.Titulo = tarea.Incidencia?.TC_Titulo;
             return View(model);
         }
+
         // POST: /Mantenimiento/Tareas/Actualizar
         [HttpPost]
         [ValidateAntiForgeryToken]

@@ -88,9 +88,9 @@ namespace Habitia.Services
             return incidencias.Select(i => MapearAListItem(i, tiposPorPersonal)).ToList();
         }
 
-        public async Task<List<IncidenciaListItemViewModel>> ObtenerPorUsuarioAsync(string idUsuario)
+        public async Task<List<IncidenciaListItemViewModel>> ObtenerPorUsuarioAsync(string idUsuario, IncidenciaFiltroViewModel? filtro = null)
         {
-            var incidencias = await _context.Incidencias
+            var query = _context.Incidencias
                 .Include(i => i.Usuario)
                 .Include(i => i.Vivienda)
                 .Include(i => i.AreaComun)
@@ -99,6 +99,24 @@ namespace Habitia.Services
                 .Include(i => i.Mantenimiento)
                     .ThenInclude(m => m!.PersonalAsignado)
                 .Where(i => i.TC_IdUsuario == idUsuario)
+                .AsQueryable();
+
+            if (filtro != null)
+            {
+                if (filtro.Estado.HasValue)
+                    query = query.Where(i => i.TN_Estado == filtro.Estado.Value);
+
+                if (filtro.Responsabilidad.HasValue)
+                    query = query.Where(i => i.TN_Responsabilidad == filtro.Responsabilidad.Value);
+
+                if (filtro.FechaDesde.HasValue)
+                    query = query.Where(i => i.TF_FechaRegistro >= filtro.FechaDesde.Value.Date);
+
+                if (filtro.FechaHasta.HasValue)
+                    query = query.Where(i => i.TF_FechaRegistro <= filtro.FechaHasta.Value.Date.AddDays(1).AddTicks(-1));
+            }
+
+            var incidencias = await query
                 .OrderByDescending(i => i.TF_FechaRegistro)
                 .ToListAsync();
 

@@ -70,11 +70,64 @@ namespace Habitia.Areas.Residente.Controllers
                     ViveAhi = relacion.TB_ViveAhi,
                     EsPropietario = relacion.TN_TipoRelacion == TipoRelacionEnum.Propietario &&
                                      relacion.TN_Estado == EstadoUsuarioEnum.Activo,
-                    EtiquetaInquilinos = ViviendaHelper.ObtenerEtiquetaOcupantes(propietario?.TB_ViveAhi)
+                    EtiquetaInquilinos = ViviendaHelper.ObtenerEtiquetaOcupantes(propietario?.TB_ViveAhi),
+                    // Estado de TU relación con esta vivienda (Pendiente/Activo/...),
+                    // no el estado general de la vivienda.
+                    EstadoRelacion = relacion.TN_Estado
                 });
             }
 
             return View(viviendas);
+        }
+
+        // POST: /Residente/Vivienda/CambiarViveAhi
+        //
+        // Alterna si el usuario vive o no en la vivienda indicada. Regla de
+        // negocio: un usuario solo puede "vivir" en una vivienda a la vez,
+        // así que al activarlo acá se desactiva automáticamente en cualquier
+        // otra vivienda donde ya lo tuviera marcado. Solo aplica a relaciones
+        // Activas (no tiene sentido togglear esto en una solicitud Pendiente).
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CambiarViveAhi([FromBody] IdViviendaVM model)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            var relacion = await _context.ViviendaUsuarios
+                .FirstOrDefaultAsync(x =>
+                    x.TN_IdVivienda == model.Id &&
+                    x.TC_IdUsuario == userId &&
+                    x.TN_Estado == EstadoUsuarioEnum.Activo);
+
+            if (relacion == null)
+            {
+                return Json(new { success = false, message = "No se encontró una relación activa con esta vivienda." });
+            }
+
+            var nuevoValor = !relacion.TB_ViveAhi;
+
+            if (nuevoValor)
+            {
+                // Se desmarca cualquier otra vivienda donde este usuario tuviera
+                // "vive ahí" en true, para garantizar que solo viva en una.
+                var otras = await _context.ViviendaUsuarios
+                    .Where(x =>
+                        x.TC_IdUsuario == userId &&
+                        x.TN_IdVivienda != model.Id &&
+                        x.TB_ViveAhi == true)
+                    .ToListAsync();
+
+                foreach (var otra in otras)
+                {
+                    otra.TB_ViveAhi = false;
+                }
+            }
+
+            relacion.TB_ViveAhi = nuevoValor;
+
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, viveAhi = relacion.TB_ViveAhi });
         }
 
         // GET: /Residente/Vivienda/EditarCupo/5
@@ -185,14 +238,6 @@ namespace Habitia.Areas.Residente.Controllers
             return View(new RegistrarViviendaViewModel());
         }
 
-        // GET: /Residente/Vivienda/ObtenerViviendasSinPropietario
-        //
-        // Devuelve, según el tipo de vivienda elegido, solo las viviendas
-        // que NO tienen propietario (ni Activo ni Pendiente), que no están
-        // Inactiva, y donde el usuario actual todavía no tiene ninguna
-        // relación registrada (evita ofrecerle una vivienda donde ya
-        // tiene una solicitud, aunque en la práctica sea poco probable
-        // porque ahí ya habría un "propietario" bloqueando el filtro).
         [HttpGet]
         public async Task<IActionResult> ObtenerViviendasSinPropietario(TipoViviendaEnum tipo)
         {
@@ -242,8 +287,6 @@ namespace Habitia.Areas.Residente.Controllers
                 return View(model);
             }
 
-            // Revalidación en servidor: la vivienda debe seguir sin propietario
-            // (por si otro usuario la reclamó entre que cargó la lista y envió el formulario).
             var yaTienePropietario = vivienda.Usuarios.Any(x =>
                 x.TN_TipoRelacion == TipoRelacionEnum.Propietario &&
                 (x.TN_Estado == EstadoUsuarioEnum.Activo || x.TN_Estado == EstadoUsuarioEnum.Pendiente));
@@ -254,8 +297,6 @@ namespace Habitia.Areas.Residente.Controllers
                 return View(model);
             }
 
-            // El usuario no puede tener ya una relación (activa o pendiente)
-            // con esta misma vivienda.
             var yaTieneRelacionConEsaVivienda = vivienda.Usuarios.Any(x =>
                 x.TC_IdUsuario == userId &&
                 x.TN_Estado != EstadoUsuarioEnum.Rechazado);
@@ -268,7 +309,7 @@ namespace Habitia.Areas.Residente.Controllers
 
             _context.ViviendaUsuarios.Add(new ViviendaUsuario
             {
-                TN_IdVivienda = model.IdVivienda,
+                TN_IdVivienda = model.IdVivienda.Value,
                 TC_IdUsuario = userId,
                 TN_TipoRelacion = TipoRelacionEnum.Propietario,
                 TN_Estado = EstadoUsuarioEnum.Pendiente,

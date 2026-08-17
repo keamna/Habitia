@@ -51,9 +51,10 @@ namespace Habitia.Areas.Admin.Controllers
                     TB_RecargoAplicado = c.TB_RecargoAplicado,
                     TB_RecargoProgramado = c.TB_RecargoProgramado,
                     NumeroVivienda = c.Vivienda != null ? c.Vivienda.TC_Numero : null,
-                    NombreTipoRecargo = c.TipoRecargo != null ? c.TipoRecargo.TC_Nombre : null, // <-- NUEVO
-                    TC_FrecuenciaRecargo = c.TC_FrecuenciaRecargo,                              // <-- NUEVO
-                    TN_ValorRecargo = c.TN_ValorRecargo                                          // <-- NUEVO
+                    NombreTipoRecargo = c.TipoRecargo != null ? c.TipoRecargo.TC_Nombre : null,
+                    TC_FrecuenciaRecargo = c.TC_FrecuenciaRecargo,
+                    TN_ValorRecargo = c.TN_ValorRecargo,
+                    TC_IdLote = c.TC_IdLote // <-- NUEVO: agrupamiento confiable en el listado
                 })
                 .ToListAsync();
 
@@ -194,8 +195,14 @@ namespace Habitia.Areas.Admin.Controllers
 
                 // IMPORTANTE: se captura UNA sola vez para que todos los cargos generados en esta
                 // misma operación (mismo residente, varias viviendas) compartan el mismo timestamp
-                // exacto. Esto es lo que permite agruparlos como "un mismo cargo" en el listado.
+                // exacto.
                 var fechaEmision = DateTime.Now;
+
+                // NUEVO: identificador de lote explícito. Es lo único que se usa para agrupar
+                // cargos en el listado — no depende de que los montos/fechas/residente coincidan,
+                // así que editar un cargo individual después nunca puede fusionarlo con otro
+                // por casualidad ni separarlo de su lote original.
+                var idLote = Guid.NewGuid().ToString();
 
                 foreach (var (idResidente, idVivienda) in paresDestino)
                 {
@@ -213,6 +220,7 @@ namespace Habitia.Areas.Admin.Controllers
                         TF_FechaEmision = fechaEmision,
                         TF_FechaVencimiento = vm.TF_FechaVencimiento!.Value,
                         TB_Estado = true,
+                        TC_IdLote = idLote, // <-- NUEVO
 
                         TB_RecargoProgramado = vm.TB_RecargoProgramado,
                         TN_IdTipoRecargo = vm.TB_RecargoProgramado ? vm.TN_IdTipoRecargo : null,
@@ -235,140 +243,6 @@ namespace Habitia.Areas.Admin.Controllers
                 TempData["MontoTotalResumen"] = montoTotal.ToString("C");
                 TempData["FechaVencimientoResumen"] = vm.TF_FechaVencimiento!.Value.ToString("dd/MM/yyyy");
                 TempData["CantidadCargosResumen"] = paresDestino.Count;
-            }
-            catch
-            {
-                TempData["Error"] = "No fue posible completar la operación";
-            }
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        // ============ EDIT ============
-
-        public async Task<IActionResult> Edit(int id)
-        {
-            var cargo = await _context.Cargos
-                .Include(c => c.Residente)
-                .Include(c => c.TipoCargo)
-                .Include(c => c.EstadoCargo)
-                .Include(c => c.Vivienda) // <-- NUEVO
-                .FirstOrDefaultAsync(c => c.TN_Id == id && c.TB_Estado);
-
-            if (cargo == null)
-            {
-                TempData["Error"] = "El cargo no existe.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            if (cargo.EstadoCargo.TC_Nombre != ESTADO_PENDIENTE)
-            {
-                TempData["Error"] = $"No se puede editar un cargo en estado \"{cargo.EstadoCargo.TC_Nombre}\".";
-                return RedirectToAction(nameof(Index));
-            }
-
-            var vm = new CargoEditViewModel
-            {
-                TN_Id = cargo.TN_Id,
-                TC_IdResidente = cargo.TC_IdResidente,
-                ResidenteDisplay = $"{cargo.Residente.TC_Identificacion} - {cargo.Residente.TC_Nombre} {cargo.Residente.TC_Apellido}",
-                TN_IdVivienda = cargo.TN_IdVivienda, // <-- NUEVO
-                TC_TipoCargoTexto = cargo.TipoCargo.TC_Nombre,
-                TN_MontoBase = cargo.TN_MontoBase,
-                TB_AplicaIva = cargo.TB_AplicaIva,
-                TF_FechaVencimiento = cargo.TF_FechaVencimiento,
-                TC_Descripcion = cargo.TC_Descripcion,
-                EstadoActual = cargo.EstadoCargo.TC_Nombre,
-                TiposCargo = await ObtenerTiposCargo(),
-                Residentes = await ObtenerResidentesBusqueda()
-            };
-
-            return View(vm);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(CargoEditViewModel vm)
-        {
-            if (!ModelState.IsValid)
-            {
-                vm.TiposCargo = await ObtenerTiposCargo();
-                vm.Residentes = await ObtenerResidentesBusqueda();
-
-                // IMPORTANTE: ResidenteDisplay y EstadoActual no vienen en el POST (son solo
-                // texto en pantalla, no inputs con "name"), así que hay que reconstruirlos aquí;
-                // si no, al volver a mostrar la vista por un error de validación se ven vacíos,
-                // dando la sensación de que el campo Residente "se borró".
-                if (!string.IsNullOrWhiteSpace(vm.TC_IdResidente))
-                {
-                    var residenteSeleccionado = await _context.Users
-                        .FirstOrDefaultAsync(u => u.Id == vm.TC_IdResidente);
-
-                    if (residenteSeleccionado != null)
-                    {
-                        vm.ResidenteDisplay = $"{residenteSeleccionado.TC_Identificacion} - {residenteSeleccionado.TC_Nombre} {residenteSeleccionado.TC_Apellido}";
-                    }
-                }
-
-                var cargoActual = await _context.Cargos
-                    .Include(c => c.EstadoCargo)
-                    .FirstOrDefaultAsync(c => c.TN_Id == vm.TN_Id);
-                vm.EstadoActual = cargoActual?.EstadoCargo.TC_Nombre ?? ESTADO_PENDIENTE;
-
-                return View(vm);
-            }
-
-            var cargo = await _context.Cargos
-                .Include(c => c.EstadoCargo)
-                .FirstOrDefaultAsync(c => c.TN_Id == vm.TN_Id && c.TB_Estado);
-
-            if (cargo == null)
-            {
-                TempData["Error"] = "El cargo no existe.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            if (cargo.EstadoCargo.TC_Nombre != ESTADO_PENDIENTE)
-            {
-                TempData["Error"] = $"No se puede editar un cargo en estado \"{cargo.EstadoCargo.TC_Nombre}\".";
-                return RedirectToAction(nameof(Index));
-            }
-
-            try
-            {
-                var tipoCargo = await ObtenerOCrearTipoCargo(vm.TC_TipoCargoTexto);
-
-                var montoBase = vm.TN_MontoBase!.Value;
-                var montoIva = vm.TB_AplicaIva ? Math.Round(montoBase * PORCENTAJE_IVA, 2) : 0m;
-                var montoTotal = montoBase + montoIva;
-
-                // NUEVO: si cambió el residente o la vivienda, valida que la vivienda
-                // elegida realmente pertenezca al residente (evita datos inconsistentes)
-                if (vm.TN_IdVivienda.HasValue)
-                {
-                    var perteneceAlResidente = await _context.ViviendaUsuarios
-                        .AnyAsync(vu => vu.TC_IdUsuario == vm.TC_IdResidente
-                                     && vu.TN_IdVivienda == vm.TN_IdVivienda.Value
-                                     && vu.TN_Estado == EstadoUsuarioEnum.Activo);
-
-                    if (!perteneceAlResidente)
-                    {
-                        vm.TN_IdVivienda = null; // salvaguarda: ignora una vivienda inválida en vez de fallar
-                    }
-                }
-
-                cargo.TC_IdResidente = vm.TC_IdResidente;
-                cargo.TN_IdVivienda = vm.TN_IdVivienda; // <-- NUEVO
-                cargo.TN_IdTipoCargo = tipoCargo.TN_Id;
-                cargo.TC_Descripcion = vm.TC_Descripcion;
-                cargo.TN_MontoBase = montoBase;
-                cargo.TB_AplicaIva = vm.TB_AplicaIva;
-                cargo.TN_MontoIva = montoIva;
-                cargo.TN_MontoTotal = montoTotal;
-                cargo.TF_FechaVencimiento = vm.TF_FechaVencimiento!.Value;
-
-                await _context.SaveChangesAsync();
-                TempData["Mensaje"] = "Cargo actualizado correctamente";
             }
             catch
             {

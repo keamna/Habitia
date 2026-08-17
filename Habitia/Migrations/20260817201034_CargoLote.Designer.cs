@@ -4,6 +4,7 @@ using Habitia.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Habitia.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260817201034_CargoLote")]
+    partial class CargoLote
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -942,18 +945,12 @@ namespace Habitia.Migrations
                     b.Property<int>("TN_IdCargoRecurrente")
                         .HasColumnType("int");
 
-                    b.Property<int?>("TN_IdVivienda")
-                        .HasColumnType("int");
-
                     b.HasKey("TN_Id");
 
                     b.HasIndex("TC_IdResidente");
 
-                    b.HasIndex("TN_IdVivienda");
-
-                    b.HasIndex("TN_IdCargoRecurrente", "TC_IdResidente", "TN_IdVivienda")
-                        .IsUnique()
-                        .HasFilter("[TN_IdVivienda] IS NOT NULL");
+                    b.HasIndex("TN_IdCargoRecurrente", "TC_IdResidente")
+                        .IsUnique();
 
                     b.ToTable("THBT_A_CargoRecurrenteResidente");
                 });
@@ -2111,16 +2108,9 @@ namespace Habitia.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Habitia.Models.Vivienda", "Vivienda")
-                        .WithMany()
-                        .HasForeignKey("TN_IdVivienda")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("CargoRecurrente");
 
                     b.Navigation("Residente");
-
-                    b.Navigation("Vivienda");
                 });
 
             modelBuilder.Entity("Habitia.Models.Financiero.THBT_A_Pago", b =>

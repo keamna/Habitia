@@ -218,12 +218,6 @@
                                 <span>Mis cargos</span>
                             </a>
 
-                            <a class="habitia-nav-item @(EsActivo("Residente", "HistorialFinanciero") ? "active" : "")"
-                               asp-area="Residente" asp-controller="HistorialFinanciero" asp-action="Index">
-                                <i class="bi bi-clock-history"></i>
-                                <span>Historial financiero</span>
-                            </a>
-
                             <a class="habitia-nav-item @(esMarketplace && string.Equals(areaActual, "Residente", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
                                asp-area="Residente" asp-controller="Marketplace" asp-action="Index">
                                 <i class="bi bi-shop"></i>

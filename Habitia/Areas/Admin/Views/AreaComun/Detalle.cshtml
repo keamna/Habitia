@@ -237,6 +237,10 @@
                     {
                         foreach (var d in disponibilidades)
                         {
+                            // Un horario ya "Finalizó" si su fecha + hora fin ya pasaron,
+                            // sin importar si TB_Reservado quedó en true o false.
+                            var yaFinalizo = d.TF_Fecha.Date.Add(d.TF_HoraFin) <= DateTime.Now;
+
                             <tr>
                                 <td>@d.TF_Fecha.ToString("dd/MM/yyyy")</td>
                                 <td>@DateTime.Today.Add(d.TF_HoraInicio).ToString("hh:mm tt")</td>
@@ -261,6 +265,10 @@
                                     {
                                         <span class="badge text-bg-secondary">Inactivo</span>
                                     }
+                                    else if (yaFinalizo)
+                                    {
+                                        <span class="badge text-bg-secondary">Finalizada</span>
+                                    }
                                     else if (d.TB_Reservado)
                                     {
                                         <span class="badge text-bg-warning">Reservado</span>
@@ -275,7 +283,9 @@
                                     <form asp-area="Admin"
                                           asp-controller="AreaComun"
                                           asp-action="EliminarDisponibilidad"
-                                          method="post">
+                                          method="post"
+                                          class="form-eliminar-horario"
+                                          data-cuando="@d.TF_Fecha.ToString("dd/MM/yyyy") de @DateTime.Today.Add(d.TF_HoraInicio).ToString("hh:mm tt") a @DateTime.Today.Add(d.TF_HoraFin).ToString("hh:mm tt")">
 
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@d.TN_Id" />
@@ -284,14 +294,14 @@
                                         @* Un horario ya reservado no se puede eliminar *@
                                         @if (d.TB_Reservado)
                                         {
-                                            <button class="btn btn-sm btn-outline-secondary" disabled
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" disabled
                                                     title="No se puede eliminar: ya fue reservado por un residente">
                                                 Eliminar
                                             </button>
                                         }
                                         else
                                         {
-                                            <button class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
                                         }
                                     </form>
                                 </td>
@@ -306,6 +316,36 @@
 
 </div>
 
+<!-- MODAL ELIMINAR HORARIO -->
+<div class="modal fade" id="modalEliminarHorario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3">
+            <div class="modal-body text-center">
+                <div class="mb-2" style="font-size:2rem; color:#B02A37;">
+                    <i class="bi bi-calendar-x"></i>
+                </div>
+
+                <h5 class="mb-2">Eliminar horario</h5>
+
+                <p class="text-muted mb-1">
+                    ¿Deseas eliminar este horario? Esta acción no se puede deshacer.
+                </p>
+
+                <p class="fw-semibold mb-3" id="eliminarHorarioResumen"></p>
+
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Volver
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminarHorario">
+                        Sí, eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         document.querySelectorAll('.form-eliminar-foto')
@@ -316,5 +356,28 @@
                     }
                 });
             });
+
+        // ===== Eliminar horario (modal, en vez del confirm() del navegador) =====
+        let formularioEliminarHorarioPendiente = null;
+
+        document.querySelectorAll('.form-eliminar-horario').forEach(form => {
+            form.addEventListener('submit', e => {
+                e.preventDefault();
+                formularioEliminarHorarioPendiente = form;
+
+                document.getElementById('eliminarHorarioResumen').textContent =
+                    form.dataset.cuando || '';
+
+                new bootstrap.Modal(document.getElementById('modalEliminarHorario')).show();
+            });
+        });
+
+        document.getElementById('btnConfirmarEliminarHorario').addEventListener('click', function () {
+            if (!formularioEliminarHorarioPendiente) return;
+
+            this.disabled = true;
+            this.textContent = 'Eliminando...';
+            formularioEliminarHorarioPendiente.submit();
+        });
     </script>
 }
