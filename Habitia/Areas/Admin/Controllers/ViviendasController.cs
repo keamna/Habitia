@@ -460,6 +460,10 @@ namespace Habitia.Areas.Admin.Controllers
                 });
             }
 
+            // Se guarda antes de borrar, porque una vez eliminada la vivienda
+            // ya no se puede consultar su estado.
+            var estabaDisponible = vivienda.TN_Estado == EstadoViviendaEnum.Disponible;
+
             // Reservas ya finalizadas o canceladas: no bloquean la eliminación,
             // pero referencian la vivienda por FK, así que se limpian antes.
             var reservasHistoricas = await _context.Reservas
@@ -480,6 +484,13 @@ namespace Habitia.Areas.Admin.Controllers
 
             _context.Viviendas.Remove(vivienda);
             await _context.SaveChangesAsync();
+
+            // El mensaje de éxito solo aparece si la vivienda estaba Disponible
+            // (sin usuarios asignados) al momento de eliminarla.
+            if (estabaDisponible)
+            {
+                TempData["MensajeExito"] = "Vivienda eliminada correctamente.";
+            }
 
             return Json(new { success = true });
         }

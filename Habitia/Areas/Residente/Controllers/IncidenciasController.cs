@@ -34,10 +34,20 @@ namespace Habitia.Areas.Residentes.Controllers
         }
 
         // GET: /Residentes/Incidencias
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(IncidenciaFiltroViewModel filtro)
         {
+            if (!ModelState.IsValid)
+            {
+                ModelState.Clear();
+                filtro = new IncidenciaFiltroViewModel();
+            }
+
             var idUsuario = _userManager.GetUserId(User);
-            var incidencias = await _incidenciaService.ObtenerPorUsuarioAsync(idUsuario!);
+            var incidencias = await _incidenciaService.ObtenerPorUsuarioAsync(idUsuario!, filtro);
+
+            ViewBag.Filtro = filtro;
+            ViewBag.TieneIncidencias = await _context.Incidencias.AnyAsync(i => i.TC_IdUsuario == idUsuario);
+
             return View(incidencias);
         }
 
@@ -88,14 +98,39 @@ namespace Habitia.Areas.Residentes.Controllers
 
             var idUsuario = _userManager.GetUserId(User);
 
-            // Un residente solo puede ver sus propias incidencias
             if (incidencia.TC_IdUsuario != idUsuario)
                 return Forbid();
 
             return View(incidencia);
         }
 
-        // Precarga solo las viviendas asociadas al usuario logueado (no todas las del condominio)
+        // POST: /Residentes/Incidencias/MarcarComoResuelta/5
+        // El residente solo puede resolver sus propias incidencias Privadas.
+        // Las incidencias Comun/Mixto nunca pasan por aquí porque
+        // MarcarComoResueltaAsync solo permite responsabilidad Privado.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarcarComoResuelta(int id)
+        {
+            var idUsuario = _userManager.GetUserId(User);
+
+            try
+            {
+                await _incidenciaService.MarcarComoResueltaAsync(id, idUsuario!, esAdmin: false);
+                TempData["Success"] = "Incidencia marcada como resuelta correctamente.";
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
         private async Task CargarListasAsync(IncidenciaCreateViewModel model)
         {
             var idUsuario = _userManager.GetUserId(User);

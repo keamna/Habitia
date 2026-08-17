@@ -1,26 +1,53 @@
-﻿@model Habitia.Models.Incidencia
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@model Habitia.Models.Incidencia
 @{
     ViewData["Title"] = "Detalle de Incidencia";
+
+    string NombreEstado(Habitia.Enums.EstadoIncidenciaEnum estado)
+    {
+        var member = estado.GetType().GetMember(estado.ToString()).FirstOrDefault();
+        var display = member?.GetCustomAttribute<DisplayAttribute>();
+        return display?.Name ?? estado.ToString();
+    }
+
+    string Ubicacion()
+    {
+        return Model.TN_Tipo switch
+        {
+            Habitia.Enums.TipoIncidenciaEnum.Vivienda => $"Vivienda: {Model.Vivienda?.TC_Numero ?? "N/D"}",
+            Habitia.Enums.TipoIncidenciaEnum.AreaComun => $"Área común: {Model.AreaComun?.TC_Nombre ?? "N/D"}",
+            Habitia.Enums.TipoIncidenciaEnum.Mixto => $"Vivienda: {Model.Vivienda?.TC_Numero ?? "N/D"} · Área común: {Model.AreaComun?.TC_Nombre ?? "N/D"}",
+            _ => "N/D"
+        };
+    }
+
+    var puedeResolver = Model.TN_Responsabilidad == Habitia.Enums.ResponsabilidadEnum.Privado
+        && Model.TN_Estado != Habitia.Enums.EstadoIncidenciaEnum.Resuelta;
 }
 
 <h2>Detalle de Incidencia</h2>
 
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
 <div class="card">
     <div class="card-body">
         <h5 class="card-title">@Model.TC_Titulo</h5>
-
         <p class="card-text">@Model.TC_Descripcion</p>
 
         <dl class="row">
             <dt class="col-sm-3">Ubicación</dt>
-            <dd class="col-sm-9">
-                @(Model.TN_Tipo == Habitia.Enums.TipoIncidenciaEnum.Vivienda
-                    ? $"Vivienda: {Model.Vivienda?.TC_Numero}"
-                    : $"Área común: {Model.AreaComun?.TC_Nombre}")
-            </dd>
+            <dd class="col-sm-9">@Ubicacion()</dd>
 
             <dt class="col-sm-3">Fecha de registro</dt>
-            <dd class="col-sm-9">@Model.TF_FechaRegistro.ToString("dd/MM/yyyy HH:mm")</dd>
+            <dd class="col-sm-9">@Model.TF_FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</dd>
 
             <dt class="col-sm-3">Estado</dt>
             <dd class="col-sm-9">
@@ -30,13 +57,12 @@
                     Habitia.Enums.EstadoIncidenciaEnum.Resuelta => "bg-success",
                     _ => "bg-secondary"
                 })">
-                    @Model.TN_Estado
+                    @NombreEstado(Model.TN_Estado)
                 </span>
             </dd>
 
             <dt class="col-sm-3">Responsabilidad</dt>
             <dd class="col-sm-9">@(Model.TN_Responsabilidad == 0 ? "Sin clasificar aún" : Model.TN_Responsabilidad.ToString())</dd>
-
         </dl>
 
         @if (!string.IsNullOrEmpty(Model.TC_ImagenUrl))
@@ -45,6 +71,13 @@
                 <label class="form-label d-block">Evidencia</label>
                 <img src="@Model.TC_ImagenUrl" alt="Evidencia de la incidencia" class="img-fluid rounded" style="max-width: 400px;" />
             </div>
+        }
+
+        @if (puedeResolver)
+        {
+            <form asp-action="MarcarComoResuelta" asp-route-id="@Model.TN_Id" method="post" class="mt-3">
+                <button type="submit" class="btn btn-success">Marcar como resuelta</button>
+            </form>
         }
     </div>
 </div>

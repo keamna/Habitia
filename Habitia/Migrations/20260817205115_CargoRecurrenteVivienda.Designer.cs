@@ -4,6 +4,7 @@ using Habitia.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Habitia.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260817205115_CargoRecurrenteVivienda")]
+    partial class CargoRecurrenteVivienda
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -951,9 +954,8 @@ namespace Habitia.Migrations
 
                     b.HasIndex("TN_IdVivienda");
 
-                    b.HasIndex("TN_IdCargoRecurrente", "TC_IdResidente", "TN_IdVivienda")
-                        .IsUnique()
-                        .HasFilter("[TN_IdVivienda] IS NOT NULL");
+                    b.HasIndex("TN_IdCargoRecurrente", "TC_IdResidente")
+                        .IsUnique();
 
                     b.ToTable("THBT_A_CargoRecurrenteResidente");
                 });
@@ -2113,8 +2115,7 @@ namespace Habitia.Migrations
 
                     b.HasOne("Habitia.Models.Vivienda", "Vivienda")
                         .WithMany()
-                        .HasForeignKey("TN_IdVivienda")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("TN_IdVivienda");
 
                     b.Navigation("CargoRecurrente");
 

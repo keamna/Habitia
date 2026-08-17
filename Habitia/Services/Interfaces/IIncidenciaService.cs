@@ -8,7 +8,7 @@ namespace Habitia.Services.Interfaces
     {
         Task<Incidencia> CrearAsync(IncidenciaCreateViewModel model, string idUsuario, string? imagenUrl);
         Task<List<IncidenciaListItemViewModel>> ObtenerTodasAsync(IncidenciaFiltroViewModel? filtro = null);
-        Task<List<IncidenciaListItemViewModel>> ObtenerPorUsuarioAsync(string idUsuario);
+        Task<List<IncidenciaListItemViewModel>> ObtenerPorUsuarioAsync(string idUsuario, IncidenciaFiltroViewModel? filtro = null);
         Task<Incidencia?> ObtenerPorIdAsync(int id);
         Task AsignarPrioridadAsync(IncidenciaPrioridadViewModel model);
         Task CambiarEstadoAsync(int idIncidencia, EstadoIncidenciaEnum nuevoEstado);

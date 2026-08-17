@@ -1,6 +1,17 @@
-﻿@model List<Habitia.ViewModels.Incidencias.IncidenciaListItemViewModel>
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@model List<Habitia.ViewModels.Incidencias.IncidenciaListItemViewModel>
 @{
     ViewData["Title"] = "Mis Incidencias";
+    var filtro = ViewBag.Filtro as Habitia.ViewModels.Incidencias.IncidenciaFiltroViewModel;
+    var tieneIncidencias = (bool)ViewBag.TieneIncidencias;
+
+    string NombreEstado(Habitia.Enums.EstadoIncidenciaEnum estado)
+    {
+        var member = estado.GetType().GetMember(estado.ToString()).FirstOrDefault();
+        var display = member?.GetCustomAttribute<DisplayAttribute>();
+        return display?.Name ?? estado.ToString();
+    }
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -10,12 +21,58 @@
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success">@TempData["Success"]</div> 
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (tieneIncidencias)
+{
+    <form asp-action="Index" method="get" class="row g-2 align-items-end mb-4">
+        <div class="col-auto">
+            <label asp-for="@filtro!.Estado" class="form-label small mb-1"></label>
+            <select asp-for="@filtro!.Estado" asp-items="Html.GetEnumSelectList<Habitia.Enums.EstadoIncidenciaEnum>()" class="form-select form-select-sm">
+                <option value="">-- Todos --</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <label asp-for="@filtro!.Responsabilidad" class="form-label small mb-1"></label>
+            <select asp-for="@filtro!.Responsabilidad" asp-items="Html.GetEnumSelectList<Habitia.Enums.ResponsabilidadEnum>()" class="form-select form-select-sm">
+                <option value="">-- Todas --</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <label asp-for="@filtro!.FechaDesde" class="form-label small mb-1"></label>
+            <input asp-for="@filtro!.FechaDesde" class="form-control form-control-sm" />
+        </div>
+        <div class="col-auto">
+            <label asp-for="@filtro!.FechaHasta" class="form-label small mb-1"></label>
+            <input asp-for="@filtro!.FechaHasta" class="form-control form-control-sm" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-sm btn-outline-primary">Filtrar</button>
+            <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Limpiar</a>
+        </div>
+    </form>
+
+    if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+    }
 }
 
 @if (!Model.Any())
 {
-    <div class="alert alert-info">Aún no ha reportado ninguna incidencia.</div>
+    @if (tieneIncidencias)
+    {
+        <div class="alert alert-info">No se encontraron incidencias con los filtros seleccionados.</div>
+    }
+    else
+    {
+        <div class="alert alert-info">Aún no ha reportado ninguna incidencia.</div>
+    }
 }
 else
 {
@@ -36,7 +93,7 @@ else
                 <tr>
                     <td>@item.Titulo</td>
                     <td>@item.Ubicacion</td>
-                    <td>@item.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@item.FechaRegistro.ToString("dd/MM/yyyy hh:mm tt")</td>
                     <td>
                         <span class="badge @(item.Estado switch {
                             Habitia.Enums.EstadoIncidenciaEnum.Pendiente => "bg-warning text-dark",
@@ -44,7 +101,7 @@ else
                             Habitia.Enums.EstadoIncidenciaEnum.Resuelta => "bg-success",
                             _ => "bg-secondary"
                         })">
-                            @item.Estado
+                            @NombreEstado(item.Estado)
                         </span>
                     </td>
                     <td>@(item.Responsabilidad?.ToString() ?? "Sin clasificar")</td>

@@ -5,6 +5,8 @@
 }
 <link rel="stylesheet" href="~/css/admin/viviendas.css" asp-append-version="true" />
 
+@Html.AntiForgeryToken()
+
 <div class="mi-vivienda-header">
     <div>
         <h1>Mi Vivienda</h1>
@@ -30,19 +32,54 @@
 }
 else
 {
-    <div class="row g-4">
+    <!-- TARJETA DE FILTROS -->
+    <div class="viviendas-filtros-card mb-4">
+        <div class="viviendas-toolbar">
+            <div class="viviendas-toolbar-filtros">
+                <select class="form-select" id="filtroEstadoSolicitud" style="max-width: 220px;">
+                    <option value="">Todos los estados</option>
+                    <option value="Pendiente">Pendiente de aprobación</option>
+                    <option value="Activo">Activo</option>
+                </select>
+
+                <select class="form-select" id="filtroViveAhi" style="max-width: 170px;">
+                    <option value="">Vive ahí (todos)</option>
+                    <option value="Si">Vive ahí</option>
+                    <option value="No">No vive ahí</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Count(v => v.EstadoRelacion == EstadoUsuarioEnum.Activo) > 1)
+    {
+        <div class="alert alert-info mb-4">
+            <i class="bi bi-info-circle"></i>
+            Solo podés marcar "Vivís ahí" en una vivienda a la vez. Al activarlo en una, se desactiva automáticamente en las demás.
+        </div>
+    }
+
+    <div class="row g-4" id="miViviendaLista">
         @foreach (var vivienda in Model)
         {
-            var estadoClase = vivienda.Estado switch
-            {
-                EstadoViviendaEnum.Disponible => "badge-estado-disponible",
-                EstadoViviendaEnum.Ocupada => "badge-estado-ocupada",
-                _ => "badge-estado-inactiva"
-            };
+            var esPendiente = vivienda.EstadoRelacion == EstadoUsuarioEnum.Pendiente;
+
+            var estadoClase = esPendiente
+                ? "badge-estado-pendiente"
+                : vivienda.Estado switch
+                {
+                    EstadoViviendaEnum.Disponible => "badge-estado-disponible",
+                    EstadoViviendaEnum.Ocupada => "badge-estado-ocupada",
+                    _ => "badge-estado-inactiva"
+                };
+
+            var estadoTexto = esPendiente ? "Pendiente de aprobación" : vivienda.Estado.ToString();
 
             var tipoTexto = vivienda.Tipo == TipoViviendaEnum.Apartamento ? "Departamento" : vivienda.Tipo.ToString();
 
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-4 mi-vivienda-item"
+                 data-estado-relacion="@vivienda.EstadoRelacion"
+                 data-vive-ahi="@(vivienda.ViveAhi ? "Si" : "No")">
                 <div class="mi-vivienda-card h-100 d-flex flex-column">
 
                     <div class="mi-vivienda-card-header">
@@ -50,7 +87,7 @@ else
                             <i class="bi bi-house-door-fill"></i>
                             @vivienda.Numero
                         </div>
-                        <span class="mi-vivienda-badge-estado @estadoClase">@vivienda.Estado</span>
+                        <span class="mi-vivienda-badge-estado @estadoClase">@estadoTexto</span>
                     </div>
 
                     <div class="mi-vivienda-body flex-grow-1">
@@ -67,7 +104,23 @@ else
 
                         <div class="mi-vivienda-fila">
                             <span>Tu relación</span>
-                            <span>@(vivienda.ViveAhi ? "Vivís ahí" : "No vivís ahí")</span>
+
+                            @if (vivienda.EstadoRelacion == EstadoUsuarioEnum.Activo)
+                            {
+                                <div class="form-check form-switch mi-vivienda-switch-viveahi">
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                           id="viveAhi_@vivienda.Id"
+                                           @(vivienda.ViveAhi ? "checked" : "")
+                                           onchange="cambiarViveAhi(@vivienda.Id, this)" />
+                                    <label class="form-check-label" for="viveAhi_@vivienda.Id">
+                                        @(vivienda.ViveAhi ? "Vivís ahí" : "No vivís ahí")
+                                    </label>
+                                </div>
+                            }
+                            else
+                            {
+                                <span>@(vivienda.ViveAhi ? "Vivís ahí" : "No vivís ahí")</span>
+                            }
                         </div>
 
                         @if (!string.IsNullOrEmpty(vivienda.PropietarioNombre))
@@ -104,4 +157,81 @@ else
             </div>
         }
     </div>
+
+    <div class="viviendas-vacio" id="miViviendaSinResultados" style="display:none;">
+        <i class="bi bi-search"></i>
+        No se encontraron viviendas con los filtros seleccionados.
+    </div>
+}
+
+@section Scripts
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const filtroEstado = document.getElementById("filtroEstadoSolicitud");
+            const filtroViveAhi = document.getElementById("filtroViveAhi");
+            const items = Array.from(document.querySelectorAll(".mi-vivienda-item"));
+            const sinResultados = document.getElementById("miViviendaSinResultados");
+
+            function aplicarFiltrosMiVivienda() {
+                const estado = filtroEstado?.value || "";
+                const viveAhi = filtroViveAhi?.value || "";
+                let visibles = 0;
+
+                items.forEach(item => {
+                    const estadoItem = item.getAttribute("data-estado-relacion") || "";
+                    const viveAhiItem = item.getAttribute("data-vive-ahi") || "";
+
+                    const coincideEstado = !estado || estadoItem === estado;
+                    const coincideViveAhi = !viveAhi || viveAhiItem === viveAhi;
+
+                    const mostrar = coincideEstado && coincideViveAhi;
+                    item.style.display = mostrar ? "" : "none";
+                    if (mostrar) visibles++;
+                });
+
+                if (sinResultados) {
+                    sinResultados.style.display = (visibles === 0 && items.length > 0) ? "" : "none";
+                }
+            }
+
+            filtroEstado?.addEventListener("change", aplicarFiltrosMiVivienda);
+            filtroViveAhi?.addEventListener("change", aplicarFiltrosMiVivienda);
+        });
+
+        function obtenerAntiForgeryTokenResidente() {
+            const input = document.querySelector('input[name="__RequestVerificationToken"]');
+            return input ? input.value : null;
+        }
+
+        function cambiarViveAhi(id, checkbox) {
+            checkbox.disabled = true;
+
+            fetch('/Residente/Vivienda/CambiarViveAhi', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": obtenerAntiForgeryTokenResidente()
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Se recarga porque el cambio puede afectar el switch de
+                    // OTRA tarjeta (la que se desmarcó automáticamente).
+                    location.reload();
+                } else {
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.disabled = false;
+                    alert(data.message ?? "No fue posible completar la operación.");
+                }
+            })
+            .catch(() => {
+                checkbox.checked = !checkbox.checked;
+                checkbox.disabled = false;
+                alert("No fue posible completar la operación. Intente nuevamente.");
+            });
+        }
+    </script>
 }

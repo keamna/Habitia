@@ -48,6 +48,8 @@ namespace Habitia.Models.Financiero
         public bool TB_AplicaIva { get; set; }
         [Required]
         public bool TB_Estado { get; set; }
+
+        public string? TC_IdLote { get; set; }
         // Relaciones
         [ForeignKey(nameof(TC_IdResidente))]
         public ApplicationUser Residente { get; set; }
