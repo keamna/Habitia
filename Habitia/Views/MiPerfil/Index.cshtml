@@ -1,13 +1,7 @@
 ﻿@model Habitia.ViewModels.Usuario.MiPerfilViewModel
 @{
     ViewData["Title"] = "Mi perfil";
-
-    // Pantalla interna: usa el layout de la app (sidebar). El _ViewStart de
-    // /Views apunta a _PublicLayout, que no carga habitia.css.
     Layout = "~/Views/Shared/_Layout.cshtml";
-
-    // Si el POST volvió con errores de validación, la pantalla debe abrir ya
-    // en modo edición para que se vean los mensajes y se puedan corregir.
     var abrirEnEdicion = !ViewData.ModelState.IsValid;
 }
 
@@ -73,6 +67,10 @@
                 <span class="miperfil-dato-etiqueta">Número de identificación</span>
                 <span class="miperfil-dato-valor">@Model.NumeroIdentificacion</span>
             </div>
+            <div>
+                <span class="miperfil-dato-etiqueta">Correo</span>
+                <span class="miperfil-dato-valor">@Model.Email</span>
+            </div>
         </div>
 
         @if (Model.Viviendas != null && Model.Viviendas.Any())
@@ -119,12 +117,6 @@
                     <label asp-for="Apellido">Apellido <span class="miperfil-obligatorio">*</span></label>
                     <input asp-for="Apellido" class="miperfil-editable" readonly="@(!abrirEnEdicion)" placeholder="Ingrese su apellido" />
                     <span asp-validation-for="Apellido" class="miperfil-error"></span>
-                </div>
-
-                <div class="miperfil-grupo">
-                    <label asp-for="Email">Correo <span class="miperfil-obligatorio">*</span></label>
-                    <input asp-for="Email" type="email" class="miperfil-editable" readonly="@(!abrirEnEdicion)" placeholder="correo@ejemplo.com" />
-                    <span asp-validation-for="Email" class="miperfil-error"></span>
                 </div>
 
                 <div class="miperfil-grupo">

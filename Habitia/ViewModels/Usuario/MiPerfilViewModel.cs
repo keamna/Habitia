@@ -4,12 +4,14 @@ namespace Habitia.ViewModels.Usuario
 {
     public class MiPerfilViewModel
     {
-       
+        // ── Solo lectura ──
         public string? TipoIdentificacion { get; set; }
         public string? NumeroIdentificacion { get; set; }
         public string? Rol { get; set; }
         public string? FotoPerfil { get; set; }
         public List<ViviendaResumenViewModel> Viviendas { get; set; } = new();
+
+        public string? Email { get; set; }
 
         // ── Editable ──
         [Required(ErrorMessage = "El nombre es obligatorio.")]
@@ -21,11 +23,6 @@ namespace Habitia.ViewModels.Usuario
         [MaxLength(100, ErrorMessage = "El apellido no puede superar los 100 caracteres.")]
         [Display(Name = "Apellido")]
         public string Apellido { get; set; }
-
-        [Required(ErrorMessage = "El correo es obligatorio.")]
-        [EmailAddress(ErrorMessage = "Debe ingresar un correo electrónico válido.")]
-        [Display(Name = "Correo electrónico")]
-        public string Email { get; set; }
 
         [Required(ErrorMessage = "El teléfono es obligatorio.")]
         [MaxLength(20, ErrorMessage = "El teléfono no puede superar los 20 caracteres.")]

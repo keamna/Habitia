@@ -3,12 +3,13 @@ using Habitia.Data.Seed;
 using Habitia.Models;
 using Habitia.Services;
 using Habitia.Services.Interfaces;
+using Microsoft.AspNetCore.Builder;           
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Hangfire;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);  
 
 var connectionString =
     builder.Configuration.GetConnectionString("DefaultConnection")
@@ -53,6 +54,37 @@ builder.Services.AddScoped<ITipoMantenimientoService, TipoMantenimientoService>(
 builder.Services.AddScoped<IReporteService, ReporteService>();
 builder.Services.AddScoped<ICargoRecurrenteService, CargoRecurrenteService>();
 
+// =====================================================
+// ⭐ CONFIGURACIÓN DEL EMAIL SENDER - BREVO
+// =====================================================
+builder.Services.AddScoped<IEmailSender>(provider =>
+{
+    var brevoApiKey = builder.Configuration["Email:BrevoApiKey"];
+    var logger = provider.GetRequiredService<ILogger<BrevoEmailSender>>();
+
+    if (!string.IsNullOrEmpty(brevoApiKey))
+    {
+        return new BrevoEmailSender(brevoApiKey, logger);
+    }
+
+    // Fallback a Gmail (si no está configurado Brevo)
+    var smtpHost = builder.Configuration["Email:SmtpHost"] ?? "smtp.gmail.com";
+    var smtpPort = int.Parse(builder.Configuration["Email:SmtpPort"] ?? "587");
+    var smtpUsername = builder.Configuration["Email:SmtpUsername"];
+    var smtpPassword = builder.Configuration["Email:SmtpPassword"];
+    var enableSSL = bool.Parse(builder.Configuration["Email:EnableSSL"] ?? "true");
+
+    if (string.IsNullOrEmpty(smtpUsername) || string.IsNullOrEmpty(smtpPassword))
+    {
+        throw new InvalidOperationException(
+            "Ni Brevo ni SMTP están configurados correctamente."
+        );
+    }
+
+    return new EmailSender(smtpHost, smtpPort, enableSSL, smtpUsername, smtpPassword);
+});
+// =====================================================
+
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(
         Path.Combine(builder.Environment.ContentRootPath, "DataProtection-Keys")))
@@ -90,7 +122,7 @@ using (var scope = app.Services.CreateScope())
     }
 
     string email =
-        "admin@habitia.com";
+        "keanymenaberrocal13@gmail.com";
     string password =
         "Admin@12345";
 
@@ -104,7 +136,7 @@ using (var scope = app.Services.CreateScope())
             UserName = email,
             Email = email,
             EmailConfirmed = true,
-            TC_Nombre = "Admin",
+            TC_Nombre = "Admin 2FA",
             TC_Apellido = "Sistema",
             TC_Identificacion = "000000000",
             TC_Telefono = "00000000",
@@ -122,6 +154,10 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(
                 admin,
                 "Admin");
+
+            await userManager.SetTwoFactorEnabledAsync(
+                admin,
+                true);
         }
     }
     else
@@ -131,6 +167,13 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(
                 admin,
                 "Admin");
+        }
+
+        if (!admin.TwoFactorEnabled)
+        {
+            await userManager.SetTwoFactorEnabledAsync(
+                admin,
+                true);
         }
     }
 
@@ -148,7 +191,7 @@ else
     app.UseHsts();
 }
 
-app.UseHangfireDashboard("/hangfire"); 
+app.UseHangfireDashboard("/hangfire");
 
 RecurringJob.AddOrUpdate<ICargoVencimientoService>(
     "revisar-cargos-vencidos",

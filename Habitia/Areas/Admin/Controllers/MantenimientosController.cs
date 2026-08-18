@@ -244,6 +244,11 @@ namespace Habitia.Areas.Admin.Controllers
                 return View(model);
             }
 
+            // ==========================
+            // ACTIVAR 2FA POR CORREO
+            // ==========================
+            await _userManager.SetTwoFactorEnabledAsync(usuario, true);
+
             var rolValido = _context.Roles.Any(x => x.Name == "Mantenimiento");
             if (rolValido)
             {

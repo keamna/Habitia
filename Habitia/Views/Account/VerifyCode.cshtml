@@ -1,0 +1,377 @@
+﻿@model Habitia.ViewModels.VerifyCodeViewModel
+@{
+    ViewData["Title"] = "Verificación de código";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=DM+Sans:wght@400;500;600&display=swap">
+</head>
+<body>
+
+<style>
+    /* Reset global */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    html, body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    /* =========================
+       VERIFY CODE - AUTH CARD
+    ========================= */
+
+    .habitia-auth-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(160deg, #2E5D2D 0%, #336332 45%, #26501f 100%);
+        padding: 24px;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .habitia-auth-card {
+        width: 100%;
+        max-width: 420px;
+        background: #FFFFFF;
+        border-radius: 18px;
+        padding: 40px 36px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .habitia-auth-header {
+        margin-bottom: 24px;
+    }
+
+    .habitia-auth-header h3 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: #1a1a1a;
+        margin: 0 0 8px 0;
+    }
+
+    .habitia-auth-header p {
+        color: #848484;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Alerts */
+    .habitia-alert {
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 0.88rem;
+        margin-bottom: 18px;
+        border: 1px solid transparent;
+        font-weight: 500;
+    }
+
+    .habitia-alert-info {
+        background-color: #EAF4FF;
+        color: #1E5A96;
+        border-color: #CFE4FA;
+    }
+
+    .habitia-alert-success {
+        background-color: #EAF7EA;
+        color: #336332;
+        border-color: #CDEACD;
+    }
+
+    .habitia-alert-danger {
+        background-color: #FDECEC;
+        color: #E53935;
+        border-color: #F7CFCF;
+    }
+
+    .habitia-alert-warning {
+        background-color: #FFF7E6;
+        color: #8A6116;
+        border-color: #FBE7BC;
+    }
+
+    .habitia-alert strong {
+        font-weight: 600;
+    }
+
+    /* Form */
+    .habitia-form-group {
+        margin-bottom: 22px;
+    }
+
+    .habitia-form-label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+    }
+
+    .habitia-code-input {
+        width: 100%;
+        text-align: center;
+        letter-spacing: 8px;
+        font-size: 24px;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        color: #336332;
+        padding: 14px 10px;
+        border: 1.5px solid #ECECEC;
+        border-radius: 12px;
+        background-color: #FAFFFA;
+        transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+        box-sizing: border-box;
+    }
+
+    .habitia-code-input::placeholder {
+        color: #D9D9D9;
+        letter-spacing: 6px;
+    }
+
+    .habitia-code-input:focus {
+        outline: none;
+        border-color: #336332;
+        box-shadow: 0 0 0 3px rgba(51, 99, 50, 0.12);
+        background-color: #FFFFFF;
+    }
+
+    .habitia-code-input:invalid {
+        border-color: #ECECEC;
+    }
+
+    .habitia-field-error {
+        display: block;
+        margin-top: 6px;
+        font-size: 0.8rem;
+        color: #E53935;
+        font-weight: 500;
+    }
+
+    /* Buttons */
+    .habitia-btn-primary {
+        width: 100%;
+        background-color: #336332;
+        color: #FFFFFF;
+        border: none;
+        padding: 13px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: background-color .2s ease, transform .1s ease;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .habitia-btn-primary:hover {
+        background-color: #294f28;
+    }
+
+    .habitia-btn-primary:active {
+        transform: scale(0.98);
+    }
+
+    .habitia-btn-primary:disabled {
+        background-color: #C0C0C0;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .habitia-btn-outline {
+        width: 100%;
+        background-color: transparent;
+        color: #848484;
+        border: 1.5px solid #ECECEC;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all .2s ease;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .habitia-btn-outline:hover {
+        border-color: #336332;
+        color: #336332;
+        background-color: rgba(51, 99, 50, 0.05);
+    }
+
+    .habitia-btn-outline:active {
+        transform: scale(0.98);
+    }
+
+    .habitia-btn-outline:disabled {
+        border-color: #D9D9D9;
+        color: #C0C0C0;
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    .habitia-resend-form {
+        margin-top: 18px;
+    }
+
+    /* Countdown */
+    .habitia-countdown-wrap {
+        text-align: center;
+        margin-top: 14px;
+    }
+
+    .habitia-countdown {
+        font-size: 0.85rem;
+        color: #848484;
+        font-weight: 500;
+    }
+
+    .habitia-btn-resend-link {
+        background: none;
+        border: none;
+        color: #336332;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        padding: 0;
+        transition: color .2s ease;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .habitia-btn-resend-link:hover {
+        color: #294f28;
+        text-decoration: underline;
+    }
+
+    /* Responsive */
+    @@media (max-width: 480px) {
+        .habitia-auth-card {
+            padding: 30px 24px;
+            border-radius: 14px;
+        }
+
+        .habitia-auth-header h3 {
+            font-size: 1.25rem;
+        }
+
+        .habitia-code-input {
+            font-size: 20px;
+            letter-spacing: 6px;
+        }
+    }
+</style>
+
+<div class="habitia-auth-wrapper">
+    <div class="habitia-auth-card">
+        <div class="habitia-auth-header">
+            <h3>Verificación en dos pasos</h3>
+            <p>Ingresá el código de 6 dígitos que enviamos a tu correo. Vence en 10 minutos.</p>
+        </div>
+
+        @if (TempData["MensajeReenvio"] != null)
+        {
+            <div class="habitia-alert habitia-alert-info">@TempData["MensajeReenvio"]</div>
+        }
+
+        @if (ViewBag.CodigoCorrecto == true)
+        {
+            <div class="habitia-alert habitia-alert-success">
+                <strong>Código correcto.</strong> Verificación exitosa.
+            </div>
+        }
+        else if (ViewBag.CodigoIncorrecto == true)
+        {
+            <div class="habitia-alert habitia-alert-danger">
+                <strong>Código incorrecto.</strong> @ViewBag.Mensaje
+            </div>
+        }
+        else if (ViewBag.Mensaje != null)
+        {
+            <div class="habitia-alert habitia-alert-warning">
+                @ViewBag.Mensaje
+            </div>
+        }
+
+        @if (ViewBag.Vencido != true)
+        {
+            <form asp-action="VerifyCode" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="RememberMe" />
+                <div class="habitia-form-group">
+                    <label asp-for="Codigo" class="habitia-form-label">Código de verificación</label>
+                    <input asp-for="Codigo"
+                           maxlength="6"
+                           inputmode="numeric"
+                           autocomplete="one-time-code"
+                           class="habitia-code-input"
+                           placeholder="------"
+                           required />
+                    <span asp-validation-for="Codigo" class="habitia-field-error"></span>
+                </div>
+                <button type="submit" class="habitia-btn-primary">Verificar</button>
+            </form>
+            <div class="habitia-countdown-wrap">
+                <span id="contador" class="habitia-countdown"></span>
+            </div>
+
+            <!-- Botón para reenviar código sin esperar a que venza -->
+            <div style="text-align: center; margin-top: 16px;">
+                <form asp-action="ReenviarCodigo" method="post" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="rememberMe" value="@Model.RememberMe" />
+                    <button type="submit" class="habitia-btn-resend-link">¿No recibiste el código? Reenviar</button>
+                </form>
+            </div>
+        }
+
+        @if (ViewBag.Vencido == true)
+        {
+            <form asp-action="ReenviarCodigo" method="post" class="habitia-resend-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="rememberMe" value="@Model.RememberMe" />
+                <button type="submit" class="habitia-btn-outline">Reenviar código</button>
+            </form>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var contadorEl = document.getElementById("contador");
+            if (!contadorEl) return;
+            var segundosRestantes = 10 * 60;
+            var intervalo = setInterval(function () {
+                segundosRestantes--;
+                if (segundosRestantes <= 0) {
+                    clearInterval(intervalo);
+                    contadorEl.textContent = "El código venció. Solicitá uno nuevo.";
+                    return;
+                }
+                var min = Math.floor(segundosRestantes / 60);
+                var seg = segundosRestantes % 60;
+                contadorEl.textContent =
+                    "Vence en " + min + ":" + (seg < 10 ? "0" + seg : seg);
+            }, 1000);
+        })();
+    </script>
+}
+
+</body>
+</html>
