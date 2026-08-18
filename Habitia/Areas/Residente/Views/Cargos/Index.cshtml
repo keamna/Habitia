@@ -4,9 +4,62 @@
     var tiposCargo = Model.Select(c => c.TipoCargo).Distinct().OrderBy(t => t).ToList();
     var viviendas = Model.Where(c => !string.IsNullOrEmpty(c.NumeroVivienda))
                           .Select(c => c.NumeroVivienda).Distinct().OrderBy(v => v).ToList();
+
+    // Program.cs no configura cultura, así que ToString("C") tomaba la del
+    // servidor y los montos salían en dólares. Se arma el texto con el colón.
+    Func<decimal, string> col = m => "₡" + m.ToString("N2",
+        System.Globalization.CultureInfo.InvariantCulture);
 }
 <link rel="stylesheet" href="~/css/financiero/financiero.css" asp-append-version="true" />
-<h4 class="mb-3">Mis cargos pendientes y vencidos</h4>
+
+<style>
+    /* Los títulos largos se montaban sobre el badge de estado. */
+    .cargo-titulo {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .cargo-badge {
+        flex-shrink: 0;
+    }
+
+    /* Todas las tarjetas del mismo alto. Ahora se puede, porque el detalle
+           largo (motivo del rechazo, recargos, descripción) se movió al modal
+           y el cuerpo de la tarjeta siempre tiene la misma cantidad de datos. */
+    .cargo-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+        .cargo-card .fin-card-body {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+    /* El botón "Ver más" siempre pegado abajo */
+    .cargo-accion {
+        margin-top: auto;
+        padding-top: 14px;
+    }
+
+    .btn-ver-mas {
+        background-color: #FFFFFF;
+        border: 1px solid var(--habitia-border, #ECECEC);
+        color: #336332;
+        font-weight: 600;
+    }
+
+        .btn-ver-mas:hover {
+            background-color: #336332;
+            border-color: #336332;
+            color: #FFFFFF;
+        }
+</style>
+<h4 class="mb-3">Mis cargos</h4>
 
 @if (TempData["Mensaje"] != null)
 {
@@ -33,6 +86,8 @@
                         <option value="Pendiente">Pendiente</option>
                         <option value="Vencido">Vencido</option>
                         <option value="En revisión">En revisión</option>
+                        <option value="Rechazado">Rechazado</option>
+                        <option value="Pagado">Pagado</option>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -85,7 +140,7 @@
         <div class="col-12">
             <div class="fin-card">
                 <div class="fin-card-body text-center text-muted py-4">
-                    No tienes cargos pendientes ni vencidos
+                    No tenés cargos registrados
                 </div>
             </div>
         </div>
@@ -95,18 +150,21 @@
         var tieneRecargo = c.TN_MontoRecargo > 0 || c.TB_RecargoProgramado;
 
         <div class="col-md-6 col-lg-4 tarjeta-cargo"
-             data-estado="@c.EstadoCargo"
+             data-estado="@c.EstadoVisible"
              data-tipo="@c.TipoCargo"
              data-vivienda="@c.NumeroVivienda"
              data-texto="@($"{c.TipoCargo} {c.TC_Descripcion}".ToLower())"
              data-vencimiento="@c.TF_FechaVencimiento.ToString("yyyy-MM-dd")"
              data-monto="@c.TN_MontoTotal"
              data-recargo="@(tieneRecargo ? "1" : "0")">
-            <div class="fin-card h-100">
+            <div class="fin-card cargo-card">
                 <div class="fin-card-header d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-receipt"></i> @c.TipoCargo</span>
-                    <span class="badge @c.BadgeClass">@c.EstadoCargo</span>
+                    <span class="cargo-titulo" title="@c.TipoCargo">
+                        <i class="bi bi-receipt"></i> @c.TipoCargo
+                    </span>
+                    <span class="badge @c.BadgeClass cargo-badge">@c.EstadoVisible</span>
                 </div>
+
                 <div class="fin-card-body">
                     @if (!string.IsNullOrEmpty(c.NumeroVivienda))
                     {
@@ -114,45 +172,38 @@
                             <i class="bi bi-house-door"></i> Vivienda <strong>@c.NumeroVivienda</strong>
                         </p>
                     }
-                    @if (!string.IsNullOrWhiteSpace(c.TC_Descripcion))
-                    {
-                        <p class="text-muted mb-1">@c.TC_Descripcion</p>
-                    }
-                    <p class="fin-monto-total mb-1">@c.TN_MontoTotal.ToString("C")</p>
-                    @if (c.TN_MontoRecargo > 0)
-                    {
-                        <p class="small text-danger mb-2">
-                            <i class="bi bi-graph-up-arrow"></i>
-                            Incluye recargo por atraso: @c.TN_MontoRecargo.ToString("C")
-                        </p>
-                    }
+
+                    <p class="fin-monto-total mb-1">@col(c.TN_MontoTotal)</p>
+
                     <p class="small mb-1"><strong>Emitido:</strong> @c.TF_FechaEmision.ToString("dd/MM/yyyy")</p>
-                    <p class="small mb-3"><strong>Vence:</strong> @c.TF_FechaVencimiento.ToString("dd/MM/yyyy")</p>
-                    @if (c.TB_RecargoProgramado && !string.IsNullOrEmpty(c.TextoRecargoProgramado))
-                    {
-                        <div class="alert alert-warning py-2 px-2 small mb-3 d-flex align-items-start gap-2">
-                            <i class="bi bi-exclamation-triangle-fill mt-1"></i>
-                            <span>
-                                Si no paga antes del <strong>@c.TF_FechaVencimiento.ToString("dd/MM/yyyy")</strong>,
-                                se aplicará un recargo automático de <strong>@c.TextoRecargoProgramado</strong>.
-                            </span>
-                        </div>
-                    }
-                    @if (c.EstadoCargo == "En revisión")
-                    {
-                        <div class="alert alert-info py-2 px-2 small mb-0 d-flex align-items-center gap-2">
-                            <i class="bi bi-hourglass-split"></i>
-                            <span>Su comprobante fue enviado y está siendo revisado por el administrador.</span>
-                        </div>
-                    }
-                    else
-                    {
-                        <div>
-                            <a asp-action="Pagar" asp-route-id="@c.TN_Id" class="btn btn-sm w-100" style="background-color:#336332;color:#fff;">
-                                <i class="bi bi-cash-coin"></i> Pagar
-                            </a>
-                        </div>
-                    }
+                    <p class="small mb-0"><strong>Vence:</strong> @c.TF_FechaVencimiento.ToString("dd/MM/yyyy")</p>
+
+                    @* El detalle completo (descripción, recargos, motivo del rechazo)
+                       y la acción viven en el modal, para que todas las tarjetas
+                       midan lo mismo sin importar cuánta información tengan. *@
+                    <div class="cargo-accion">
+                        <button type="button"
+                                class="btn btn-sm w-100 btn-ver-mas"
+                                data-id="@c.TN_Id"
+                                data-tipo="@c.TipoCargo"
+                                data-estado="@c.EstadoVisible"
+                                data-badge="@c.BadgeClass"
+                                data-vivienda="@c.NumeroVivienda"
+                                data-descripcion="@c.TC_Descripcion"
+                                data-base="@col(c.TN_MontoBase)"
+                                data-iva="@col(c.TN_MontoIva)"
+                                data-recargo="@(c.TN_MontoRecargo > 0 ? col(c.TN_MontoRecargo) : "")"
+                                data-total="@col(c.TN_MontoTotal)"
+                                data-emitido="@c.TF_FechaEmision.ToString("dd/MM/yyyy")"
+                                data-vence="@c.TF_FechaVencimiento.ToString("dd/MM/yyyy")"
+                                data-motivo="@c.MotivoRechazo"
+                                data-aviso-recargo="@(c.TB_RecargoProgramado? c.TextoRecargoProgramado: "")"
+                                data-url-pagar="@Url.Action("Pagar", new { id = c.TN_Id })"
+                                data-puede-pagar="@((c.EstadoCargo != "En revisión" && c.EstadoCargo != "Pagado") ? "1" : "0")"
+                                data-texto-boton="@(c.FuePagoRechazado ? "Reenviar comprobante" : "Pagar")">
+                            <i class="bi bi-eye"></i> Ver más
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -168,7 +219,150 @@
     </div>
 </div>
 
+<!-- MODAL DETALLE DEL CARGO -->
+<div class="modal fade" id="modalDetalleCargo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-receipt me-2"></i><span id="dcTipo"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted small" id="dcVivienda"></span>
+                    <span class="badge" id="dcEstado"></span>
+                </div>
+
+                <p class="text-muted mb-3" id="dcDescripcion"></p>
+
+                <!-- Motivo del rechazo -->
+                <div class="alert alert-danger py-2 px-3 small" id="dcMotivoBox" style="display:none;">
+                    <i class="bi bi-x-circle me-1"></i>
+                    <strong>Comprobante rechazado:</strong>
+                    <span id="dcMotivo"></span>
+                </div>
+
+                <!-- Aviso de recargo programado -->
+                <div class="alert alert-warning py-2 px-3 small" id="dcAvisoBox" style="display:none;">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    <span id="dcAviso"></span>
+                </div>
+
+                <table class="table table-sm mb-0">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted">Monto base</td>
+                            <td class="text-end" id="dcBase"></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">IVA</td>
+                            <td class="text-end" id="dcIva"></td>
+                        </tr>
+                        <tr id="dcRecargoFila" style="display:none;">
+                            <td class="text-danger">Recargo por atraso</td>
+                            <td class="text-end text-danger" id="dcRecargo"></td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td>Total</td>
+                            <td class="text-end" id="dcTotal"></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Emitido</td>
+                            <td class="text-end" id="dcEmitido"></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Vence</td>
+                            <td class="text-end" id="dcVence"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-info py-2 px-3 small mt-3 mb-0" id="dcRevisionBox" style="display:none;">
+                    <i class="bi bi-hourglass-split me-1"></i>
+                    Tu comprobante fue enviado y está siendo revisado por el administrador.
+                </div>
+
+                <div class="alert alert-success py-2 px-3 small mt-3 mb-0" id="dcPagadoBox" style="display:none;">
+                    <i class="bi bi-check-circle-fill me-1"></i>
+                    Este cargo ya fue pagado y aprobado.
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <a href="#" class="btn" id="dcBotonPagar"
+                   style="background-color:#336332;color:#fff;">
+                    <i class="bi bi-cash-coin"></i> <span id="dcTextoBoton">Pagar</span>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+    <script>
+        // Llena el modal con los datos del botón "Ver más" que se tocó.
+        (function () {
+            var modalEl = document.getElementById('modalDetalleCargo');
+            if (!modalEl) return;
+
+            function texto(id, valor) {
+                document.getElementById(id).textContent = valor || '';
+            }
+
+            function mostrar(id, visible) {
+                document.getElementById(id).style.display = visible ? '' : 'none';
+            }
+
+            document.querySelectorAll('.btn-ver-mas').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var d = btn.dataset;
+
+                    texto('dcTipo', d.tipo);
+                    texto('dcVivienda', d.vivienda ? 'Vivienda ' + d.vivienda : '');
+                    texto('dcDescripcion', d.descripcion);
+                    texto('dcBase', d.base);
+                    texto('dcIva', d.iva);
+                    texto('dcRecargo', d.recargo);
+                    texto('dcTotal', d.total);
+                    texto('dcEmitido', d.emitido);
+                    texto('dcVence', d.vence);
+                    texto('dcMotivo', d.motivo);
+                    texto('dcAviso', d.avisoRecargo);
+
+                    var estado = document.getElementById('dcEstado');
+                    estado.textContent = d.estado;
+                    estado.className = 'badge ' + d.badge;
+
+                    mostrar('dcMotivoBox', !!d.motivo);
+                    mostrar('dcAvisoBox', !!d.avisoRecargo);
+                    mostrar('dcRecargoFila', !!d.recargo);
+                    mostrar('dcRevisionBox', d.estado === 'En revisión');
+                    mostrar('dcPagadoBox', d.estado === 'Pagado');
+
+                    // El botón de pagar solo aparece si el cargo se puede pagar.
+                    var boton = document.getElementById('dcBotonPagar');
+                    if (d.puedePagar === '1') {
+                        boton.style.display = '';
+                        boton.href = d.urlPagar;
+                        document.getElementById('dcTextoBoton').textContent = d.textoBoton;
+                    } else {
+                        boton.style.display = 'none';
+                    }
+
+                    new bootstrap.Modal(modalEl).show();
+                });
+            });
+        })();
+    </script>
+
     <script>
         (function () {
             var buscar = document.getElementById('buscarCargo');

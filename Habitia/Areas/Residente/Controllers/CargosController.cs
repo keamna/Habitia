@@ -27,7 +27,7 @@ namespace Habitia.Areas.Residente.Controllers
 
         // Estados que el residente puede VER en su listado (incluye "En revisión" para que
         // vea el seguimiento de comprobantes ya enviados, aunque no pueda volver a pagarlos)
-        private static readonly string[] EstadosVisiblesResidente = { "Pendiente", "Vencido", "En revisión" };
+        private static readonly string[] EstadosVisiblesResidente = { "Pendiente", "Vencido", "En revisión", "Pagado" };
 
         public CargosController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IWebHostEnvironment env)
         {
@@ -70,6 +70,24 @@ namespace Habitia.Areas.Residente.Controllers
                     NumeroVivienda = c.Vivienda != null ? c.Vivienda.TC_Numero : null // <-- NUEVO
                 })
                 .ToListAsync();
+
+            // "Rechazado" no existe como estado del cargo: al rechazar un
+            // comprobante el cargo vuelve a Pendiente y el motivo queda en el
+            // pago. Se trae acá para mostrarlo y permitir filtrar por él.
+            var idsCargos = cargos.Select(c => c.TN_Id).ToList();
+
+            var rechazos = await _context.Pagos
+                .Where(pago => idsCargos.Contains(pago.TN_IdCargo) &&
+                               pago.TC_MotivoRechazo != null)
+                .OrderByDescending(pago => pago.TF_FechaPago)
+                .Select(pago => new { pago.TN_IdCargo, pago.TC_MotivoRechazo })
+                .ToListAsync();
+
+            foreach (var cargo in cargos)
+            {
+                cargo.MotivoRechazo = rechazos
+                    .FirstOrDefault(x => x.TN_IdCargo == cargo.TN_Id)?.TC_MotivoRechazo;
+            }
 
             return View(cargos);
         }

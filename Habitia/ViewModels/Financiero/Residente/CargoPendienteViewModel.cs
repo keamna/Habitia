@@ -19,11 +19,26 @@
         public string? TipoRecargoNombre { get; set; } // "Fijo" o "Porcentaje"
         public string? NumeroVivienda { get; set; } // NUEVO
 
-        public string BadgeClass => EstadoCargo switch
+        // Motivo del último pago rechazado, si lo hubo.
+        // OJO: "Rechazado" NO es un estado del cargo. Cuando el administrador
+        // rechaza un comprobante, el cargo vuelve a "Pendiente" y el motivo
+        // queda en el pago. Acá se deriva para poder mostrarlo y filtrarlo.
+        public string? MotivoRechazo { get; set; }
+
+        public bool FuePagoRechazado =>
+            !string.IsNullOrWhiteSpace(MotivoRechazo) &&
+            (EstadoCargo == "Pendiente" || EstadoCargo == "Vencido");
+
+        // Lo que se muestra al residente y por lo que se filtra en la pantalla.
+        public string EstadoVisible => FuePagoRechazado ? "Rechazado" : EstadoCargo;
+
+        public string BadgeClass => EstadoVisible switch
         {
             "Pendiente" => "badge-pendiente",
             "Vencido" => "badge-vencido",
             "En revisión" => "badge-revision",
+            "Pagado" => "badge-pagado",
+            "Rechazado" => "badge-rechazado",
             _ => "badge-aplicado"
         };
 

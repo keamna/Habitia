@@ -304,3 +304,22 @@
     margin: 0 auto 10px;
     border-radius: 16px;
 }
+
+/* ============================================
+   MARCADOR DE FOTO EN LA TABLA DE RESERVAS
+   Se reusa .area-sin-foto-sm, el mismo marcador
+   que el listado de Áreas Comunes del Admin, para
+   que la imagen por defecto se vea igual en todo
+   el sistema. La miniatura real se iguala a 56px.
+============================================ */
+.reserva-foto-celda .reserva-foto-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--bs-border-radius, 8px);
+}
+
+.reserva-foto-encima {
+    position: absolute;
+    top: 0;
+    left: 0;
+}

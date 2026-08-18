@@ -44,25 +44,30 @@
                         {
                             <tr>
                                 <td>
-                                    @if (r.FotosAreaComun != null && r.FotosAreaComun.Any())
-                                    {
-                                        <div class="reserva-foto-celda">
+                                    @* El marcador va siempre de fondo. Si el área no tiene
+                                       foto, o el archivo no existe en este equipo, queda la
+                                       casita gris en vez del ícono de imagen rota. *@
+                                    <div class="reserva-foto-celda">
+                                        <div class="area-sin-foto area-sin-foto-sm" title="Sin foto">
+                                            <i class="bi bi-house-door"></i>
+                                        </div>
+
+                                        @if (r.FotosAreaComun != null && r.FotosAreaComun.Any())
+                                        {
                                             <img src="@r.FotosAreaComun.First()"
                                                  alt="Foto de @r.NombreAreaComun"
-                                                 class="reserva-foto-thumb"
+                                                 class="reserva-foto-thumb reserva-foto-encima"
                                                  role="button"
+                                                 onerror="this.remove();"
                                                  data-fotos='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(r.FotosAreaComun))'
                                                  data-nombre-area="@r.NombreAreaComun" />
+
                                             @if (r.FotosAreaComun.Count > 1)
                                             {
                                                 <span class="reserva-foto-contador">+@(r.FotosAreaComun.Count - 1)</span>
                                             }
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-secondary small">Sin foto</span>
-                                    }
+                                        }
+                                    </div>
                                 </td>
                                 <td>@r.NombreAreaComun</td>
                                 <td>@r.NombreResidente</td>

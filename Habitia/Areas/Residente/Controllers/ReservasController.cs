@@ -26,6 +26,11 @@ namespace Habitia.Areas.Residente.Controllers
         // ================= Listado de áreas comunes activas =================
         public async Task<IActionResult> Index()
         {
+            // Se refresca en cada entrada al módulo: si un horario ya terminó,
+            // su reserva pasa a Finalizada aunque el residente no haya abierto
+            // "Mis reservas".
+            await ReservaHelper.FinalizarReservasVencidasAsync(_context);
+
             var areas = await _context.AreasComunes
                 .Include(a => a.Fotos)
                 .Where(a => a.TB_Estado)
@@ -37,6 +42,8 @@ namespace Habitia.Areas.Residente.Controllers
         // ================= Detalle + horarios disponibles =================
         public async Task<IActionResult> Detalle(int id)
         {
+            await ReservaHelper.FinalizarReservasVencidasAsync(_context);
+
             var area = await _context.AreasComunes
                 .Include(a => a.Fotos)
                 .FirstOrDefaultAsync(a => a.TN_Id == id && a.TB_Estado);
@@ -160,7 +167,24 @@ namespace Habitia.Areas.Residente.Controllers
 
             var inicio = reserva.Disponibilidad.TF_Fecha.Date
                 .Add(reserva.Disponibilidad.TF_HoraInicio);
-            var minutos = reserva.Disponibilidad.AreaComun.TN_AnticipacionMinima;
+
+            var fin = reserva.Disponibilidad.TF_Fecha.Date
+                .Add(reserva.Disponibilidad.TF_HoraFin);
+
+            // Si el horario ya terminó, la reserva se cierra en vez de cancelarse.
+            // Cubre el caso de una pantalla abierta desde antes de que venciera.
+            if (fin <= DateTime.Now)
+            {
+                reserva.TN_Estado = EstadoReservaEnum.Finalizada;
+                await _context.SaveChangesAsync();
+
+                TempData["Error"] = "Esta reserva ya finalizó y no se puede cancelar.";
+                return RedirectToAction(nameof(MisReservas));
+            }
+            // La anticipación vive en el HORARIO, no en el área común.
+            // Antes leía AreaComun.TN_AnticipacionMinima, la columna vieja que
+            // quedó en 0 al mover el dato: por eso siempre dejaba cancelar.
+            var minutos = reserva.Disponibilidad.TN_AnticipacionMinima;
 
             if (DateTime.Now.AddMinutes(minutos) > inicio)
             {

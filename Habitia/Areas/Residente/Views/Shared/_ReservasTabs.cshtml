@@ -1,0 +1,23 @@
+﻿@{
+    var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
+    var accionActual = ViewContext.RouteData.Values["action"]?.ToString();
+
+    // "Áreas comunes" queda activo tanto en el listado como en el detalle
+    // de un área, porque reservar es parte de ese mismo flujo.
+    var esMisReservas = string.Equals(accionActual, "MisReservas", StringComparison.OrdinalIgnoreCase);
+    var esAreas = string.Equals(controladorActual, "Reservas", StringComparison.OrdinalIgnoreCase) && !esMisReservas;
+}
+
+<link rel="stylesheet" href="~/css/areas-comunes/areas-comunes-tabs.css" asp-append-version="true" />
+
+<div class="ac-tabs mb-4">
+    <a class="ac-tab @(esAreas ? "active" : "")"
+       asp-area="Residente" asp-controller="Reservas" asp-action="Index">
+        <i class="bi bi-building"></i> <span>Áreas Comunes</span>
+    </a>
+
+    <a class="ac-tab @(esMisReservas ? "active" : "")"
+       asp-area="Residente" asp-controller="Reservas" asp-action="MisReservas">
+        <i class="bi bi-calendar-check"></i> <span>Mis Reservas</span>
+    </a>
+</div>

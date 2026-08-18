@@ -14,6 +14,8 @@
 
 <div class="container py-4">
 
+    <partial name="_ReservasTabs" />
+
     <h1 class="h3 mb-1">@Model.TC_Nombre</h1>
     <p class="text-secondary mb-4">
         Capacidad máxima: @Model.TN_Capacidad personas ·
@@ -102,10 +104,10 @@
                                             data-bs-toggle="modal"
                                             data-bs-target="#modalReserva"
                                             onclick="abrirModalReserva(
-                                                        @h.TN_Id,
-                                                        '@h.TF_Fecha.ToString("dd/MM/yyyy")',
-                                                        '@DateTime.Today.Add(h.TF_HoraInicio).ToString("hh:mm tt")',
-                                                        '@DateTime.Today.Add(h.TF_HoraFin).ToString("hh:mm tt")')">
+                                                                @h.TN_Id,
+                                                                '@h.TF_Fecha.ToString("dd/MM/yyyy")',
+                                                                '@DateTime.Today.Add(h.TF_HoraInicio).ToString("hh:mm tt")',
+                                                                '@DateTime.Today.Add(h.TF_HoraFin).ToString("hh:mm tt")')">
                                         Reservar
                                     </button>
                                 </td>
