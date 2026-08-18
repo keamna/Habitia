@@ -4,6 +4,7 @@ using Habitia.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Habitia.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260818175218_CodigoVerificacion")]
+    partial class CodigoVerificacion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -372,89 +375,6 @@ namespace Habitia.Migrations
                     b.ToTable("THBT_A_AreaComunFoto");
                 });
 
-            modelBuilder.Entity("Habitia.Models.CambioContrasena", b =>
-                {
-                    b.Property<int>("TN_Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
-
-                    b.Property<bool>("TB_Utilizado")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("TC_ContrasenaTemporal")
-                        .IsRequired()
-                        .HasMaxLength(12)
-                        .HasColumnType("nvarchar(12)");
-
-                    b.Property<string>("TC_IdUsuario")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("TF_FechaCreacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("TF_FechaExpiracion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("TF_FechaUtilizacion")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("TN_Id");
-
-                    b.HasIndex("TC_IdUsuario");
-
-                    b.ToTable("THBT_A_CambioContrasena");
-                });
-
-            modelBuilder.Entity("Habitia.Models.CambioEmail", b =>
-                {
-                    b.Property<int>("TN_Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TN_Id"));
-
-                    b.Property<bool>("TB_Confirmado")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("TB_Invalidado")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("TC_Codigo")
-                        .IsRequired()
-                        .HasMaxLength(6)
-                        .HasColumnType("nvarchar(6)");
-
-                    b.Property<string>("TC_EmailNuevo")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("TC_IdUsuario")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("TF_FechaCreacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("TF_FechaExpiracion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("TF_UltimoReenvioUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("TN_Intentos")
-                        .HasColumnType("int");
-
-                    b.HasKey("TN_Id");
-
-                    b.HasIndex("TC_IdUsuario");
-
-                    b.ToTable("THBT_A_CambioEmail");
-                });
-
             modelBuilder.Entity("Habitia.Models.Catalogos.CategoriaDocumento", b =>
                 {
                     b.Property<int>("TN_Id")
@@ -661,12 +581,6 @@ namespace Habitia.Migrations
 
                     b.Property<DateTime>("TF_FechaExpiracion")
                         .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("TF_UltimoReenvioUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("TN_CiclosFallidos")
-                        .HasColumnType("int");
 
                     b.Property<int>("TN_Intentos")
                         .HasColumnType("int");
@@ -2085,28 +1999,6 @@ namespace Habitia.Migrations
                         .IsRequired();
 
                     b.Navigation("AreaComun");
-                });
-
-            modelBuilder.Entity("Habitia.Models.CambioContrasena", b =>
-                {
-                    b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("TC_IdUsuario")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("Habitia.Models.CambioEmail", b =>
-                {
-                    b.HasOne("Habitia.Models.ApplicationUser", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("TC_IdUsuario")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("Habitia.Models.CodigoVerificacion", b =>

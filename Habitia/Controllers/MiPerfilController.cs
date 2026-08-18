@@ -1,11 +1,14 @@
 ﻿using Habitia.Data;
+using Habitia.Helpers;
 using Habitia.Models;
+using Habitia.Services.Interfaces;
 using Habitia.ViewModels;
 using Habitia.ViewModels.Usuario;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Habitia.Controllers
 {
@@ -16,17 +19,20 @@ namespace Habitia.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly IEmailSender _emailSender;
 
         public MiPerfilController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ApplicationDbContext context,
-            IWebHostEnvironment env)
+            IWebHostEnvironment env,
+            IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
             _env = env;
+            _emailSender = emailSender;
         }
 
         // GET: /MiPerfil
@@ -40,6 +46,7 @@ namespace Habitia.Controllers
         }
 
         // POST: /MiPerfil/Editar
+        // ✓ MODIFICADO: Solo edita Nombre, Apellido y Teléfono. Email es SOLO LECTURA
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Editar(MiPerfilViewModel model)
@@ -54,23 +61,9 @@ namespace Habitia.Controllers
                 return View("Index", modeloConDatos);
             }
 
-            var emailNormalizado = model.Email.Trim();
-
-            var emailYaExiste = await _userManager.Users
-                .AnyAsync(u => u.Email == emailNormalizado && u.Id != user.Id);
-
-            if (emailYaExiste)
-            {
-                ModelState.AddModelError(nameof(model.Email), "Ya existe un usuario registrado con este correo.");
-                var modeloConDatos = await ConstruirModeloAsync(user);
-                CopiarCamposEditables(modeloConDatos, model);
-                return View("Index", modeloConDatos);
-            }
-
+            // Actualizar solo: Nombre, Apellido, Teléfono
             user.TC_Nombre = model.Nombre.Trim();
             user.TC_Apellido = model.Apellido.Trim();
-            user.Email = emailNormalizado;
-            user.UserName = emailNormalizado;
             user.TC_Telefono = model.Telefono.Trim();
 
             var resultado = await _userManager.UpdateAsync(user);
@@ -86,9 +79,6 @@ namespace Habitia.Controllers
                 CopiarCamposEditables(modeloConDatos, model);
                 return View("Index", modeloConDatos);
             }
-
-            // Refresca la cookie de sesión, ya que el correo/username cambió
-            await _signInManager.RefreshSignInAsync(user);
 
             TempData["Success"] = "Perfil actualizado correctamente.";
             return RedirectToAction(nameof(Index));
@@ -132,12 +122,13 @@ namespace Habitia.Controllers
             };
         }
 
+        // ✓ MODIFICADO: Solo copia Nombre, Apellido, Teléfono (Email excluido)
         private static void CopiarCamposEditables(MiPerfilViewModel destino, MiPerfilViewModel origen)
         {
             destino.Nombre = origen.Nombre;
             destino.Apellido = origen.Apellido;
-            destino.Email = origen.Email;
             destino.Telefono = origen.Telefono;
+            // Email NO se copia (es solo lectura)
         }
 
         [HttpPost]

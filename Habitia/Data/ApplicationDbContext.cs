@@ -54,11 +54,14 @@ namespace Habitia.Data
         public DbSet<AreaComunFoto> AreaComunFotos { get; set; }
 
         public DbSet<THBT_H_ConfiguracionPago> HistorialConfiguracionesPago { get; set; }
+        public DbSet<CambioContrasena> CambiosContraseña { get; set; }
+        public DbSet<CambioEmail> CambiosEmail { get; set; }
 
         // Catálogos
         public DbSet<TipoArea> TiposArea { get; set; }
         public DbSet<TipoMantenimiento> TiposMantenimiento { get; set; }
         public DbSet<PersonalTipoMantenimiento> PersonalTipoMantenimiento { get; set; }
+        public DbSet<CodigoVerificacion> CodigosVerificacion { get; set; }
 
         // ===== US-11: Documentos y Asambleas =====
         public DbSet<Documento> Documentos { get; set; }

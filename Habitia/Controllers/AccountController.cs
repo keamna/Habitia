@@ -2,6 +2,7 @@
 using Habitia.Enums;
 using Habitia.Helpers;
 using Habitia.Models;
+using Habitia.Services.Interfaces;
 using Habitia.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,20 +16,39 @@ namespace Habitia.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationDbContext _context;
+        private readonly IEmailSender _emailSender;
+        private readonly ILogger<AccountController> _logger;
+
+        // Reglas del código de verificación (tabla CodigosVerificacion)
+        private const int MINUTOS_EXPIRACION_CODIGO = 10;
+        private const int MAX_INTENTOS_CODIGO = 5;
+
+        // Array de cooldowns progresivos (en minutos)
+        private static readonly int[] COOLDOWN_MINUTOS_POR_CICLO = { 1, 5, 15, 30 };
 
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IEmailSender emailSender,
+            ILogger<AccountController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
+            _emailSender = emailSender;
+            _logger = logger;
         }
 
-
-
+        // =====================================================
+        // HELPER: Obtener cooldown según ciclo de fallos
+        // =====================================================
+        private TimeSpan ObtenerCooldown(int ciclosFallidos)
+        {
+            int indice = Math.Min(ciclosFallidos, COOLDOWN_MINUTOS_POR_CICLO.Length - 1);
+            return TimeSpan.FromMinutes(COOLDOWN_MINUTOS_POR_CICLO[indice]);
+        }
 
 
         // =====================================================
@@ -40,9 +60,6 @@ namespace Habitia.Controllers
         {
             return View();
         }
-
-
-
 
 
         // =====================================================
@@ -59,16 +76,11 @@ namespace Habitia.Controllers
                 return View(model);
             }
 
-
-
             var usuario =
                 await _userManager.FindByEmailAsync(model.Email);
 
-
-
             if (usuario == null)
             {
-
                 ModelState.AddModelError(
                     "",
                     "Credenciales incorrectas."
@@ -77,34 +89,24 @@ namespace Habitia.Controllers
                 return View(model);
             }
 
-
-
-
             if (usuario.TN_Estado == EstadoUsuarioEnum.Pendiente)
             {
-
                 ModelState.AddModelError(
                     "",
                     "Su cuenta todavía está pendiente de aprobación."
                 );
 
                 return View(model);
-
             }
-
-
-
 
             if (usuario.TN_Estado == EstadoUsuarioEnum.Rechazado)
             {
-
                 ModelState.AddModelError(
                     "",
                     "Su cuenta no ha sido aceptada. Inténtelo de nuevo."
                 );
 
                 return View(model);
-
             }
 
             if (usuario.TN_Estado == EstadoUsuarioEnum.Suspendido)
@@ -113,129 +115,282 @@ namespace Habitia.Controllers
                 return View(model);
             }
 
-            var resultado =
-                await _signInManager.PasswordSignInAsync(
-                    usuario,
-                    model.Password,
-                    model.RememberMe,
-                    lockoutOnFailure: false
-                );
+            // Validamos la contraseña manualmente
+            var passwordValida =
+                await _userManager.CheckPasswordAsync(usuario, model.Password);
 
-
-
-
-
-
-            if (!resultado.Succeeded)
+            if (!passwordValida)
             {
-
                 ModelState.AddModelError(
                     "",
                     "Correo o contraseña incorrectos."
                 );
 
                 return View(model);
-
             }
 
+            var tiene2FA =
+                await _userManager.GetTwoFactorEnabledAsync(usuario);
 
-
-
-
-
-            var roles =
-                await _userManager.GetRolesAsync(usuario);
-
-
-
-
-
-            if (roles.Contains("Admin"))
+            if (tiene2FA)
             {
+                try
+                {
+                    await GenerarYEnviarCodigoAsync(usuario);
 
-                return RedirectToAction(
-                    "Index",
-                    "Dashboard",
-                    new
-                    {
-                        area = "Admin"
-                    });
+                    TempData["EmailVerificacion"] = usuario.Email;
+                    _logger.LogInformation($"Código de verificación generado para: {usuario.Email}");
 
+                    return RedirectToAction(
+                        "VerifyCode",
+                        new { rememberMe = model.RememberMe }
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error al generar código: {ex.Message}");
+                    ModelState.AddModelError(
+                        "",
+                        "Error al enviar el código de verificación. Por favor, intente más tarde."
+                    );
+
+                    return View(model);
+                }
             }
 
+            // Sin 2FA: inicia sesión directo
+            await _signInManager.SignInAsync(usuario, model.RememberMe);
 
-
-
-
-
-
-            if (roles.Contains("Residente"))
-            {
-
-                return RedirectToAction(
-                    "Index",
-                    "Home",
-                    new
-                    {
-                        area = "Residente"
-                    });
-
-            }
-
-
-
-
-
-
-
-            if (roles.Contains("Seguridad"))
-            {
-
-                return RedirectToAction(
-                    "Index",
-                    "Home",
-                    new
-                    {
-                        area = "Seguridad"
-                    });
-
-            }
-
-
-
-
-
-
-
-            if (roles.Contains("Mantenimiento"))
-            {
-
-                return RedirectToAction(
-                    "Index",
-                    "Home",
-                    new
-                    {
-                        area = "Mantenimiento"
-                    });
-
-            }
-
-
-
-
-
-
-
-            return RedirectToAction("Login");
+            return await RedirigirPorRolAsync(usuario);
 
         }
 
 
+        // =====================================================
+        // VERIFY CODE GET
+        // =====================================================
+
+        [HttpGet]
+        public IActionResult VerifyCode(bool rememberMe)
+        {
+            if (TempData["EmailVerificacion"] == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            TempData.Keep("EmailVerificacion");
+
+            var model = new VerifyCodeViewModel
+            {
+                RememberMe = rememberMe
+            };
+
+            ViewBag.Vencido = false;
+
+            return View(model);
+        }
 
 
+        // =====================================================
+        // VERIFY CODE POST
+        // =====================================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerifyCode(VerifyCodeViewModel model)
+        {
+
+            var email =
+                TempData["EmailVerificacion"] as string;
+
+            if (string.IsNullOrEmpty(email))
+            {
+                return RedirectToAction("Login");
+            }
+
+            TempData.Keep("EmailVerificacion");
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var usuario =
+                await _userManager.FindByEmailAsync(email);
+
+            if (usuario == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Trae el último código no invalidado de este usuario
+            var registro =
+                await _context.CodigosVerificacion
+                .Where(c =>
+                    c.TC_IdUsuario == usuario.Id &&
+                    !c.TB_Invalidado
+                )
+                .OrderByDescending(c => c.TF_FechaCreacion)
+                .FirstOrDefaultAsync();
+
+            if (registro == null || registro.TB_Usado)
+            {
+                ViewBag.Mensaje = "No hay un código activo. Solicitá uno nuevo.";
+                ViewBag.Vencido = true;
+                return View(model);
+            }
+
+            if (DateTime.UtcNow > registro.TF_FechaExpiracion)
+            {
+                ViewBag.Mensaje = "El código venció.";
+                ViewBag.Vencido = true;
+                return View(model);
+            }
+
+            if (registro.TN_Intentos >= MAX_INTENTOS_CODIGO)
+            {
+                var cooldown = ObtenerCooldown(registro.TN_CiclosFallidos);
+                var tiempoRestante = registro.TF_UltimoReenvioUtc.HasValue
+                    ? registro.TF_UltimoReenvioUtc.Value.Add(cooldown) - DateTime.UtcNow
+                    : TimeSpan.Zero;
+
+                if (tiempoRestante > TimeSpan.Zero)
+                {
+                    var minutosEspera = (int)Math.Ceiling(tiempoRestante.TotalSeconds / 60);
+                    ViewBag.Mensaje = $"Superaste el límite de intentos. Debés esperar {minutosEspera} minuto(s) para solicitar un nuevo código.";
+                    ViewBag.Vencido = true;
+                    return View(model);
+                }
+                else
+                {
+                    ViewBag.Mensaje = "Superaste el límite de intentos. Solicitá un código nuevo.";
+                    ViewBag.Vencido = true;
+                    return View(model);
+                }
+            }
+
+            if (registro.TC_Codigo != model.Codigo)
+            {
+
+                registro.TN_Intentos++;
+                registro.TF_UltimoReenvioUtc = DateTime.UtcNow;
+
+                if (registro.TN_Intentos >= MAX_INTENTOS_CODIGO)
+                {
+                    registro.TN_CiclosFallidos++;
+                }
+
+                await _context.SaveChangesAsync();
+
+                int restantes =
+                    MAX_INTENTOS_CODIGO - registro.TN_Intentos;
+
+                ViewBag.Mensaje =
+                    restantes > 0
+                    ? $"Código incorrecto. Te quedan {restantes} intento(s)."
+                    : "Código incorrecto. Superaste el límite de intentos, solicitá uno nuevo.";
+
+                ViewBag.CodigoIncorrecto = true;
+                ViewBag.Vencido = restantes <= 0;
+
+                return View(model);
+            }
+
+            // Código correcto
+            registro.TB_Usado = true;
+            registro.TN_CiclosFallidos = 0;
+            registro.TN_Intentos = 0;
+
+            await _context.SaveChangesAsync();
+
+            await _signInManager.SignInAsync(
+                usuario,
+                model.RememberMe
+            );
+
+            ViewBag.CodigoCorrecto = true;
+
+            return await RedirigirPorRolAsync(usuario);
+
+        }
 
 
+        // =====================================================
+        // REENVIAR CÓDIGO CON COOLDOWN PROGRESIVO
+        // =====================================================
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReenviarCodigo(bool rememberMe)
+        {
+
+            var email =
+                TempData["EmailVerificacion"] as string;
+
+            if (string.IsNullOrEmpty(email))
+            {
+                return RedirectToAction("Login");
+            }
+
+            var usuario =
+                await _userManager.FindByEmailAsync(email);
+
+            if (usuario == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Traer el código actual para checkear cooldown
+            var codigoActual =
+                await _context.CodigosVerificacion
+                .Where(c =>
+                    c.TC_IdUsuario == usuario.Id &&
+                    !c.TB_Invalidado
+                )
+                .OrderByDescending(c => c.TF_FechaCreacion)
+                .FirstOrDefaultAsync();
+
+            // Si hay un código activo Y el usuario agotó intentos, checkear cooldown
+            if (codigoActual != null && codigoActual.TN_Intentos >= MAX_INTENTOS_CODIGO)
+            {
+                var cooldown = ObtenerCooldown(codigoActual.TN_CiclosFallidos);
+                var tiempoRestante = codigoActual.TF_UltimoReenvioUtc.HasValue
+                    ? codigoActual.TF_UltimoReenvioUtc.Value.Add(cooldown) - DateTime.UtcNow
+                    : TimeSpan.Zero;
+
+                if (tiempoRestante > TimeSpan.Zero)
+                {
+                    var minutosEspera = (int)Math.Ceiling(tiempoRestante.TotalSeconds / 60);
+                    TempData["Mensaje"] = $"Debés esperar {minutosEspera} minuto(s) para solicitar un nuevo código.";
+                    TempData.Keep("EmailVerificacion");
+                    return RedirectToAction("VerifyCode", new { rememberMe });
+                }
+            }
+
+            // El cooldown expiró o no hay restricción
+            try
+            {
+                await GenerarYEnviarCodigoAsync(usuario);
+
+                TempData["EmailVerificacion"] = usuario.Email;
+                TempData["MensajeReenvio"] = "Te enviamos un nuevo código a tu correo.";
+
+                _logger.LogInformation($"Código reenviado para: {usuario.Email}");
+
+                return RedirectToAction(
+                    "VerifyCode",
+                    new { rememberMe }
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error al reenviar código: {ex.Message}");
+                TempData["Mensaje"] = "Error al enviar el código. Por favor, intente más tarde.";
+                TempData.Keep("EmailVerificacion");
+                return RedirectToAction("VerifyCode", new { rememberMe });
+            }
+
+        }
 
 
         // =====================================================
@@ -245,18 +400,10 @@ namespace Habitia.Controllers
         [HttpGet]
         public IActionResult Register()
         {
-
             return View(
                 new RegisterViewModel()
             );
-
         }
-
-
-
-
-
-
 
 
         // =====================================================
@@ -271,8 +418,6 @@ namespace Habitia.Controllers
 
             bool esAjax =
                 Request.Headers["X-Requested-With"] == "XMLHttpRequest";
-
-
 
             if (!ModelState.IsValid)
             {
@@ -297,21 +442,11 @@ namespace Habitia.Controllers
                 return View(model);
             }
 
-
-
-
-
-
             var vivienda =
                 await _context.Viviendas
                 .FirstOrDefaultAsync(x =>
                     x.TN_Id == model.TN_ViviendaId
                 );
-
-
-
-
-
 
             if (vivienda == null)
             {
@@ -320,7 +455,6 @@ namespace Habitia.Controllers
                     "",
                     "Debe seleccionar una vivienda."
                 );
-
 
                 if (esAjax)
                 {
@@ -331,26 +465,16 @@ namespace Habitia.Controllers
                     });
                 }
 
-
                 return View(model);
 
             }
-
-
-
-
-
-
-
 
             // ==========================================
             // VALIDAR PROPIETARIO
             // ==========================================
 
-
             if (model.TC_TipoRelacion == TipoRelacionEnum.Propietario)
             {
-
 
                 bool existePropietario =
                     await _context.ViviendaUsuarios
@@ -363,8 +487,6 @@ namespace Habitia.Controllers
                         )
                     );
 
-
-
                 if (existePropietario)
                 {
 
@@ -372,7 +494,6 @@ namespace Habitia.Controllers
                         "",
                         "Esta vivienda ya tiene propietario."
                     );
-
 
                     if (esAjax)
                     {
@@ -383,30 +504,18 @@ namespace Habitia.Controllers
                         });
                     }
 
-
                     return View(model);
 
                 }
 
-
             }
-
-
-
-
-
-
-
-
 
             // ==========================================
             // VALIDAR INQUILINO
             // ==========================================
 
-
             if (model.TC_TipoRelacion == TipoRelacionEnum.Inquilino)
             {
-
 
                 var propietario =
                     await _context.ViviendaUsuarios
@@ -416,8 +525,6 @@ namespace Habitia.Controllers
                         x.TN_Estado == EstadoUsuarioEnum.Activo
                     );
 
-
-
                 if (propietario == null)
                 {
 
@@ -425,7 +532,6 @@ namespace Habitia.Controllers
                         "",
                         "La vivienda no tiene propietario aprobado."
                     );
-
 
                     if (esAjax)
                     {
@@ -436,16 +542,10 @@ namespace Habitia.Controllers
                         });
                     }
 
-
                     return View(model);
 
                 }
 
-
-
-                // Respetar el cupo de inquilinos definido para la vivienda
-                // (el mismo campo sirve tanto para arrendatarios como para
-                // personas que conviven con el propietario).
                 var inquilinosOcupados =
                     await _context.ViviendaUsuarios
                     .CountAsync(x =>
@@ -457,8 +557,6 @@ namespace Habitia.Controllers
                         )
                     );
 
-
-
                 if (inquilinosOcupados >= vivienda.TN_CantidadInquilinos)
                 {
 
@@ -466,7 +564,6 @@ namespace Habitia.Controllers
                         "",
                         "Esta vivienda ya alcanzó el cupo máximo de inquilinos."
                     );
-
 
                     if (esAjax)
                     {
@@ -477,12 +574,9 @@ namespace Habitia.Controllers
                         });
                     }
 
-
                     return View(model);
 
                 }
-
-
 
             }
 
@@ -490,27 +584,18 @@ namespace Habitia.Controllers
             // CREAR USUARIO
             // ==========================================
 
-
             var partesNombre =
                 model.TC_NombreCompleto
                 .Trim()
                 .Split(" ");
 
-
-
             var nombre =
                 partesNombre[0];
-
-
 
             var apellido =
                 partesNombre.Length > 1
                 ? string.Join(" ", partesNombre.Skip(1))
                 : "";
-
-
-
-
 
             var usuario =
                 new ApplicationUser
@@ -522,38 +607,26 @@ namespace Habitia.Controllers
 
                     EmailConfirmed = true,
 
-
                     TC_Nombre = nombre,
 
                     TC_Apellido = apellido,
 
-
                     TN_TipoIdentificacion =
                          model.TC_TipoIdentificacion.Value,
-
 
                     TC_Identificacion =
                         model.TC_NumeroIdentificacion,
 
-
                     TC_Telefono =
                         model.TC_Telefono,
 
-
                     TN_Estado =
                         EstadoUsuarioEnum.Pendiente,
-
 
                     TF_FechaRegistro =
                         DateTime.Now
 
                 };
-
-
-
-
-
-
 
             var resultado =
                 await _userManager.CreateAsync(
@@ -561,14 +634,8 @@ namespace Habitia.Controllers
                     model.Password
                 );
 
-
-
-
-
-
             if (!resultado.Succeeded)
             {
-
 
                 foreach (var error in resultado.Errors)
                 {
@@ -580,7 +647,6 @@ namespace Habitia.Controllers
 
                 }
 
-
                 if (esAjax)
                 {
                     return Json(new
@@ -590,39 +656,31 @@ namespace Habitia.Controllers
                     });
                 }
 
-
                 return View(model);
 
             }
 
-
-
-
-
-
-
             // ==========================================
             // ASIGNAR ROL RESIDENTE
             // ==========================================
-
 
             await _userManager.AddToRoleAsync(
                 usuario,
                 "Residente"
             );
 
+            // ==========================================
+            // ACTIVAR 2FA POR CORREO
+            // ==========================================
 
-
-
-
-
-
-
+            await _userManager.SetTwoFactorEnabledAsync(
+                usuario,
+                true
+            );
 
             // ==========================================
             // RELACIONAR VIVIENDA
             // ==========================================
-
 
             var viviendaUsuario =
                 new ViviendaUsuario
@@ -631,51 +689,32 @@ namespace Habitia.Controllers
                     TC_IdUsuario =
                         usuario.Id,
 
-
                     TN_IdVivienda =
                         vivienda.TN_Id,
-
 
                     TN_TipoRelacion =
                         model.TC_TipoRelacion.Value,
 
-
                     TN_Estado =
                         EstadoUsuarioEnum.Pendiente,
 
-
                     TB_ViveAhi =
                         model.TB_ViveAhi,
-
 
                     TF_FechaRegistro =
                         DateTime.Now
 
                 };
 
-
-
-
-
-
             _context.ViviendaUsuarios.Add(
                 viviendaUsuario
             );
 
-
-
             await _context.SaveChangesAsync();
-
-
-
-
-
-
 
             // ==========================================
             // RESPUESTA FINAL
             // ==========================================
-
 
             if (esAjax)
             {
@@ -687,34 +726,18 @@ namespace Habitia.Controllers
 
             }
 
-
-
             TempData["RegistroPendiente"] = true;
-
-
 
             return RedirectToAction(
                 "Register"
             );
 
-
         }
 
 
-
-
-
-
-
-
-
         // =====================================================
-        // VERIFICAR EMAIL DISPONIBLE (paso 1 del registro)
+        // VERIFICAR EMAIL DISPONIBLE
         // =====================================================
-        //
-        // Se llama desde el JS al presionar "Siguiente" en el paso 1,
-        // para avisar de inmediato si el correo ya está registrado,
-        // en vez de que el error aparezca hasta el final del paso 3.
 
         [HttpGet]
         public async Task<IActionResult> VerificarEmailDisponible(string email)
@@ -731,15 +754,8 @@ namespace Habitia.Controllers
         }
 
 
-
-
-
-
-
-
-
         // =====================================================
-        // OBTENER VIVIENDAS DISPONIBLES (según tipo y relación)
+        // OBTENER VIVIENDAS DISPONIBLES
         // =====================================================
 
         [HttpGet]
@@ -754,12 +770,6 @@ namespace Habitia.Controllers
                 .Where(x => x.TN_Tipo == tipo)
                 .AsQueryable();
 
-
-            // Solo para Propietario nos interesa que la vivienda esté
-            // marcada como Disponible (todavía sin dueño reclamándola).
-            // Para Inquilino la vivienda YA tiene dueño activo (por eso
-            // su TN_Estado suele cambiar a Ocupada al aprobarlo), así
-            // que acá NO filtramos por TN_Estado.
             if (relacion == TipoRelacionEnum.Propietario)
             {
                 query =
@@ -768,13 +778,10 @@ namespace Habitia.Controllers
                     );
             }
 
-
             var viviendas =
                 await query.ToListAsync();
 
-
             var resultado = new List<object>();
-
 
             foreach (var vivienda in viviendas)
             {
@@ -782,11 +789,8 @@ namespace Habitia.Controllers
                 bool disponible = false;
                 string etiquetaRelacion = null;
 
-
                 if (relacion == TipoRelacionEnum.Propietario)
                 {
-                    // Solo se puede elegir como Propietario si nadie más
-                    // la tiene reclamada (ni Activo ni Pendiente de aprobación)
                     var propietario =
                         vivienda.Usuarios
                         .FirstOrDefault(x =>
@@ -800,12 +804,6 @@ namespace Habitia.Controllers
                 }
                 else if (relacion == TipoRelacionEnum.Inquilino)
                 {
-                    // Para Inquilino solo se necesita un propietario Activo,
-                    // sin importar si vive ahí o no (el mismo cupo
-                    // TN_CantidadInquilinos sirve tanto para gente que
-                    // alquila como para gente que convive con el dueño).
-                    // Se cuentan también las solicitudes Pendientes para
-                    // no sobrevender el cupo mientras se aprueban.
                     var propietarioActivo =
                         vivienda.Usuarios
                         .FirstOrDefault(x =>
@@ -825,10 +823,6 @@ namespace Habitia.Controllers
 
                         disponible = inquilinosOcupados < vivienda.TN_CantidadInquilinos;
 
-                        // Aclara con qué etiqueta va a quedar registrado en
-                        // esa vivienda específica, según si el propietario
-                        // vive ahí o no (US: "Ocupante" en la tarjeta,
-                        // pero se muestra como Familiar o Inquilino aquí).
                         if (disponible)
                         {
                             etiquetaRelacion =
@@ -836,7 +830,6 @@ namespace Habitia.Controllers
                         }
                     }
                 }
-
 
                 if (disponible)
                 {
@@ -849,25 +842,15 @@ namespace Habitia.Controllers
                 }
             }
 
-
             return Json(resultado);
 
         }
-
-
-
-
-
-
-
 
 
         // =====================================================
         // LOGOUT
         // =====================================================
 
-
-        // POST: /Account/Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -877,12 +860,8 @@ namespace Habitia.Controllers
         }
 
         // =====================================================
-        // VERIFICAR IDENTIFICACIÓN DISPONIBLE (paso 1 del registro)
+        // VERIFICAR IDENTIFICACIÓN DISPONIBLE
         // =====================================================
-        //
-        // Misma idea que VerificarEmailDisponible: se llama al presionar
-        // "Siguiente" en el paso 1, para avisar de inmediato si la cédula
-        // ya está registrada, sin esperar hasta el final del paso 3.
 
         [HttpGet]
         public async Task<IActionResult> VerificarIdentificacionDisponible(string identificacion)
@@ -900,6 +879,112 @@ namespace Habitia.Controllers
         }
 
 
-    }
 
+        // =====================================================
+        // HELPERS PRIVADOS - 2FA
+        // =====================================================
+
+        private async Task GenerarYEnviarCodigoAsync(ApplicationUser usuario)
+        {
+            try
+            {
+                _logger.LogInformation($"[INICIO] GenerarYEnviarCodigoAsync para: {usuario.Email}");
+
+                // Invalidar códigos previos
+                var codigosPrevios =
+                    _context.CodigosVerificacion
+                    .Where(c =>
+                        c.TC_IdUsuario == usuario.Id &&
+                        !c.TB_Usado &&
+                        !c.TB_Invalidado
+                    );
+
+                await codigosPrevios.ForEachAsync(c => c.TB_Invalidado = true);
+
+                // Generar nuevo código
+                var codigoGenerado = Random.Shared.Next(0, 1000000).ToString("D6");
+
+                var nuevoCodigo =
+                    new CodigoVerificacion
+                    {
+                        TC_IdUsuario = usuario.Id,
+                        TC_Codigo = codigoGenerado,
+                        TF_FechaCreacion = DateTime.UtcNow,
+                        TF_FechaExpiracion = DateTime.UtcNow.AddMinutes(MINUTOS_EXPIRACION_CODIGO),
+                        TN_Intentos = 0,
+                        TN_CiclosFallidos = 0,
+                        TF_UltimoReenvioUtc = null,
+                        TB_Usado = false,
+                        TB_Invalidado = false
+                    };
+
+                _context.CodigosVerificacion.Add(nuevoCodigo);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation($"[DB] Código generado en BD - Usuario: {usuario.Email}, Código: {codigoGenerado}");
+
+                // Generar plantilla de email
+                _logger.LogInformation($"[EMAIL] Generando plantilla HTML...");
+                var cuerpoCorreo =
+                    EmailTemplateHelper.GenerarCorreoCodigoVerificacion(
+                        usuario.TC_Nombre,
+                        codigoGenerado
+                    );
+
+                _logger.LogInformation($"[EMAIL] Plantilla generada. Contenido vacío: {string.IsNullOrEmpty(cuerpoCorreo)}");
+
+                if (string.IsNullOrEmpty(cuerpoCorreo))
+                {
+                    throw new InvalidOperationException("La plantilla de email retornó vacío");
+                }
+
+                // Enviar email
+                _logger.LogInformation($"[EMAIL] Enviando email a: {usuario.Email}");
+                await _emailSender.SendEmailAsync(
+                    usuario.Email,
+                    "Tu código de verificación - Habitia",
+                    cuerpoCorreo
+                );
+
+                _logger.LogInformation($"✅ [EMAIL] Código enviado a {usuario.Email}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"❌ [ERROR] GenerarYEnviarCodigoAsync - {ex.Message} - {ex.StackTrace}");
+                throw;
+            }
+        }
+
+
+
+        private async Task<IActionResult> RedirigirPorRolAsync(ApplicationUser usuario)
+        {
+
+            var roles =
+                await _userManager.GetRolesAsync(usuario);
+
+            if (roles.Contains("Admin"))
+            {
+                return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+            }
+
+            if (roles.Contains("Residente"))
+            {
+                return RedirectToAction("Index", "Home", new { area = "Residente" });
+            }
+
+            if (roles.Contains("Seguridad"))
+            {
+                return RedirectToAction("Index", "Home", new { area = "Seguridad" });
+            }
+
+            if (roles.Contains("Mantenimiento"))
+            {
+                return RedirectToAction("Index", "Home", new { area = "Mantenimiento" });
+            }
+
+            return RedirectToAction("Login");
+
+        }
+    }
 }

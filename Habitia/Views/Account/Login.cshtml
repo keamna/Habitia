@@ -4,14 +4,16 @@
     Layout = "_AuthLayout";
     ViewData["AuthImage"] = "login.png";
 }
-
 <h1 class="auth-title">Iniciar sesión</h1>
 <p class="auth-subtitle">Completa los campos para iniciar sesión a tu cuenta.</p>
-
+@if (TempData["MensajeExito"] != null)
+{
+    <div style="background-color: #EAF7EA; color: #336332; border: 1px solid #CDEACD; padding: 12px 16px; border-radius: 10px; margin-bottom: 18px; font-size: 0.88rem; font-weight: 500;">
+        <i class="bi bi-check-circle" style="margin-right: 8px;"></i> @TempData["MensajeExito"]
+    </div>
+}
 <form asp-action="Login" method="post" class="auth-form" id="loginForm" novalidate>
-
     <div asp-validation-summary="All" class="auth-validation-summary"></div>
-
     <div class="auth-field">
         <label asp-for="Email">Correo</label>
         <div class="auth-input-wrap">
@@ -22,7 +24,6 @@
         </div>
         <span asp-validation-for="Email" class="auth-error" id="errEmail"></span>
     </div>
-
     <div class="auth-field">
         <label asp-for="Password">Contraseña</label>
         <div class="auth-input-wrap">
@@ -33,84 +34,17 @@
         </div>
         <span asp-validation-for="Password" class="auth-error" id="errPassword"></span>
     </div>
-
     <div class="auth-row">
         <label class="auth-checkbox">
             <input asp-for="RememberMe" />
             <span>Recordarme</span>
         </label>
-        <a asp-controller="Account" asp-action="ForgotPassword" class="auth-link-muted">¿Olvidaste la contraseña?</a>
     </div>
-
     <button type="submit" class="auth-submit" id="btnLogin">Iniciar sesión</button>
-
     <p class="auth-footer-text">
         ¿No tienes cuenta? <a asp-controller="Account" asp-action="Register" class="auth-link">Crear cuenta</a>
     </p>
 </form>
-
 @section Scripts {
-    <script>
-        document.querySelectorAll('.auth-toggle-password').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var input = document.getElementById(btn.dataset.target);
-                var icon = btn.querySelector('i');
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.classList.remove('bi-eye');
-                    icon.classList.add('bi-eye-slash');
-                } else {
-                    input.type = 'password';
-                    icon.classList.remove('bi-eye-slash');
-                    icon.classList.add('bi-eye');
-                }
-            });
-        });
-
-        document.querySelectorAll('.auth-clear').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var input = document.getElementById(btn.dataset.target);
-                input.value = '';
-                input.focus();
-            });
-        });
-
-        // ==========================
-        // VALIDACIÓN LOGIN
-        // ==========================
-        var loginForm = document.getElementById('loginForm');
-
-        if (loginForm) {
-            loginForm.addEventListener('submit', function (e) {
-
-                var valido = true;
-
-                document.querySelectorAll('.auth-error').forEach(function (el) {
-                    el.innerHTML = '';
-                });
-
-                var email = document.getElementById('Email').value.trim();
-                var password = document.getElementById('Password').value;
-
-                var regexCorreo = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
-
-                if (email === '') {
-                    document.getElementById('errEmail').innerHTML = 'Ingrese su correo';
-                    valido = false;
-                } else if (!regexCorreo.test(email)) {
-                    document.getElementById('errEmail').innerHTML = 'Ingrese un correo válido';
-                    valido = false;
-                }
-
-                if (password === '') {
-                    document.getElementById('errPassword').innerHTML = 'Ingrese su contraseña';
-                    valido = false;
-                }
-
-                if (!valido) {
-                    e.preventDefault();
-                }
-            });
-        }
-    </script>
+    <script src="~/js/login.js"></script>
 }
