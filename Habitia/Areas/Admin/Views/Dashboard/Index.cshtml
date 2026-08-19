@@ -40,7 +40,7 @@
     <div class="panel-seccion">
         <div class="panel-seccion-titulo">Resumen</div>
 
-        <div class="panel-cifras" style="--cols:3;">
+        <div class="panel-cifras" style="--cols:4;">
 
             <a class="panel-cifra" asp-area="Admin" asp-controller="Usuarios" asp-action="Index">
                 <div class="panel-cifra-top">
@@ -104,6 +104,32 @@
                 <div class="panel-cifra-valor">@Model.VisitantesDentro</div>
                 <div class="panel-cifra-titulo">Visitantes dentro</div>
                 <div class="panel-cifra-meta">@Model.AccesosHoy ingresos registrados hoy</div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Admin" asp-controller="Cargos" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-ambar">
+                        <i class="bi bi-cash-stack"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.CargosPendientes</div>
+                <div class="panel-cifra-titulo">Cargos por cobrar</div>
+                <div class="panel-cifra-meta">
+                    ₡@Model.MontoPorCobrar.ToString("N2", System.Globalization.CultureInfo.InvariantCulture) pendientes
+                </div>
+            </a>
+
+            <a class="panel-cifra" asp-area="Admin" asp-controller="Pagos" asp-action="Index">
+                <div class="panel-cifra-top">
+                    <span class="panel-cifra-icono panel-cifra-icono-azul">
+                        <i class="bi bi-receipt-cutoff"></i>
+                    </span>
+                    <i class="bi bi-arrow-up-right panel-cifra-flecha"></i>
+                </div>
+                <div class="panel-cifra-valor">@Model.PagosPorRevisar</div>
+                <div class="panel-cifra-titulo">Comprobantes por revisar</div>
+                <div class="panel-cifra-meta">Esperando aprobación</div>
             </a>
 
             <a class="panel-cifra" asp-area="Admin" asp-controller="Incidencias" asp-action="Index">

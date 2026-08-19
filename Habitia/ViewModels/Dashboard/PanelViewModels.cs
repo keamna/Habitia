@@ -55,6 +55,11 @@
         // Incidencias (solo lectura, la sección la mantiene el otro módulo)
         public int IncidenciasPendientes { get; set; }
 
+        // Financiero
+        public int CargosPendientes { get; set; }
+        public int PagosPorRevisar { get; set; }
+        public decimal MontoPorCobrar { get; set; }
+
         // Listas
         public List<PanelItemViewModel> SolicitudesRecientes { get; set; } = new();
         public List<PanelItemViewModel> ProximasReservas { get; set; } = new();

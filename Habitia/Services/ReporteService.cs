@@ -114,6 +114,7 @@ namespace Habitia.Services
             modelo.IncidenciasPorMes = AgruparPorMes(fechasIncidencias);
 
             modelo.Mantenimiento = await ReporteMantenimientoAsync(desde, hasta);
+            modelo.Financiero = await ReporteFinancieroAsync(desde, hasta);
 
             return modelo;
         }
@@ -466,6 +467,113 @@ namespace Habitia.Services
                 .ToListAsync();
 
             r.PorMes = AgruparPorMes(todas);
+
+            return r;
+        }
+
+
+        // ===================== FINANCIERO =====================
+        private async Task<ReporteFinancieroViewModel> ReporteFinancieroAsync(DateTime? desde, DateTime? hasta)
+        {
+            var query = _context.Cargos
+                .Include(c => c.TipoCargo)
+                .Include(c => c.EstadoCargo)
+                .Include(c => c.Vivienda)
+                .Where(c => c.TB_Estado)
+                .AsQueryable();
+
+            // El rango se aplica sobre la fecha de emisión del cargo.
+            if (desde.HasValue)
+                query = query.Where(c => c.TF_FechaEmision >= desde.Value);
+
+            if (hasta.HasValue)
+                query = query.Where(c => c.TF_FechaEmision <= hasta.Value);
+
+            var cargos = await query.ToListAsync();
+
+            var r = new ReporteFinancieroViewModel
+            {
+                TotalCargos = cargos.Count,
+                CargosPendientes = cargos.Count(c => c.EstadoCargo.TC_Nombre == "Pendiente"),
+                CargosEnRevision = cargos.Count(c => c.EstadoCargo.TC_Nombre == "En revisión"),
+                CargosPagados = cargos.Count(c => c.EstadoCargo.TC_Nombre == "Pagado"),
+                CargosVencidos = cargos.Count(c => c.EstadoCargo.TC_Nombre == "Vencido")
+            };
+
+            r.MontoEmitido = cargos.Sum(c => c.TN_MontoTotal);
+
+            r.MontoCobrado = cargos
+                .Where(c => c.EstadoCargo.TC_Nombre == "Pagado")
+                .Sum(c => c.TN_MontoTotal);
+
+            // Lo que falta cobrar: todo lo que no está pagado todavía.
+            r.MontoPorCobrar = cargos
+                .Where(c => c.EstadoCargo.TC_Nombre != "Pagado")
+                .Sum(c => c.TN_MontoTotal);
+
+            r.MontoVencido = cargos
+                .Where(c => c.EstadoCargo.TC_Nombre == "Vencido")
+                .Sum(c => c.TN_MontoTotal);
+
+            r.PorcentajeCobrado = r.MontoEmitido == 0
+                ? 0
+                : Math.Round((double)(r.MontoCobrado * 100 / r.MontoEmitido), 1);
+
+            r.CargosPorTipo = cargos
+                .GroupBy(c => c.TipoCargo != null ? c.TipoCargo.TC_Nombre : "Sin tipo")
+                .Select(g => new ConteoReporteViewModel { Etiqueta = g.Key, Cantidad = g.Count() })
+                .OrderByDescending(x => x.Cantidad)
+                .ToList();
+
+            // Viviendas con más monto sin pagar
+            r.ViviendasConMasDeuda = cargos
+                .Where(c => c.EstadoCargo.TC_Nombre != "Pagado" && c.Vivienda != null)
+                .GroupBy(c => c.Vivienda.TC_Numero)
+                .Select(g => new ConteoReporteViewModel
+                {
+                    Etiqueta = "Vivienda " + g.Key,
+                    Cantidad = (int)g.Sum(x => x.TN_MontoTotal)
+                })
+                .OrderByDescending(x => x.Cantidad)
+                .Take(5)
+                .ToList();
+
+            // Tendencia mensual: todos los cargos, sin filtro de rango.
+            var fechasCargos = await _context.Cargos
+                .Where(c => c.TB_Estado)
+                .Select(c => c.TF_FechaEmision)
+                .ToListAsync();
+
+            r.CargosPorMes = AgruparPorMes(fechasCargos);
+
+            // ---- Pagos ----
+            var idsCargos = cargos.Select(c => c.TN_Id).ToList();
+
+            var pagos = await _context.Pagos
+                .Include(pago => pago.MetodoPago)
+                .Where(pago => idsCargos.Contains(pago.TN_IdCargo))
+                .ToListAsync();
+
+            r.PagosRechazados = pagos.Count(pago => pago.TC_MotivoRechazo != null);
+
+            r.PagosPorMetodo = pagos
+                .GroupBy(pago => pago.MetodoPago != null ? pago.MetodoPago.TC_Nombre : "Sin método")
+                .Select(g => new ConteoReporteViewModel { Etiqueta = g.Key, Cantidad = g.Count() })
+                .OrderByDescending(x => x.Cantidad)
+                .ToList();
+
+            // ---- Recargos aplicados por atraso ----
+            var recargosQuery = _context.Recargos
+                .Where(rec => rec.TB_Estado)
+                .AsQueryable();
+
+            if (desde.HasValue)
+                recargosQuery = recargosQuery.Where(rec => rec.TF_FechaAplicacion >= desde.Value);
+
+            if (hasta.HasValue)
+                recargosQuery = recargosQuery.Where(rec => rec.TF_FechaAplicacion <= hasta.Value);
+
+            r.MontoRecargos = await recargosQuery.SumAsync(rec => (decimal?)rec.TN_MontoAplicado) ?? 0m;
 
             return r;
         }
