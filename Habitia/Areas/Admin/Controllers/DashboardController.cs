@@ -106,6 +106,24 @@ namespace Habitia.Areas.Admin.Controllers
             model.IncidenciasPendientes = await _context.Incidencias
                 .CountAsync(i => i.TN_Estado == EstadoIncidenciaEnum.Pendiente);
 
+            // ===================== FINANCIERO =====================
+
+            var cargos = await _context.Cargos
+                .Include(c => c.EstadoCargo)
+                .Where(c => c.TB_Estado)
+                .ToListAsync();
+
+            model.CargosPendientes = cargos
+                .Count(c => c.EstadoCargo.TC_Nombre == "Pendiente" ||
+                            c.EstadoCargo.TC_Nombre == "Vencido");
+
+            model.PagosPorRevisar = cargos
+                .Count(c => c.EstadoCargo.TC_Nombre == "En revisión");
+
+            model.MontoPorCobrar = cargos
+                .Where(c => c.EstadoCargo.TC_Nombre != "Pagado")
+                .Sum(c => c.TN_MontoTotal);
+
             // ===================== SOLICITUDES RECIENTES =====================
 
             var solicitudes = await _context.ViviendaUsuarios

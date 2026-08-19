@@ -133,6 +133,38 @@
 
 
     // =====================================================
+    // FINANCIERO
+    // =====================================================
+    public class ReporteFinancieroViewModel
+    {
+        // Cantidad de cargos por estado
+        public int TotalCargos { get; set; }
+        public int CargosPendientes { get; set; }
+        public int CargosEnRevision { get; set; }
+        public int CargosPagados { get; set; }
+        public int CargosVencidos { get; set; }
+
+        // Dinero
+        public decimal MontoEmitido { get; set; }
+        public decimal MontoCobrado { get; set; }
+        public decimal MontoPorCobrar { get; set; }
+        public decimal MontoVencido { get; set; }
+        public decimal MontoRecargos { get; set; }
+
+        // Porcentaje del monto emitido que ya se cobró
+        public double PorcentajeCobrado { get; set; }
+
+        // Comprobantes rechazados por el administrador
+        public int PagosRechazados { get; set; }
+
+        public List<ConteoReporteViewModel> CargosPorTipo { get; set; } = new();
+        public List<ConteoReporteViewModel> PagosPorMetodo { get; set; } = new();
+        public List<ConteoReporteViewModel> ViviendasConMasDeuda { get; set; } = new();
+        public List<ConteoReporteViewModel> CargosPorMes { get; set; } = new();
+    }
+
+
+    // =====================================================
     // CONTENEDOR DE TODOS LOS REPORTES
     // =====================================================
     public class ReporteGeneralViewModel
@@ -153,5 +185,7 @@
         public List<ConteoReporteViewModel> IncidenciasPorMes { get; set; } = new();
 
         public ReporteMantenimientoViewModel Mantenimiento { get; set; } = new();
+
+        public ReporteFinancieroViewModel Financiero { get; set; } = new();
     }
 }

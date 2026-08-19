@@ -14,6 +14,11 @@
     var datosIncidenciasMes = Serie(Model.IncidenciasPorMes);
     var datosDiaSemana = Serie(Model.Accesos.IngresosPorDiaSemana);
     var datosMantenimientoMes = Serie(Model.Mantenimiento.PorMes);
+    var datosCargosMes = Serie(Model.Financiero.CargosPorMes);
+
+    // Program.cs no configura cultura: se arma el monto con el colón.
+    Func<decimal, string> col = m => "₡" + m.ToString("N2",
+        System.Globalization.CultureInfo.InvariantCulture);
 
     // Viviendas: comparativa ocupadas vs disponibles por tipo.
     var etiquetasTipo = JsonSerializer.Serialize(Model.Viviendas.OcupadasPorTipo.Select(x => x.Etiqueta));
@@ -23,7 +28,7 @@
 
 <style>
     /* Bootstrap pinta los nav-link de azul por defecto. Acá se usan los
-           verdes/grises de Habitia. El ícono hereda el color del enlace. */
+               verdes/grises de Habitia. El ícono hereda el color del enlace. */
     .nav-tabs .nav-link {
         color: #5a655a;
         font-weight: 600;
@@ -61,10 +66,10 @@
     }
 
     /* =========================================================
-           IMPRESIÓN
-           Sin sidebar, sin botones ni filtros, y con TODAS las
-           pestañas desplegadas una debajo de otra.
-        ========================================================= */
+               IMPRESIÓN
+               Sin sidebar, sin botones ni filtros, y con TODAS las
+               pestañas desplegadas una debajo de otra.
+            ========================================================= */
     @@media print {
         @@page {
             size: A4 portrait;
@@ -76,8 +81,8 @@
             display: none !important;
         }
         /* El layout usa height:100vh + overflow:hidden en el wrapper y el
-               scroll vive dentro de .habitia-content. Si no se anulan, el
-               navegador imprime solo lo que entra en una pantalla. */
+                   scroll vive dentro de .habitia-content. Si no se anulan, el
+                   navegador imprime solo lo que entra en una pantalla. */
         html, body {
             height: auto !important;
             overflow: visible !important;
@@ -115,7 +120,7 @@
             gap: 12px;
         }
         /* Bootstrap oculta las pestañas inactivas: acá se muestran todas,
-               una debajo de otra, para que el PDF traiga el reporte completo. */
+                   una debajo de otra, para que el PDF traiga el reporte completo. */
         .tab-content > .tab-pane {
             display: block !important;
             opacity: 1 !important;
@@ -212,7 +217,7 @@
                 {
                     <text> hasta el <strong>@Model.FechaHasta.Value.ToString("dd/MM/yyyy")</strong></text>
                 }
-    .
+                .
                 El reporte de viviendas siempre refleja el estado actual del condominio.
             </div>
         }
@@ -248,6 +253,11 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabMantenimiento" type="button" role="tab">
                 <i class="bi bi-tools me-1"></i> Mantenimiento
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabFinanciero" type="button" role="tab">
+                <i class="bi bi-cash-stack me-1"></i> Financiero
             </button>
         </li>
     </ul>
@@ -1040,6 +1050,193 @@
 
         </div>
 
+
+        <!-- ===================== FINANCIERO ===================== -->
+        <div class="tab-pane fade" id="tabFinanciero" role="tabpanel">
+
+            <h4 class="solo-impresion mb-3">Financiero</h4>
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Dinero del período</div>
+                <div class="panel-cifras" style="--cols:4;">
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-cash-stack"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@col(Model.Financiero.MontoEmitido)</div>
+                        <div class="panel-cifra-titulo">Total emitido</div>
+                        <div class="panel-cifra-meta">@Model.Financiero.TotalCargos cargos generados</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@col(Model.Financiero.MontoCobrado)</div>
+                        <div class="panel-cifra-titulo">Cobrado</div>
+                        <div class="panel-cifra-meta">@Model.Financiero.PorcentajeCobrado.ToString("0.#")% de lo emitido</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-ambar">
+                                <i class="bi bi-hourglass-split"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@col(Model.Financiero.MontoPorCobrar)</div>
+                        <div class="panel-cifra-titulo">Por cobrar</div>
+                        <div class="panel-cifra-meta">Cargos aún sin pagar</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-rojo">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@col(Model.Financiero.MontoVencido)</div>
+                        <div class="panel-cifra-titulo">Vencido</div>
+                        <div class="panel-cifra-meta">Pasó la fecha límite</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Estado de los cargos</div>
+                <div class="panel-cifras" style="--cols:4;">
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-ambar">
+                                <i class="bi bi-receipt"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Financiero.CargosPendientes</div>
+                        <div class="panel-cifra-titulo">Pendientes</div>
+                        <div class="panel-cifra-meta">Esperando pago</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-azul">
+                                <i class="bi bi-receipt-cutoff"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Financiero.CargosEnRevision</div>
+                        <div class="panel-cifra-titulo">En revisión</div>
+                        <div class="panel-cifra-meta">Comprobante por aprobar</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-verde">
+                                <i class="bi bi-check2-all"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Financiero.CargosPagados</div>
+                        <div class="panel-cifra-titulo">Pagados</div>
+                        <div class="panel-cifra-meta">Aprobados</div>
+                    </div>
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-rojo">
+                                <i class="bi bi-x-circle"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@Model.Financiero.PagosRechazados</div>
+                        <div class="panel-cifra-titulo">Comprobantes rechazados</div>
+                        <div class="panel-cifra-meta">Deben reenviarse</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Cargos emitidos por mes</div>
+                <div class="reporte-grafico-card">
+                    <div class="reporte-grafico">
+                        <canvas id="grafFinanciero"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Desglose</div>
+                <div class="panel-columnas">
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Cargos por tipo</h6>
+                        </div>
+                        @if (!Model.Financiero.CargosPorTipo.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin cargos en el rango.
+                            </div>
+                        }
+                        @foreach (var item in Model.Financiero.CargosPorTipo)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Etiqueta</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Cantidad</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Pagos por método</h6>
+                        </div>
+                        @if (!Model.Financiero.PagosPorMetodo.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin pagos registrados.
+                            </div>
+                        }
+                        @foreach (var item in Model.Financiero.PagosPorMetodo)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Etiqueta</div>
+                                <span class="panel-badge panel-badge-secondary">@item.Cantidad</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="panel-lista-card">
+                        <div class="panel-lista-header">
+                            <h6>Viviendas con más saldo pendiente (top 5)</h6>
+                        </div>
+                        @if (!Model.Financiero.ViviendasConMasDeuda.Any())
+                        {
+                            <div class="panel-lista-vacia">
+                                <i class="bi bi-bar-chart"></i>
+                                Sin saldos pendientes.
+                            </div>
+                        }
+                        @foreach (var item in Model.Financiero.ViviendasConMasDeuda)
+                        {
+                            <div class="panel-lista-item">
+                                <div class="panel-item-titulo">@item.Etiqueta</div>
+                                <span class="panel-badge panel-badge-secondary">@("₡" + item.Cantidad.ToString("N0", System.Globalization.CultureInfo.InvariantCulture))</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-seccion">
+                <div class="panel-seccion-titulo">Recargos</div>
+                <div class="panel-cifras" style="--cols:1;">
+                    <div class="panel-cifra">
+                        <div class="panel-cifra-top">
+                            <span class="panel-cifra-icono panel-cifra-icono-rojo">
+                                <i class="bi bi-graph-up-arrow"></i>
+                            </span>
+                        </div>
+                        <div class="panel-cifra-valor">@col(Model.Financiero.MontoRecargos)</div>
+                        <div class="panel-cifra-titulo">Recargos aplicados por atraso</div>
+                        <div class="panel-cifra-meta">Monto total cobrado en recargos</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
 
 </div>
@@ -1112,6 +1309,14 @@
                            value="tabMantenimiento" checked />
                     <label class="form-check-label" for="chkMantenimiento">
                         <i class="bi bi-tools me-1"></i> Mantenimiento
+                    </label>
+                </div>
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input chk-seccion" type="checkbox" id="chkFinanciero"
+                           value="tabFinanciero" checked />
+                    <label class="form-check-label" for="chkFinanciero">
+                        <i class="bi bi-cash-stack me-1"></i> Financiero
                     </label>
                 </div>
 
@@ -1208,6 +1413,7 @@
         barras('grafAccesos', @Html.Raw(datosDiaSemana), 'Ingresos');
         barras('grafIncidencias', @Html.Raw(datosIncidenciasMes), 'Incidencias');
         barras('grafMantenimiento', @Html.Raw(datosMantenimientoMes), 'Tareas');
+        barras('grafFinanciero', @Html.Raw(datosCargosMes), 'Cargos');
 
         // Los gráficos de pestañas ocultas nacen con ancho 0: hay que
         // redimensionarlos cuando la pestaña se muestra por primera vez.
